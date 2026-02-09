@@ -46,8 +46,8 @@ class Config:
     ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg'}
 
     # Rate Limiting
-    # Defaults to Redis. If Redis is not available, it will raise an error, encouraging proper setup.
-    RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI') or 'redis://localhost:6379'
+    # Defaults to memory storage for local development. Use Redis in production.
+    RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI') or 'memory://'
     RATELIMIT_STRATEGY = 'fixed-window'
     
     # Environment
