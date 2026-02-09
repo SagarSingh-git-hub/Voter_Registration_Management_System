@@ -1,0 +1,1430 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h2 class="font-display text-4xl font-bold text-white mb-2">New Voter Registration</h2>
+            <p class="text-gray-400 text-sm">Form 6 - General Electors</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition-all">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+
+    <div class="glass-panel p-6 md:p-12 rounded-3xl relative animate-slide-in" style="animation-delay: 0.1s;">
+        <!-- Stepper -->
+        <div class="mb-12 relative px-4 md:px-0">
+            <!-- Background Line -->
+            <div class="absolute top-1/2 left-0 w-full h-1 bg-white/5 -translate-y-1/2 rounded-full z-0"></div>
+            <!-- Progress Line with Neon Glow -->
+            <div id="progress-bar" class="absolute top-1/2 left-0 h-1 bg-electric -translate-y-1/2 rounded-full z-0 shadow-[0_0_8px_#00B4FF] transition-all duration-500 ease-out" style="width: 0%;"></div>
+            
+            <div class="relative z-10 flex justify-between items-center">
+                <!-- Step 1 Indicator -->
+                <div class="step-indicator active relative group" data-step="1" title="Step 1: Identity Verification">
+                    <div class="w-12 h-12 rounded-full bg-slate-900 border-2 border-electric text-electric flex items-center justify-center font-bold mb-2 shadow-[0_0_20px_rgba(0,180,255,0.4)] scale-110 transition-all duration-500">1</div>
+                    <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-electric uppercase tracking-wider block transition-all duration-300 scale-105">Identity</span>
+                </div>
+                <!-- Step 2 Indicator -->
+                <div class="step-indicator relative group" data-step="2" title="Step 2: Address & Constituency">
+                    <div class="w-10 h-10 rounded-full bg-slate-900 border border-white/10 text-gray-600 flex items-center justify-center font-bold mb-2 transition-all duration-500">2</div>
+                    <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:block transition-all duration-300">Address</span>
+                </div>
+                <!-- Step 3 Indicator -->
+                <div class="step-indicator relative group" data-step="3" title="Step 3: ID Proof & Review">
+                    <div class="w-10 h-10 rounded-full bg-slate-900 border border-white/10 text-gray-600 flex items-center justify-center font-bold mb-2 transition-all duration-500">3</div>
+                    <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:block transition-all duration-300">Verification</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="" enctype="multipart/form-data" class="space-y-8 relative z-10" id="voterForm">
+            {{ form.hidden_tag() }}
+            
+            <!-- Step 1: Personal Details -->
+            <div class="form-step active" id="step-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="md:col-span-2">
+                        <h3 class="text-electric text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-3">
+                            <span class="w-8 h-0.5 bg-electric shadow-glow"></span> 
+                            <span class="tracking-[0.2em]">Identity Verification</span>
+                        </h3>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="group">
+                        {{ form.full_name.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.full_name(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Full Name as per ID") }}
+                        {% for error in form.full_name.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Relative Name & Type -->
+                    <div class="group">
+                        {{ form.relative_name.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        <div class="flex gap-2">
+                            <div class="w-1/3">
+                                {{ form.relative_type(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 transition-all appearance-none cursor-pointer") }}
+                            </div>
+                            <div class="w-2/3">
+                                {{ form.relative_name(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 transition-all placeholder-gray-600", placeholder="Relative's Name") }}
+                            </div>
+                        </div>
+                        {% for error in form.relative_name.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- DOB & Age -->
+                    <div class="group">
+                        {{ form.dob.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.dob(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all text-gray-400", type="date") }}
+                        <div id="age-calc" class="text-xs mt-2 font-mono text-gray-500"></div>
+                        {% for error in form.dob.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="group">
+                        {{ form.gender.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.gender(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all appearance-none cursor-pointer") }}
+                        {% for error in form.gender.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Mobile -->
+                    <div class="group">
+                        {{ form.phone.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        <div class="relative">
+                            <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-mono pointer-events-none transition-colors group-focus-within:text-electric">+91</span>
+                            {{ form.phone(class="w-full bg-white/5 border border-white/10 rounded-xl text-white pl-16 pr-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXX XXXXX", maxlength="15", inputmode="numeric") }}
+                            <button type="button" id="btn-send-otp" class="absolute right-2 top-2 bottom-2 bg-electric/10 hover:bg-electric/20 text-electric text-xs font-bold px-3 rounded-lg transition-colors border border-electric/30">Verify OTP</button>
+                            <div id="phone-verified-badge" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-emerald-400 text-xs font-bold hidden bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20">
+                                <i class="fas fa-check-circle"></i> <span>Verified</span>
+                            </div>
+                        </div>
+                        
+                        <!-- OTP Input Section (Hidden initially) -->
+                        <div id="otp-section" class="hidden mt-3 animate-slide-in">
+                            <div class="relative">
+                                <input type="text" id="otp-input" class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-[0.5em] text-center text-lg" placeholder="OTP" maxlength="6" inputmode="numeric">
+                                <button type="button" id="btn-verify-otp" class="absolute right-2 top-2 bottom-2 bg-electric/10 hover:bg-electric/20 text-electric text-xs font-bold px-4 rounded-lg transition-colors border border-electric/30">Verify</button>
+                            </div>
+                            <div class="flex items-center justify-between mt-2 px-1">
+                                <span id="otp-timer" class="text-xs text-gray-500 font-mono"></span>
+                                <button type="button" id="btn-resend-otp" class="text-xs text-gray-400 hover:text-white underline decoration-white/30 hover:decoration-white transition-all">Resend OTP</button>
+                            </div>
+                        </div>
+
+                        <div id="phone-feedback" class="text-xs mt-2 font-mono transition-all duration-300 h-4"></div>
+                        {% for error in form.phone.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email (Optional) -->
+                    <div class="group">
+                        {{ form.email.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.email(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Email Address (Optional)") }}
+                        {% for error in form.email.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Photograph Upload -->
+                    <div class="md:col-span-2 group">
+                        {{ form.photograph.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 h-24 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative flex-shrink-0">
+                                <img id="photo-preview" src="#" alt="Preview" class="w-full h-full object-cover hidden">
+                                <i class="fas fa-user text-3xl text-gray-600" id="photo-placeholder"></i>
+                            </div>
+                            <div class="flex-1">
+                                {{ form.photograph(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-electric/10 file:text-electric hover:file:bg-electric/20", id="photograph") }}
+                                <p class="text-xs text-gray-500 mt-2">Passport size, clear face, light background. Max 2MB.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Only: Polling Area Details -->
+                    {% if current_user.role == 'admin' %}
+                    <div class="group bg-slate-800/50 p-4 rounded-xl border border-white/10 md:col-span-2">
+                        <p class="text-xs text-yellow-400 font-bold uppercase mb-4"><i class="fas fa-lock mr-2"></i>Official Use Only</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Polling Station</label>
+                                <input type="text" name="polling_station" class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-yellow-400 focus:bg-white/10 transition-all placeholder-gray-600" placeholder="Polling Station Name/No.">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Booth Number</label>
+                                <input type="text" name="booth_number" class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-yellow-400 focus:bg-white/10 transition-all placeholder-gray-600" placeholder="Booth No.">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 2: Address Details -->
+            <div class="form-step hidden" id="step-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="md:col-span-2">
+                        <h3 class="text-electric text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-3">
+                            <span class="w-8 h-0.5 bg-electric shadow-glow"></span> 
+                            <span class="tracking-[0.2em]">Address & Constituency</span>
+                        </h3>
+                    </div>
+
+                    <!-- Present Address -->
+                    <div class="md:col-span-2 group">
+                        {{ form.present_address.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.present_address(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", rows=3, placeholder="House No, Street, Village/Town") }}
+                        {% for error in form.present_address.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Permanent Address -->
+                    <div class="md:col-span-2 group">
+                        <div class="flex items-center justify-between mb-2">
+                            {{ form.permanent_address.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest group-focus-within:text-electric transition-colors") }}
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="same-as-present" class="w-4 h-4 rounded border-white/20 bg-white/5 text-electric focus:ring-electric focus:ring-offset-0">
+                                <span class="text-xs text-gray-400">Same as Present Address</span>
+                            </label>
+                        </div>
+                        {{ form.permanent_address(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", rows=3, placeholder="Permanent Address") }}
+                        {% for error in form.permanent_address.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- State -->
+                    <div class="group relative z-50">
+                        {{ form.state.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.state(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all appearance-none cursor-pointer") }}
+                        {% for error in form.state.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- District -->
+                    <div class="group relative z-40">
+                        {{ form.district.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.district(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all appearance-none cursor-pointer") }}
+                        {% for error in form.district.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- PIN Code -->
+                    <div class="group">
+                        {{ form.pin_code.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.pin_code(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXXX", maxlength="6", inputmode="numeric") }}
+                        {% for error in form.pin_code.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Auto-Derived Constituencies -->
+                    <div class="group bg-white/5 p-4 rounded-xl border border-white/10 md:col-span-2">
+                        <p class="text-xs text-electric font-bold uppercase mb-4"><i class="fas fa-robot mr-2"></i>Auto-Detected Constituencies</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                {{ form.assembly_constituency.label(class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1") }}
+                                {{ form.assembly_constituency(class="w-full bg-transparent border-0 border-b border-white/10 text-white px-0 py-2 focus:ring-0 font-mono text-lg cursor-not-allowed", readonly=true, placeholder="Auto-detected") }}
+                            </div>
+                            <div>
+                                {{ form.loksabha_constituency.label(class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1") }}
+                                {{ form.loksabha_constituency(class="w-full bg-transparent border-0 border-b border-white/10 text-white px-0 py-2 focus:ring-0 font-mono text-lg cursor-not-allowed", readonly=true, placeholder="Auto-detected") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Review & ID Proof -->
+            <div class="form-step hidden" id="step-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="md:col-span-2">
+                        <h3 class="text-electric text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-3">
+                            <span class="w-8 h-0.5 bg-electric shadow-glow"></span> 
+                            <span class="tracking-[0.2em]">ID Proof & Review</span>
+                        </h3>
+                    </div>
+
+                    <!-- ID Proof Type -->
+                    <div class="group relative z-30">
+                        {{ form.id_proof_type.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        {{ form.id_proof_type(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all appearance-none cursor-pointer") }}
+                        {% for error in form.id_proof_type.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- ID Proof Number -->
+                    <div class="group relative z-0">
+                        {{ form.id_proof_number.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                        <div class="relative">
+                            {{ form.id_proof_number(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="Enter ID Number") }}
+                            <div id="aadhaar-badge" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-emerald-400 text-xs font-bold hidden bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20">
+                                <i class="fas fa-check-circle"></i> <span>Verified</span>
+                            </div>
+                        </div>
+                        <div id="id-feedback" class="text-xs mt-2 font-mono transition-all duration-300 h-4"></div>
+                        {% for error in form.id_proof_number.errors %}
+                            <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Document Upload with OCR -->
+                    <div class="md:col-span-2 mt-4">
+                        <div class="relative group cursor-pointer perspective-1000">
+                            {{ form.document(class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20") }}
+                            <div class="border-2 border-dashed border-white/10 rounded-2xl p-10 text-center bg-white/5 group-hover:border-electric/50 group-hover:bg-electric/5 group-hover:shadow-glow-sm transition-all duration-500 transform group-hover:scale-[1.01]">
+                                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-white/5 to-white/10 rounded-full flex items-center justify-center text-gray-400 mb-4 group-hover:text-electric group-hover:scale-110 group-hover:shadow-glow transition-all duration-500 border border-white/5">
+                                    <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                                </div>
+                                <p class="text-white font-medium mb-2 text-lg">Click to Upload ID Proof</p>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">PDF or JPG (Max 2MB)</p>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="btn-ocr-scan" class="mt-4 w-full py-3 rounded-xl border border-electric/30 text-electric font-bold hover:bg-electric/10 transition-all flex items-center justify-center gap-2 hidden group relative overflow-hidden">
+                            <span class="absolute inset-0 bg-electric/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+                            <i class="fas fa-magic"></i> 
+                            <span>Auto-fill Form from Document (AI)</span>
+                            <i class="fas fa-spinner fa-spin hidden ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- Summary Review -->
+                    <div class="md:col-span-2 bg-white/5 rounded-2xl p-6 border border-white/10 mt-6">
+                        <h4 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Application Summary</h4>
+                        <div id="review-content" class="text-sm text-gray-300 space-y-2 font-mono">
+                            <!-- Populated via JS -->
+                        </div>
+                        <div class="mt-4 flex items-start gap-2 text-xs text-gray-400 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
+                            <p>I hereby declare that the information given above is true to the best of my knowledge. I understand that false declaration is punishable under the Representation of the People Act, 1950.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="pt-2 flex items-center gap-6 border-t border-white/10 mt-2">
+                <button type="button" id="prev-btn" class="hidden px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-bold hover:bg-white/5 hover:text-white hover:border-white/30 transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i> Back
+                </button>
+                <div class="flex-1"></div>
+                <button type="button" id="next-btn" class="px-12 py-4 rounded-xl bg-electric/10 text-electric border border-electric/30 font-bold hover:bg-electric/20 hover:shadow-glow transition-all duration-300">
+                    Next Step <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+                {{ form.submit_application(class="hidden flex-1 bg-gradient-to-r from-electric to-peacock text-white font-display font-bold text-lg py-4 rounded-xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300 transform cursor-pointer border border-white/10", id="submit-btn") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- STEPPER LOGIC ---
+        let currentStep = 1;
+        let isPhoneVerified = false;
+        const totalSteps = 3;
+        const form = document.getElementById('voterForm');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // --- DEBUG: CONFIRM SCRIPT LOAD ---
+        // alert("System Ready"); // Uncomment if needed for load debugging
+
+        // --- SUBMIT LISTENER (Moved to top for reliability) ---
+        if (submitBtn) {
+            submitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // --- DEBUG: CHECK ACTUAL FORM VALUES ---
+                const idType = document.getElementById('id_proof_type');
+                const idNum = document.getElementById('id_proof_number');
+                // alert(`Debug: Sending ID Type: '${idType.value}' | Number: '${idNum.value}'`);
+                console.log(`Debug: ID Type=${idType.value}, Number=${idNum.value}`);
+                
+                try {
+                    console.log("Validating step 3...");
+                    if (validateStep(3)) {
+                        submitBtn.value = "Submitting...";
+                        submitBtn.style.opacity = "0.7";
+                        submitBtn.style.cursor = "wait";
+                        
+                        alert("Debug: Validation Passed. Submitting form..."); // CONFIRM SUBMISSION
+                        
+                        // Use robust submission method
+                        HTMLFormElement.prototype.submit.call(form);
+                    } else {
+                        alert("Please complete all required fields correctly.");
+                    }
+                } catch (error) {
+                    console.error("Submission Error:", error);
+                    alert("An error occurred: " + error.message);
+                    
+                    submitBtn.value = "Submit Application";
+                    submitBtn.style.opacity = "1";
+                    submitBtn.style.cursor = "pointer";
+                }
+            });
+        } else {
+            console.error("Critical: Submit button not found");
+            alert("Error: Submit button element not found!");
+        }
+
+        const progressBar = document.getElementById('progress-bar');
+        
+        function updateStep(step) {
+            // Update Progress Bar
+            const progress = ((step - 1) / (totalSteps - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Show/Hide Steps
+            document.querySelectorAll('.form-step').forEach(el => el.classList.add('hidden'));
+            document.querySelector(`#step-${step}`).classList.remove('hidden');
+            document.querySelector(`#step-${step}`).classList.add('animate-slide-in');
+            
+            // Update Indicators
+            document.querySelectorAll('.step-indicator').forEach(el => {
+                const s = parseInt(el.dataset.step);
+                const circle = el.querySelector('div');
+                const label = el.querySelector('span');
+                
+                if (s < step) { // Completed
+                    circle.className = 'w-10 h-10 rounded-full bg-electric text-slate-900 flex items-center justify-center font-bold mb-2 shadow-[0_0_15px_rgba(0,180,255,0.6)] transition-all duration-500';
+                    circle.innerHTML = '<i class="fas fa-check"></i>';
+                    label.className = 'absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-electric uppercase tracking-wider hidden md:block transition-all duration-300';
+                } else if (s === step) { // Active
+                    circle.className = 'w-12 h-12 rounded-full bg-slate-900 border-2 border-electric text-electric flex items-center justify-center font-bold mb-2 shadow-[0_0_20px_rgba(0,180,255,0.4)] scale-110 transition-all duration-500';
+                    circle.textContent = s;
+                    label.className = 'absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-electric uppercase tracking-wider block transition-all duration-300 scale-105';
+                    el.classList.add('active');
+                } else { // Pending
+                    circle.className = 'w-10 h-10 rounded-full bg-slate-900 border border-white/10 text-gray-600 flex items-center justify-center font-bold mb-2 transition-all duration-500';
+                    circle.textContent = s;
+                    label.className = 'absolute -bottom-8 left-1/2 -translate-x-1/2 w-max text-center text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:block transition-all duration-300';
+                    el.classList.remove('active');
+                }
+            });
+            
+            // Update Buttons
+            if (step === 1) {
+                prevBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+            }
+            
+            if (step === totalSteps) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+                populateReview();
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            try {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    updateStep(currentStep);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("An error occurred: " + e.message);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep(currentStep);
+            }
+        });
+        
+        function validateStep(step) {
+            // Simple validation for required fields in current step
+            const currentStepEl = document.querySelector(`#step-${step}`);
+            const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            let firstErrorInput = null;
+            
+            // Note: Flask-WTF fields don't have 'required' attribute by default in HTML unless specified
+            // So we rely on our custom checks or if the fields are empty
+            
+            // Custom basic check for empty fields
+            const relevantInputs = currentStepEl.querySelectorAll('input, select');
+            relevantInputs.forEach(input => {
+                // Skip optional email and hidden fields (except native selects which we hide)
+                if (input.name === 'email') return;
+                
+                // Check if value is empty. For native selects hidden by custom dropdown, this checks the underlying select value.
+                if (input.type !== 'file' && input.type !== 'hidden' && !input.value && input.name !== 'loksabha_constituency' && input.name !== 'assembly_constituency' && input.name !== 'email' && input.name !== 'polling_station' && input.name !== 'booth_number' && input.id !== 'otp-input') {
+                     input.classList.add('border-red-500');
+                     showShake(input);
+                     isValid = false;
+                     if (!firstErrorInput) firstErrorInput = input;
+                } else {
+                     input.classList.remove('border-red-500');
+                }
+            });
+            
+            // Specific validation for step 1
+            if (step === 1) {
+                 const fullName = document.getElementById('full_name');
+                 if (!fullName.value) { 
+                     showShake(fullName); 
+                     if (!firstErrorInput) firstErrorInput = fullName;
+                     isValid = false; 
+                 }
+                 
+                 const phone = document.getElementById('phone');
+                 if (!phone.value) { 
+                     showShake(phone); 
+                     if (!firstErrorInput) firstErrorInput = phone;
+                     isValid = false; 
+                 }
+                 
+                 // Validate Photograph
+                 const photoInput = document.getElementById('photograph');
+                 if (!photoInput.files || photoInput.files.length === 0) {
+                     showShake(photoInput);
+                     alert("Please upload your passport size photograph.");
+                     return false;
+                 }
+                 
+                 const dob = document.getElementById('dob');
+                 if (!dob.value) { 
+                     showShake(dob); 
+                     if (!firstErrorInput) firstErrorInput = dob;
+                     isValid = false; 
+                 }
+            }
+            
+            // Specific validation for step 2
+             if (step === 2) {
+                 const state = document.getElementById('state');
+                 if (!state.value) { 
+                     showShake(state); 
+                     if (!firstErrorInput) firstErrorInput = state;
+                     isValid = false; 
+                 }
+                 
+                 const district = document.getElementById('district');
+                 if (!district.value) { 
+                     showShake(district); 
+                     if (!firstErrorInput) firstErrorInput = district;
+                     isValid = false; 
+                 }
+            }
+
+            // Specific validation for step 3
+            if (step === 3) {
+                 // Validate ID Proof Type and Number
+                 const idType = document.getElementById('id_proof_type');
+                 if (!idType.value) { 
+                     showShake(idType); 
+                     if (!firstErrorInput) firstErrorInput = idType;
+                     isValid = false; 
+                 }
+                 
+                 const idNum = document.getElementById('id_proof_number');
+                 if (!idNum.value) { 
+                     showShake(idNum); 
+                     if (!firstErrorInput) firstErrorInput = idNum;
+                     isValid = false; 
+                 }
+                 
+                 // Validate Document Upload
+                 const docInput = document.getElementById('document');
+                 if (!docInput.files || docInput.files.length === 0) {
+                     const dropzone = docInput.nextElementSibling; // The visual dropzone div
+                     dropzone.classList.remove('border-white/10');
+                     dropzone.classList.add('border-red-500', 'animate-pulse');
+                     setTimeout(() => {
+                         dropzone.classList.remove('border-red-500', 'animate-pulse');
+                         dropzone.classList.add('border-white/10');
+                     }, 1500);
+                     alert("Please upload your ID Proof document.");
+                     return false;
+                 }
+            }
+
+            if (!isValid && firstErrorInput) {
+                // Get label text to show meaningful error
+                let labelText = firstErrorInput.name;
+                const label = document.querySelector(`label[for="${firstErrorInput.id}"]`);
+                if (label) labelText = label.innerText;
+                
+                alert(`Please fill in the required field: ${labelText}`);
+                
+                // Ensure the error is visible
+                showShake(firstErrorInput);
+            }
+
+            return isValid;
+        }
+
+
+
+
+        function showShake(element) {
+             if (!element) return;
+             let target = element;
+             
+             // Don't try to focus or animate hidden elements
+             if (target.style.display === 'none') return;
+             
+             if (target.tagName !== 'DIV' && typeof target.focus === 'function') {
+                 try { target.focus(); } catch(e) {}
+             }
+             
+             target.classList.add('animate-pulse', 'border-red-500');
+             setTimeout(() => target.classList.remove('animate-pulse', 'border-red-500'), 1000);
+        }
+
+        // initCustomSelect removed to restore native behavior
+
+        async function populateDistricts(state, preSelectedValue = null) {
+            const districtNative = document.getElementById('district');
+            if (!districtNative) return;
+            
+            // Set loading state
+            districtNative.innerHTML = '';
+            const loadingOpt = document.createElement('option');
+            loadingOpt.value = '';
+            loadingOpt.disabled = true;
+            loadingOpt.selected = true;
+            loadingOpt.textContent = 'Loading Districts...';
+            districtNative.appendChild(loadingOpt);
+            
+            // Update custom select if exists (for loading state)
+            if (typeof csDistrict !== 'undefined' && csDistrict.updateOptions) csDistrict.updateOptions();
+            
+            try {
+                const response = await fetch(`{{ url_for('voter.get_districts') }}?state=${encodeURIComponent(state)}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const districts = await response.json();
+                
+                districtNative.innerHTML = '';
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.disabled = true;
+                defaultOpt.selected = !preSelectedValue;
+                defaultOpt.textContent = 'Select District';
+                districtNative.appendChild(defaultOpt);
+                
+                districts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = d;
+                    if (preSelectedValue && d === preSelectedValue) {
+                        opt.selected = true;
+                    }
+                    districtNative.appendChild(opt);
+                });
+
+                // Update custom select with new options
+                if (typeof csDistrict !== 'undefined' && csDistrict.updateOptions) csDistrict.updateOptions();
+                
+            } catch (error) {
+                console.error('Error fetching districts:', error);
+                districtNative.innerHTML = '';
+                const errOpt = document.createElement('option');
+                errOpt.value = '';
+                errOpt.textContent = 'Error loading districts';
+                districtNative.appendChild(errOpt);
+                
+                // Update custom select to show error
+                if (typeof csDistrict !== 'undefined' && csDistrict.updateOptions) csDistrict.updateOptions();
+            }
+        }
+
+        document.getElementById('state').addEventListener('change', (e) => {
+            if (e.target.value) {
+                populateDistricts(e.target.value);
+            } else {
+                 const districtNative = document.getElementById('district');
+                 districtNative.innerHTML = '<option value="" disabled selected>Select District</option>';
+                 if (csDistrict && typeof csDistrict.updateOptions === 'function') {
+                    csDistrict.updateOptions();
+                 }
+            }
+        });
+        
+        // Initial load check
+        const initialState = document.getElementById('state').value;
+        const preSelectedDistrict = "{{ form.district.data if form.district.data else '' }}";
+        if (initialState) {
+            populateDistricts(initialState, preSelectedDistrict);
+        }
+
+        // --- REVIEW POPULATION ---
+        function populateReview() {
+            const reviewEl = document.getElementById('review-content');
+            const data = {
+                "Full Name": document.getElementById('full_name').value,
+                "Relative": `${document.getElementById('relative_type').value} - ${document.getElementById('relative_name').value}`,
+                "DOB": document.getElementById('dob').value,
+                "Gender": document.getElementById('gender').value,
+                "Mobile": document.getElementById('phone').value,
+                "Email": document.getElementById('email').value || "N/A",
+                "Address": document.getElementById('present_address').value,
+                "State": document.getElementById('state').value,
+                "District": document.getElementById('district').value,
+                "PIN Code": document.getElementById('pin_code').value,
+                "Permanent Address": document.getElementById('same-as-present').checked ? "Same as Present" : document.getElementById('permanent_address').value,
+                "Constituency": `${document.getElementById('assembly_constituency').value} (Assembly), ${document.getElementById('loksabha_constituency').value} (Lok Sabha)`,
+                "ID Proof": `${document.getElementById('id_proof_type').value}: ${document.getElementById('id_proof_number').value}`
+            };
+
+            // Admin Only Fields (Check if they exist in DOM)
+            const pollingStation = document.querySelector('input[name="polling_station"]');
+            const boothNumber = document.querySelector('input[name="booth_number"]');
+            
+            if (pollingStation && pollingStation.value) {
+                data["Polling Station"] = pollingStation.value;
+            }
+            if (boothNumber && boothNumber.value) {
+                data["Booth Number"] = boothNumber.value;
+            }
+            
+            let html = '';
+            for (const [key, value] of Object.entries(data)) {
+                html += `<div class="flex justify-between border-b border-white/5 last:border-0 py-1">
+                            <span class="text-gray-500">${key}:</span>
+                            <span class="text-white font-medium text-right">${value}</span>
+                         </div>`;
+            }
+            reviewEl.innerHTML = html;
+        }
+
+        // --- SAME AS PRESENT LOGIC ---
+        const sameAsCheckbox = document.getElementById('same-as-present');
+        const presentAddr = document.getElementById('present_address');
+        const permanentAddr = document.getElementById('permanent_address');
+        
+        sameAsCheckbox.addEventListener('change', () => {
+            if (sameAsCheckbox.checked) {
+                permanentAddr.value = presentAddr.value;
+                permanentAddr.setAttribute('readonly', true);
+                permanentAddr.classList.add('opacity-50');
+            } else {
+                permanentAddr.value = '';
+                permanentAddr.removeAttribute('readonly');
+                permanentAddr.classList.remove('opacity-50');
+            }
+        });
+        
+        presentAddr.addEventListener('input', () => {
+            if (sameAsCheckbox.checked) {
+                permanentAddr.value = presentAddr.value;
+            }
+        });
+
+        // --- AUTO-DERIVED CONSTITUENCY LOGIC ---
+        // Mock Data Mapping (District -> Assembly -> Lok Sabha)
+        // Note: In a real system, this would be an API call based on PIN Code or detailed GIS data.
+        const electoralMap = {
+            // Telangana
+            "Hyderabad": { assembly: "Jubilee Hills", loksabha: "Hyderabad" },
+            "Ranga Reddy": { assembly: "Serilingampally", loksabha: "Chevella" },
+            "Medchal-Malkajgiri": { assembly: "Kukatpally", loksabha: "Malkajgiri" },
+            "Warangal": { assembly: "Warangal East", loksabha: "Warangal" },
+            "Nizamabad": { assembly: "Nizamabad Urban", loksabha: "Nizamabad" },
+            "Karimnagar": { assembly: "Karimnagar", loksabha: "Karimnagar" },
+            "Khammam": { assembly: "Khammam", loksabha: "Khammam" },
+            
+            // Andhra Pradesh
+            "Visakhapatnam": { assembly: "Visakhapatnam East", loksabha: "Visakhapatnam" },
+            "Krishna": { assembly: "Vijayawada West", loksabha: "Vijayawada" },
+            "Guntur": { assembly: "Guntur West", loksabha: "Guntur" },
+            "Chittoor": { assembly: "Tirupati", loksabha: "Tirupati" },
+            "Kurnool": { assembly: "Kurnool", loksabha: "Kurnool" },
+            "Nellore": { assembly: "Nellore City", loksabha: "Nellore" },
+
+            // Maharashtra
+            "Mumbai City": { assembly: "Colaba", loksabha: "Mumbai South" },
+            "Mumbai Suburban": { assembly: "Bandra West", loksabha: "Mumbai North Central" },
+            "Pune": { assembly: "Shivajinagar", loksabha: "Pune" },
+            "Nagpur": { assembly: "Nagpur South West", loksabha: "Nagpur" },
+            "Thane": { assembly: "Kopri-Pachpakhadi", loksabha: "Thane" },
+            "Nashik": { assembly: "Nashik Central", loksabha: "Nashik" },
+            "Aurangabad": { assembly: "Aurangabad East", loksabha: "Aurangabad" },
+
+            // Karnataka
+            "Bengaluru Urban": { assembly: "Bangalore South", loksabha: "Bangalore South" },
+            "Mysuru": { assembly: "Krishnaraja", loksabha: "Mysore" },
+            "Dharwad": { assembly: "Hubli-Dharwad Central", loksabha: "Dharwad" },
+            "Dakshina Kannada": { assembly: "Mangalore City South", loksabha: "Dakshina Kannada" },
+            "Belagavi": { assembly: "Belgaum North", loksabha: "Belgaum" },
+
+            // Tamil Nadu
+            "Chennai": { assembly: "Thousand Lights", loksabha: "Chennai Central" },
+            "Coimbatore": { assembly: "Coimbatore South", loksabha: "Coimbatore" },
+            "Madurai": { assembly: "Madurai Central", loksabha: "Madurai" },
+            "Tiruchirappalli": { assembly: "Tiruchirappalli West", loksabha: "Tiruchirappalli" },
+            "Salem": { assembly: "Salem West", loksabha: "Salem" },
+
+            // Delhi
+            "New Delhi": { assembly: "New Delhi", loksabha: "New Delhi" },
+            "North Delhi": { assembly: "Model Town", loksabha: "Chandni Chowk" },
+            "South Delhi": { assembly: "Greater Kailash", loksabha: "South Delhi" },
+            "East Delhi": { assembly: "Laxmi Nagar", loksabha: "East Delhi" },
+
+            // Uttar Pradesh
+            "Lucknow": { assembly: "Lucknow East", loksabha: "Lucknow" },
+            "Kanpur Nagar": { assembly: "Aryanagar", loksabha: "Kanpur" },
+            "Varanasi": { assembly: "Varanasi North", loksabha: "Varanasi" },
+            "Prayagraj": { assembly: "Allahabad North", loksabha: "Allahabad" },
+            "Agra": { assembly: "Agra South", loksabha: "Agra" },
+            "Ghaziabad": { assembly: "Ghaziabad", loksabha: "Ghaziabad" },
+            "Gautam Buddha Nagar": { assembly: "Noida", loksabha: "Gautam Buddha Nagar" },
+
+            // Gujarat
+            "Ahmedabad": { assembly: "Ellisbridge", loksabha: "Ahmedabad West" },
+            "Surat": { assembly: "Majura", loksabha: "Navsari" },
+            "Vadodara": { assembly: "Sayajigunj", loksabha: "Vadodara" },
+            "Rajkot": { assembly: "Rajkot West", loksabha: "Rajkot" },
+
+            // West Bengal
+            "Kolkata": { assembly: "Chowringhee", loksabha: "Kolkata Sudip" },
+            "North 24 Parganas": { assembly: "Rajarhat New Town", loksabha: "Barasat" },
+            "Howrah": { assembly: "Howrah Central", loksabha: "Howrah" },
+            "Darjeeling": { assembly: "Darjeeling", loksabha: "Darjeeling" },
+
+            // Rajasthan
+            "Jaipur": { assembly: "Civil Lines", loksabha: "Jaipur" },
+            "Jodhpur": { assembly: "Sardarpura", loksabha: "Jodhpur" },
+            "Udaipur": { assembly: "Udaipur", loksabha: "Udaipur" },
+            "Kota": { assembly: "Kota South", loksabha: "Kota" },
+
+            // Madhya Pradesh
+            "Bhopal": { assembly: "Govindpura", loksabha: "Bhopal" },
+            "Indore": { assembly: "Indore-1", loksabha: "Indore" },
+            "Gwalior": { assembly: "Gwalior East", loksabha: "Gwalior" },
+            "Jabalpur": { assembly: "Jabalpur Cantt", loksabha: "Jabalpur" },
+
+            // Others
+            "Patna": { assembly: "Bankipore", loksabha: "Patna Sahib" },
+            "Chandigarh": { assembly: "Chandigarh", loksabha: "Chandigarh" },
+            "Thiruvananthapuram": { assembly: "Thiruvananthapuram", loksabha: "Thiruvananthapuram" },
+            "Ernakulam": { assembly: "Ernakulam", loksabha: "Ernakulam" },
+            "Ranchi": { assembly: "Ranchi", loksabha: "Ranchi" },
+            "Raipur": { assembly: "Raipur City South", loksabha: "Raipur" },
+            "Bhubaneswar": { assembly: "Bhubaneswar Central", loksabha: "Bhubaneswar" },
+            "Guwahati": { assembly: "Guwahati East", loksabha: "Guwahati" },
+            "Dehradun": { assembly: "Dehradun Cantt", loksabha: "Tehri Garhwal" }
+        };
+
+        const districtSelect = document.getElementById('district');
+        const assemblyInput = document.getElementById('assembly_constituency');
+        const loksabhaInput = document.getElementById('loksabha_constituency');
+        
+        // Listen for district changes (handled by the populateDistricts logic below)
+        // We hook into the change event
+        
+        function updateConstituencies() {
+            const dist = districtSelect.value;
+            if (dist && electoralMap[dist]) {
+                assemblyInput.value = electoralMap[dist].assembly;
+                loksabhaInput.value = electoralMap[dist].loksabha;
+            } else if (dist) {
+                // Generic fallback if map not found
+                assemblyInput.value = dist + " Central AC";
+                loksabhaInput.value = dist + " PC";
+            } else {
+                assemblyInput.value = "";
+                loksabhaInput.value = "";
+            }
+        }
+        
+        districtSelect.addEventListener('change', updateConstituencies);
+
+
+        // Photo Preview
+        const photoInput = document.getElementById('photograph');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoPlaceholder = document.getElementById('photo-placeholder');
+
+        if (photoInput) {
+            photoInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (photoPreview) {
+                            photoPreview.src = e.target.result;
+                            photoPreview.classList.remove('hidden');
+                        }
+                        if (photoPlaceholder) photoPlaceholder.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    if (photoPreview) {
+                        photoPreview.src = '#';
+                        photoPreview.classList.add('hidden');
+                    }
+                    if (photoPlaceholder) photoPlaceholder.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // Real-time Validation for Relative Name
+        const relativeNameInput = document.getElementById('relative_name');
+        relativeNameInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-emerald-500');
+            } else {
+                this.classList.remove('border-emerald-500');
+                this.classList.add('border-red-500');
+            }
+        });
+
+        // Real-time Validation for PIN Code
+        const pinCodeInput = document.getElementById('pin_code');
+        pinCodeInput.addEventListener('input', function() {
+            const val = this.value.replace(/\D/g, '');
+            this.value = val;
+            if (val.length === 6) {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-emerald-500');
+            } else {
+                this.classList.remove('border-emerald-500');
+                this.classList.add('border-red-500');
+            }
+        });
+
+        // DOB Validation (18+)
+        const dobInput = document.getElementById('dob');
+        const ageCalc = document.getElementById('age-calc');
+        
+        dobInput.addEventListener('change', function() {
+             const dob = new Date(this.value);
+             const today = new Date();
+             let age = today.getFullYear() - dob.getFullYear();
+             const m = today.getMonth() - dob.getMonth();
+             if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                 age--;
+             }
+             
+             if (age < 18) {
+                 ageCalc.innerHTML = `<span class="text-red-400 font-bold">Age: ${age} years. You must be 18+ to apply.</span>`;
+                 this.classList.add('border-red-500');
+             } else {
+                 ageCalc.innerHTML = `<span class="text-emerald-400">Age: ${age} years. Eligible.</span>`;
+                 this.classList.remove('border-red-500');
+             }
+        });
+        
+        // --- EXISTING ID VALIDATION CODE (Copied & Adapted) ---
+        const idProofType = document.getElementById('id_proof_type');
+        const idProofNumber = document.getElementById('id_proof_number');
+        const feedbackEl = document.getElementById('id-feedback');
+        
+        const idRules = {
+            'Aadhar Card': { 
+                regex: /^[0-9]{4}\s[0-9]{4}\s[0-9]{4}$/, 
+                placeholder: '1234 5678 9012', 
+                maxLength: 14, 
+                errorMsg: 'Aadhaar must be 12 digits (1234 5678 9012)',
+                format: (v) => { const x = v.replace(/\D/g, '').substring(0, 12); const parts = []; for(let i=0; i<x.length; i+=4) parts.push(x.substring(i,i+4)); return parts.join(' '); } 
+            },
+            'PAN Card': { 
+                regex: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 
+                placeholder: 'ABCDE1234F', 
+                maxLength: 10, 
+                errorMsg: 'Invalid PAN format. Example: ABCDE1234F',
+                format: (v) => v.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 10) 
+            },
+            'Voter Card': { 
+                regex: /^[A-Z]{3}[0-9]{7}$/, 
+                placeholder: 'ABC1234567', 
+                maxLength: 10, 
+                errorMsg: 'Invalid Voter ID format. Example: ABC1234567',
+                format: (v) => v.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 10) 
+            },
+            'Driving License': { 
+                regex: /^[A-Z]{2}[- ]?[0-9]{2}[- ]?[0-9]{4}[- ]?[0-9]{7}$/, 
+                placeholder: 'HR-06-1985-0034761', 
+                maxLength: 20, 
+                errorMsg: 'Invalid DL format. Example: HR-06-1985-0034761',
+                format: (v) => v.toUpperCase().replace(/[^A-Z0-9\-\s]/g, '') 
+            },
+            'Birth Certificate': { 
+                regex: /^[0-9]{3}[ -]?[0-9]{2}[ -]?[0-9]{6}$/, 
+                placeholder: '123-21-456789', 
+                maxLength: 15, 
+                errorMsg: 'Invalid Birth Certificate format. Example: 123-21-456789',
+                format: (v) => v.replace(/[^0-9\-\s]/g, '') 
+            }
+        };
+
+        let realAadhaarValue = '';
+
+        function validateID() {
+            const type = idProofType.value;
+            let value = idProofNumber.value;
+            if (type === 'Aadhar Card' && value.includes('X') && realAadhaarValue) value = realAadhaarValue;
+            
+            if (!type || !value) {
+                feedbackEl.textContent = '';
+                idProofNumber.classList.remove('border-green-500', 'border-red-500');
+                document.getElementById('aadhaar-badge').classList.add('hidden');
+                return false;
+            }
+            
+            const rule = idRules[type];
+            if (rule && rule.regex.test(value)) {
+                feedbackEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Valid Format';
+                feedbackEl.className = 'text-xs mt-2 font-mono transition-all duration-300 h-4 text-emerald-400';
+                idProofNumber.classList.remove('border-white/10', 'border-red-500');
+                idProofNumber.classList.add('border-emerald-500');
+                if (type === 'Aadhar Card') document.getElementById('aadhaar-badge').classList.remove('hidden');
+                return true;
+            } else {
+                const msg = rule && rule.errorMsg ? rule.errorMsg : 'Invalid Format';
+                feedbackEl.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> ${msg}`;
+                feedbackEl.className = 'text-xs mt-2 font-mono transition-all duration-300 h-4 text-red-400';
+                idProofNumber.classList.remove('border-white/10', 'border-emerald-500');
+                idProofNumber.classList.add('border-red-500');
+                document.getElementById('aadhaar-badge').classList.add('hidden');
+                return false;
+            }
+        }
+        
+        idProofType.addEventListener('change', () => {
+             const type = idProofType.value;
+             const rule = idRules[type];
+             idProofNumber.value = '';
+             realAadhaarValue = '';
+             feedbackEl.textContent = '';
+             if (rule) {
+                 idProofNumber.placeholder = rule.placeholder;
+                 idProofNumber.maxLength = rule.maxLength;
+                 idProofNumber.disabled = false;
+             } else {
+                 idProofNumber.disabled = true;
+             }
+        });
+        
+        idProofNumber.addEventListener('input', (e) => {
+             const type = idProofType.value;
+             const rule = idRules[type];
+             if (!rule) return;
+             
+             let val = e.target.value;
+             if (rule.format) {
+                 const formatted = rule.format(val);
+                 if (formatted !== val) {
+                     e.target.value = formatted;
+                     val = formatted;
+                 }
+             }
+             if (type === 'Aadhar Card') realAadhaarValue = val;
+             validateID();
+        });
+
+        // Aadhaar Masking on Blur
+        idProofNumber.addEventListener('blur', () => {
+             if (idProofType.value === 'Aadhar Card' && idProofNumber.value) {
+                 if (!idProofNumber.value.includes('X')) realAadhaarValue = idProofNumber.value;
+                 if (idRules['Aadhar Card'].regex.test(realAadhaarValue)) {
+                     idProofNumber.value = 'XXXX XXXX ' + realAadhaarValue.slice(-4);
+                     validateID();
+                 }
+             }
+        });
+        
+        idProofNumber.addEventListener('focus', () => {
+             if (idProofType.value === 'Aadhar Card' && realAadhaarValue) {
+                 idProofNumber.value = realAadhaarValue;
+             }
+        });
+        
+        // OCR Logic (Simplified for brevity but functional)
+        const ocrBtn = document.getElementById('btn-ocr-scan');
+        const documentInput = document.getElementById('document');
+        
+        documentInput.addEventListener('change', function() {
+             if (this.files && this.files[0]) ocrBtn.classList.remove('hidden');
+             else ocrBtn.classList.add('hidden');
+        });
+        
+        ocrBtn.addEventListener('click', async () => {
+             const file = documentInput.files[0];
+             if (!file) return;
+             
+             // Loading State
+             const btnText = ocrBtn.querySelector('span:nth-child(2)');
+             const spinner = ocrBtn.querySelector('.fa-spinner');
+             const originalText = btnText.textContent;
+             btnText.textContent = 'Scanning...';
+             spinner.classList.remove('hidden');
+             ocrBtn.disabled = true;
+             
+             const formData = new FormData();
+             formData.append('document', file);
+             
+             try {
+                 const response = await fetch('/voter/ocr-scan', {
+                     method: 'POST',
+                     body: formData
+                 });
+                 const result = await response.json();
+                 
+                 if (result.success) {
+                     // Auto-fill logic
+                     let filled = [];
+                     
+                     if (result.full_name) {
+                         document.getElementById('full_name').value = result.full_name;
+                         filled.push("Name");
+                     }
+                     
+                     if (result.dob) {
+                         const dobInput = document.getElementById('dob');
+                         dobInput.value = result.dob;
+                         dobInput.dispatchEvent(new Event('change')); // Trigger age validation
+                         filled.push("DOB");
+                     }
+                     
+                     if (result.id_proof_type) {
+                         const typeInput = document.getElementById('id_proof_type');
+                         // Only set if valid option
+                         if ([...typeInput.options].some(o => o.value === result.id_proof_type)) {
+                             typeInput.value = result.id_proof_type;
+                             typeInput.dispatchEvent(new Event('change'));
+                             filled.push("ID Type");
+                         }
+                     }
+
+                     if (result.id_proof_number) {
+                         // Delay slightly to allow type change to propagate
+                         setTimeout(() => {
+                             idProofNumber.value = result.id_proof_number;
+                             idProofNumber.dispatchEvent(new Event('input')); // Trigger format/validate
+                         }, 100);
+                         filled.push("ID Number");
+                     }
+                     
+                     if (filled.length > 0) {
+                        alert(`Document Scanned Successfully! Auto-filled: ${filled.join(', ')}`);
+                     } else {
+                        alert('Document Scanned. No readable data found to auto-fill.');
+                     }
+                 } else {
+                     alert('Could not scan document. Please enter details manually.');
+                 }
+             } catch (error) {
+                 console.error('OCR Error:', error);
+                 alert('Error scanning document.');
+             } finally {
+                 btnText.textContent = originalText;
+                 spinner.classList.add('hidden');
+                 ocrBtn.disabled = false;
+             }
+        });
+
+        // --- OTP VERIFICATION LOGIC ---
+        const btnSendOtp = document.getElementById('btn-send-otp');
+        const btnVerifyOtp = document.getElementById('btn-verify-otp');
+        const btnResendOtp = document.getElementById('btn-resend-otp');
+        const otpSection = document.getElementById('otp-section');
+        const otpInput = document.getElementById('otp-input');
+        const phoneInput = document.getElementById('phone');
+        const phoneFeedback = document.getElementById('phone-feedback');
+        const verifiedBadge = document.getElementById('phone-verified-badge');
+        let otpTimerInterval;
+
+        phoneInput.addEventListener('input', () => {
+            if (isPhoneVerified) {
+                isPhoneVerified = false;
+                verifiedBadge.classList.add('hidden');
+                btnSendOtp.classList.remove('hidden');
+                phoneFeedback.innerHTML = '<span class="text-yellow-500">Phone number changed. Please verify again.</span>';
+            }
+        });
+
+        btnSendOtp.addEventListener('click', async () => {
+            const phone = phoneInput.value;
+            // Basic length check (regex could be stricter)
+            if (!phone || phone.length < 10) {
+                phoneFeedback.innerHTML = '<span class="text-red-400">Please enter a valid mobile number.</span>';
+                return;
+            }
+
+            btnSendOtp.disabled = true;
+            btnSendOtp.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                const response = await fetch('/voter/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    phoneFeedback.innerHTML = '<span class="text-emerald-400">OTP sent successfully to your registered email.</span>';
+                    btnSendOtp.classList.add('hidden');
+                    otpSection.classList.remove('hidden');
+                    startOtpTimer();
+                } else {
+                    phoneFeedback.innerHTML = `<span class="text-red-400">${result.message}</span>`;
+                    btnSendOtp.disabled = false;
+                    btnSendOtp.textContent = 'Verify OTP';
+                }
+            } catch (error) {
+                console.error('OTP Error:', error);
+                phoneFeedback.innerHTML = '<span class="text-red-400">Error sending OTP. Please try again.</span>';
+                btnSendOtp.disabled = false;
+                btnSendOtp.textContent = 'Verify OTP';
+            }
+        });
+
+        btnVerifyOtp.addEventListener('click', async () => {
+            const otp = otpInput.value;
+            const phone = phoneInput.value;
+            
+            if (!otp) {
+                phoneFeedback.innerHTML = '<span class="text-red-400">Please enter the OTP.</span>';
+                return;
+            }
+
+            btnVerifyOtp.disabled = true;
+            btnVerifyOtp.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetch('/voter/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp: otp, phone: phone })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    isPhoneVerified = true;
+                    phoneFeedback.innerHTML = '<span class="text-emerald-400 font-bold">Mobile Number Verified Successfully!</span>';
+                    otpSection.classList.add('hidden');
+                    verifiedBadge.classList.remove('hidden');
+                    phoneInput.classList.add('border-emerald-500');
+                    phoneInput.classList.remove('border-white/10', 'border-red-500');
+                } else {
+                    phoneFeedback.innerHTML = `<span class="text-red-400">${result.message}</span>`;
+                    btnVerifyOtp.disabled = false;
+                    btnVerifyOtp.textContent = 'Verify';
+                }
+            } catch (error) {
+                console.error('Verify Error:', error);
+                phoneFeedback.innerHTML = '<span class="text-red-400">Error verifying OTP.</span>';
+                btnVerifyOtp.disabled = false;
+                btnVerifyOtp.textContent = 'Verify';
+            }
+        });
+
+        btnResendOtp.addEventListener('click', () => {
+            btnSendOtp.click();
+        });
+
+        function startOtpTimer() {
+            let timeLeft = 60;
+            const timerDisplay = document.getElementById('otp-timer');
+            btnResendOtp.classList.add('hidden');
+            
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerDisplay.textContent = '';
+                    btnResendOtp.classList.remove('hidden');
+                } else {
+                    timerDisplay.textContent = `Resend in ${timeLeft}s`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        // --- CUSTOM DROPDOWN IMPLEMENTATION (From service_form.html) ---
+        function initCustomSelect(nativeSelectId, placeholder) {
+            const nativeSelect = document.getElementById(nativeSelectId);
+            if (!nativeSelect) return;
+
+            // Hide native select
+            nativeSelect.style.display = 'none';
+            
+            // Create Container
+            const container = document.createElement('div');
+            container.className = 'custom-select-container';
+            nativeSelect.parentNode.insertBefore(container, nativeSelect);
+            container.appendChild(nativeSelect); // Move native select inside
+
+            // Create Trigger
+            const trigger = document.createElement('div');
+            trigger.className = 'custom-select-trigger';
+            
+            // Determine initial text
+            let initialText = placeholder;
+            if (nativeSelect.selectedIndex >= 0 && nativeSelect.options[nativeSelect.selectedIndex].value) {
+                initialText = nativeSelect.options[nativeSelect.selectedIndex].text;
+                trigger.classList.add('has-value');
+            }
+            
+            trigger.innerHTML = `<span>${initialText}</span><i class="fas fa-chevron-down"></i>`;
+            container.appendChild(trigger);
+
+            // Create Options Container
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'custom-options';
+            container.appendChild(optionsContainer);
+
+            // Toggle Dropdown
+            function toggleDropdown(open) {
+                if (open) {
+                    // Close others first
+                    document.querySelectorAll('.custom-options').forEach(opt => {
+                        if (opt !== optionsContainer) {
+                            opt.classList.remove('is-open');
+                            opt.previousElementSibling.classList.remove('is-open');
+                            // Reset z-index of other containers/groups
+                            const otherContainer = opt.closest('.custom-select-container');
+                            if (otherContainer) {
+                                otherContainer.style.zIndex = 'auto';
+                                const otherGroup = otherContainer.closest('.group');
+                                if (otherGroup) {
+                                    otherGroup.style.zIndex = ''; 
+                                    otherGroup.style.position = '';
+                                }
+                            }
+                        }
+                    });
+
+                    optionsContainer.classList.add('is-open');
+                    trigger.classList.add('is-open');
+                    
+                    // Boost Z-Index to ensure it floats above other fields
+                    container.style.zIndex = '100';
+                    const parentGroup = container.closest('.group');
+                    if (parentGroup) {
+                        parentGroup.style.zIndex = '50';
+                        parentGroup.style.position = 'relative'; // Ensure z-index works
+                    }
+                } else {
+                    optionsContainer.classList.remove('is-open');
+                    trigger.classList.remove('is-open');
+                    
+                    // Reset Z-Index delay slightly to allow transition
+                    setTimeout(() => {
+                        if (!optionsContainer.classList.contains('is-open')) {
+                            container.style.zIndex = 'auto';
+                            const parentGroup = container.closest('.group');
+                            if (parentGroup) {
+                                parentGroup.style.zIndex = '';
+                                parentGroup.style.position = '';
+                            }
+                        }
+                    }, 200);
+                }
+            }
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = optionsContainer.classList.contains('is-open');
+                toggleDropdown(!isOpen);
+            });
+
+            // Handle Label Click
+            const label = document.querySelector(`label[for="${nativeSelectId}"]`);
+            if (label) {
+                label.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const isOpen = optionsContainer.classList.contains('is-open');
+                    toggleDropdown(!isOpen);
+                });
+            }
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target) && (!label || !label.contains(e.target))) {
+                    toggleDropdown(false);
+                }
+            });
+
+            // Expose update function to refresh options from native select
+            container.updateOptions = function() {
+                optionsContainer.innerHTML = '';
+                
+                Array.from(nativeSelect.options).forEach(opt => {
+                    if (opt.disabled || opt.value === "") return;
+
+                    const customOption = document.createElement('div');
+                    customOption.className = 'custom-option';
+                    customOption.textContent = opt.text;
+                    customOption.dataset.value = opt.value;
+                    
+                    if (opt.selected) {
+                        customOption.classList.add('selected');
+                    }
+
+                    customOption.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Update Native Select
+                        nativeSelect.value = customOption.dataset.value;
+                        
+                        // Trigger Change Event on Native Select
+                        const event = new Event('change', { bubbles: true });
+                        nativeSelect.dispatchEvent(event);
+
+                        // Update Trigger UI
+                        trigger.querySelector('span').textContent = customOption.textContent;
+                        trigger.classList.add('has-value');
+                        
+                        // Close Dropdown
+                        toggleDropdown(false);
+                        
+                        // Update Selection Styling
+                        optionsContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                        customOption.classList.add('selected');
+
+                        // Remove error state if any
+                        trigger.classList.remove('border-red-500', 'animate-pulse');
+                    });
+
+                    optionsContainer.appendChild(customOption);
+                });
+            };
+
+            // Initial population
+            container.updateOptions();
+
+            return container;
+        }
+
+        // Initialize Custom Dropdowns
+        initCustomSelect('relative_type', 'Select Relation');
+        initCustomSelect('gender', 'Select Gender');
+        initCustomSelect('id_proof_type', 'Select ID Proof');
+        
+        // Initialize State & District (assigned to vars for cascading updates)
+        var csState = initCustomSelect('state', 'Select State');
+        var csDistrict = initCustomSelect('district', 'Select District');
+        
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen pt-24 pb-12 px-6">
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Header -->
+        <div class="mb-10 slide-in-bottom">
+            <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-2">Admin Profile</h2>
+            <p class="text-gray-400">Manage your account settings and view your activity summary.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Profile Card -->
+            <div class="lg:col-span-1 space-y-6 slide-in-left" style="animation-delay: 0.1s;">
+                <div class="glass-panel p-8 rounded-3xl flex flex-col items-center text-center relative overflow-hidden group">
+                    <!-- Background Decoration -->
+                    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-peacock/20 to-transparent"></div>
+                    
+                    <!-- Avatar -->
+                    <div class="relative z-10 mb-4 group/avatar">
+                        <div class="w-24 h-24 rounded-full bg-dark border-4 border-glass-border flex items-center justify-center shadow-glow group-hover:border-electric/50 transition-all duration-500 overflow-hidden relative">
+                            {% if current_user.profile_pic %}
+                                <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_pic) }}" alt="Profile" class="w-full h-full object-cover">
+                            {% else %}
+                                <i class="fas fa-user-shield text-4xl text-electric"></i>
+                            {% endif %}
+                            
+                            <!-- Upload Overlay -->
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center gap-3 transition-opacity">
+                                <button type="button" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors" onclick="document.getElementById('profile-upload').click()" title="Upload New">
+                                    <i class="fas fa-camera text-white text-sm"></i>
+                                </button>
+                                
+                                {% if current_user.profile_pic %}
+                                <button type="button" class="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center transition-colors" onclick="if(confirm('Are you sure you want to remove your profile picture?')) document.getElementById('remove-pic-form').submit()" title="Remove Picture">
+                                    <i class="fas fa-trash-alt text-red-400 text-sm"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-emerald border-4 border-dark" title="Active"></div>
+                        
+                        <!-- Hidden Forms -->
+                        <form action="{{ url_for('admin.upload_profile_pic') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+                            <input type="file" name="file" id="profile-upload" class="hidden" accept=".jpg,.jpeg,.png" onchange="document.getElementById('upload-form').submit()">
+                        </form>
+                        
+                        {% if current_user.profile_pic %}
+                        <form action="{{ url_for('admin.remove_profile_pic') }}" method="POST" id="remove-pic-form" class="hidden"></form>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="relative z-10 group/info">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <h3 class="font-display text-xl font-bold text-white">{{ current_user.full_name or current_user.email.split('@')[0] }}</h3>
+                            <button onclick="document.getElementById('edit-profile-modal').classList.remove('hidden')" class="opacity-0 group-hover/info:opacity-100 transition-opacity text-gray-400 hover:text-electric w-6 h-6 rounded-full hover:bg-white/5 flex items-center justify-center" title="Edit Profile">
+                                <i class="fas fa-pen text-[10px]"></i>
+                            </button>
+                        </div>
+                        <p class="text-electric text-sm font-medium mb-4">{{ current_user.email }}</p>
+                        
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <i class="fas fa-id-badge text-gray-400 text-xs"></i>
+                            <span class="text-xs text-gray-300 font-mono">{{ current_user.id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="glass-panel p-6 rounded-3xl slide-in-bottom" style="animation-delay: 0.2s;">
+                    <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Account Status</h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Role</span>
+                            <span class="text-emerald font-bold text-sm bg-emerald/10 px-2 py-1 rounded">Super Admin</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Status</span>
+                            <span class="text-white text-sm flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald animate-pulse"></span> Active
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Joined</span>
+                            <span class="text-white text-sm font-mono">2024-01-15</span> <!-- Mock or fetch if available -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Details & Stats -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Activity Summary -->
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.3s;">
+                    <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-chart-line text-electric"></i> Activity Summary
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Total Approvals -->
+                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-emerald/5 hover:border-emerald/20 transition-all group">
+                            <div class="text-emerald text-3xl font-display font-bold mb-1">{{ stats.approvals }}</div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider group-hover:text-emerald/80 transition-colors">Approvals</div>
+                        </div>
+
+                        <!-- Total Rejections -->
+                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-red-500/5 hover:border-red-500/20 transition-all group">
+                            <div class="text-red-400 text-3xl font-display font-bold mb-1">{{ stats.rejections }}</div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider group-hover:text-red-400/80 transition-colors">Rejections</div>
+                        </div>
+
+                        <!-- Last Action -->
+                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-electric/5 hover:border-electric/20 transition-all group">
+                            <div class="text-white text-lg font-bold mb-1 truncate">
+                                {% if stats.last_action %}
+                                    {{ stats.last_action.strftime('%d %b') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider group-hover:text-electric/80 transition-colors">Last Action</div>
+                            {% if stats.last_action %}
+                                <div class="text-electric text-[10px] mt-1">{{ stats.last_action.strftime('%H:%M') }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.4s;">
+                    <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-shield-alt text-electric"></i> Security & Session
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-dark flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium">Password</h4>
+                                    <p class="text-gray-400 text-xs">Last changed 30 days ago</p>
+                                </div>
+                            </div>
+                            <button onclick="document.getElementById('change-password-modal').classList.remove('hidden')" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors">
+                                Change
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-dark flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium">Session</h4>
+                                    <p class="text-gray-400 text-xs">Active since {{ current_user.last_login if current_user.last_login else 'Just now' }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('auth.logout') }}" class="px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-sm transition-colors">
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="document.getElementById('edit-profile-modal').classList.add('hidden')"></div>
+    
+    <!-- Modal Content -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6">
+        <div class="glass-panel p-8 rounded-3xl relative border border-white/10 shadow-2xl animate-scale-in">
+            <button onclick="document.getElementById('edit-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <h3 class="font-display text-2xl font-bold text-white mb-2">Edit Profile</h3>
+                <p class="text-gray-400 text-sm">Update your personal information</p>
+            </div>
+            
+            <form action="{{ url_for('admin.update_profile') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Full Name</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-500"></i>
+                        </div>
+                        <input type="text" name="full_name" value="{{ current_user.full_name if current_user.full_name else '' }}" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all placeholder-gray-600" placeholder="Enter your full name">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-500"></i>
+                        </div>
+                        <input type="email" name="email" value="{{ current_user.email }}" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all placeholder-gray-600" required>
+                    </div>
+                </div>
+                
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-gradient-to-r from-electric to-emerald text-dark font-bold py-3 rounded-xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="change-password-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="document.getElementById('change-password-modal').classList.add('hidden')"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6">
+        <div class="glass-panel p-8 rounded-3xl relative border border-white/10 shadow-2xl animate-scale-in">
+            <button onclick="document.getElementById('change-password-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="text-center mb-6">
+                <h3 class="font-display text-2xl font-bold text-white mb-2">Change Password</h3>
+                <p class="text-gray-400 text-sm">Set a new password for your account</p>
+            </div>
+            <form action="{{ url_for('admin.change_password') }}" method="POST" class="space-y-4">
+                <!-- Current Password removed as per user request (allow reset if forgotten) -->
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">New Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-500"></i>
+                        </div>
+                        <input type="password" name="new_password" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all" placeholder="Enter new password" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Confirm New Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-500"></i>
+                        </div>
+                        <input type="password" name="confirm_password" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all" placeholder="Confirm new password" required>
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-gradient-to-r from-electric to-emerald text-dark font-bold py-3 rounded-xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+    
+    <!-- Back Button -->
+    <div class="max-w-7xl mx-auto mb-6">
+        <button onclick="window.history.back()" class="inline-flex items-center text-gray-400 hover:text-electric transition-colors group">
+            <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+            <span class="font-medium">Back to Dashboard</span>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <div class="max-w-4xl mx-auto text-center mb-10">
+        <h1 class="text-4xl font-display font-bold text-white mb-3">Search Your Name in Voter List</h1>
+        <p class="text-lg text-gray-400">Enter your details to find your polling station and voter information.</p>
+    </div>
+
+    <!-- Search Box -->
+    <div class="max-w-4xl mx-auto mb-12">
+        <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all">
+            
+            <!-- Search Type Toggle -->
+            <div class="flex gap-4 mb-6 border-b border-white/10 pb-4">
+                <button onclick="toggleSearchType('details')" id="btnDetails" class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-electric text-white shadow-lg">
+                    Search by Details
+                </button>
+                <button onclick="toggleSearchType('epic')" id="btnEpic" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">
+                    Search by EPIC No.
+                </button>
+            </div>
+
+            <!-- Search Form: Details -->
+            <div id="searchByDetails" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-1 md:col-span-3 lg:col-span-1">
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                    <input type="text" id="nameInput" placeholder="Enter Full Name" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Age</label>
+                    <input type="number" id="ageInput" placeholder="Enter Age" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">State</label>
+                    <select id="stateInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                        <option value="" class="bg-dark">Select State</option>
+                        <option value="Delhi" class="bg-dark">Delhi</option>
+                        <option value="Maharashtra" class="bg-dark">Maharashtra</option>
+                        <option value="Uttar Pradesh" class="bg-dark">Uttar Pradesh</option>
+                        <option value="Karnataka" class="bg-dark">Karnataka</option>
+                        <!-- Add more states as needed -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">District</label>
+                    <input type="text" id="districtInput" placeholder="Enter District" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Assembly Constituency</label>
+                    <input type="text" id="assemblyInput" placeholder="Optional" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                </div>
+                 <div class="flex items-end">
+                    <button type="button" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i> Search Records
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Form: EPIC -->
+            <div id="searchByEpic" class="hidden flex gap-4">
+                 <div class="flex-1">
+                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">EPIC Number</label>
+                    <input type="text" id="epicInput" placeholder="Enter EPIC Number (e.g., ABC1234567)" 
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all"
+                           onkeypress="if(event.key === 'Enter') performSearch()">
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i> Search Records
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="hidden text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-electric mb-4"></div>
+        <p class="text-gray-400 animate-pulse">Searching electoral records...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsContainer" class="max-w-4xl mx-auto space-y-6 hidden">
+        <!-- Results will be injected here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+        <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
+            <i class="fas fa-search-minus text-4xl text-gray-500"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-2">Voter not found in voter list</h3>
+        <p class="text-gray-400 max-w-md mx-auto">We couldn't find any voter matching your details. Please check the spelling or try searching with your EPIC Number.</p>
+    </div>
+</div>
+
+<script>
+    let currentSearchType = 'details';
+
+    function toggleSearchType(type) {
+        currentSearchType = type;
+        
+        const btnDetails = document.getElementById('btnDetails');
+        const btnEpic = document.getElementById('btnEpic');
+        const formDetails = document.getElementById('searchByDetails');
+        const formEpic = document.getElementById('searchByEpic');
+
+        if (type === 'details') {
+            btnDetails.classList.add('bg-electric', 'text-white', 'shadow-lg');
+            btnDetails.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            
+            btnEpic.classList.remove('bg-electric', 'text-white', 'shadow-lg');
+            btnEpic.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            
+            formDetails.classList.remove('hidden');
+            formDetails.classList.add('grid');
+            formEpic.classList.add('hidden');
+            formEpic.classList.remove('flex');
+        } else {
+            btnEpic.classList.add('bg-electric', 'text-white', 'shadow-lg');
+            btnEpic.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            
+            btnDetails.classList.remove('bg-electric', 'text-white', 'shadow-lg');
+            btnDetails.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            
+            formEpic.classList.remove('hidden');
+            formEpic.classList.add('flex');
+            formDetails.classList.add('hidden');
+            formDetails.classList.remove('grid');
+        }
+    }
+
+    async function performSearch() {
+        let queryParams = new URLSearchParams();
+
+        if (currentSearchType === 'details') {
+            const name = document.getElementById('nameInput').value.trim();
+            const age = document.getElementById('ageInput').value.trim();
+            const state = document.getElementById('stateInput').value;
+            const district = document.getElementById('districtInput').value.trim();
+            const assembly = document.getElementById('assemblyInput').value.trim();
+
+            if (!name) {
+                alert('Please enter at least a Full Name to search.');
+                return;
+            }
+
+            queryParams.append('type', 'details');
+            queryParams.append('name', name);
+            if (age) queryParams.append('age', age);
+            if (state) queryParams.append('state', state);
+            if (district) queryParams.append('district', district);
+            if (assembly) queryParams.append('assembly', assembly);
+
+        } else {
+            const epic = document.getElementById('epicInput').value.trim();
+            if (!epic) {
+                alert('Please enter an EPIC Number.');
+                return;
+            }
+            queryParams.append('type', 'epic');
+            queryParams.append('epic', epic);
+        }
+
+        // UI Updates
+        const loading = document.getElementById('loadingState');
+        const results = document.getElementById('resultsContainer');
+        const empty = document.getElementById('emptyState');
+        
+        loading.classList.remove('hidden');
+        results.classList.add('hidden');
+        empty.classList.add('hidden');
+        results.innerHTML = ''; // Clear previous
+
+        try {
+            const response = await fetch(`/voter/api/search?${queryParams.toString()}`);
+            const data = await response.json();
+
+            loading.classList.add('hidden');
+
+            if (data.length > 0) {
+                results.classList.remove('hidden');
+                
+                data.forEach(voter => {
+                    const card = createVoterCard(voter);
+                    results.appendChild(card);
+                });
+            } else {
+                empty.classList.remove('hidden');
+            }
+
+        } catch (error) {
+            console.error('Search failed:', error);
+            loading.classList.add('hidden');
+            alert('An error occurred while searching. Please try again.');
+        }
+    }
+
+    function createVoterCard(voter) {
+        const div = document.createElement('div');
+        div.className = 'glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-lg animate-fade-in-up';
+        
+        // Header Strip
+        div.innerHTML = `
+            <div class="bg-gradient-to-r from-peacock/50 to-electric/50 px-6 py-4 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        ${voter.photo_url ? 
+                            `<img src="/voter/photo/${voter.photo_url}" class="w-full h-full object-cover" alt="Voter Photo">` : 
+                            `<div class="flex flex-col items-center justify-center w-full h-full bg-gray-800 text-gray-400"><i class="fas fa-user text-xl mb-1"></i><span class="text-[8px] uppercase">N/A</span></div>`
+                        }
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-lg">Electoral Roll Entry</h3>
+                        <p class="text-xs text-blue-100 uppercase tracking-wider">Verified Record</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-blue-200 uppercase tracking-wider">EPIC Number</div>
+                    <div class="text-xl font-display font-bold text-white tracking-widest">${voter.epic_number || 'N/A'}</div>
+                </div>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                <!-- Personal Details -->
+                <div class="col-span-1 md:col-span-2 pb-4 border-b border-white/5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Voter Name</div>
+                            <div class="text-white font-bold text-lg">${voter.full_name}</div>
+                            <div class="text-gray-400 text-xs mt-1">Relative: ${voter.relative_name || 'N/A'}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Age / Gender</div>
+                            <div class="text-white font-bold text-lg">${voter.age} Yrs / ${voter.gender}</div>
+                        </div>
+                         <div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Part No. / Serial No.</div>
+                            <div class="text-white font-bold text-lg">
+                                ${voter.part_number || 'N/A'} <span class="text-gray-500 text-sm mx-1">/</span> ${voter.serial_number || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Constituency Details -->
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-map-marked-alt text-electric text-sm"></i>
+                        <span class="text-gray-400 text-xs uppercase tracking-wider">Assembly Constituency</span>
+                    </div>
+                    <div class="text-white font-medium pl-6">${voter.assembly_constituency}</div>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-landmark text-electric text-sm"></i>
+                        <span class="text-gray-400 text-xs uppercase tracking-wider">Parliamentary Constituency</span>
+                    </div>
+                    <div class="text-white font-medium pl-6">${voter.loksabha_constituency}</div>
+                </div>
+
+                <!-- Polling Station -->
+                <div class="col-span-1 md:col-span-2 pt-4 border-t border-white/5">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1">
+                            <i class="fas fa-vote-yea text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Polling Station</div>
+                            <div class="text-white font-bold text-lg">${voter.polling_station || 'To be assigned'}</div>
+                            <p class="text-gray-400 text-sm mt-1">${voter.polling_address || ''}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Actions -->
+            <div class="bg-white/5 px-6 py-3 flex justify-between items-center border-t border-white/10">
+                <button onclick="window.location.href='/voter/print-slip/${voter.epic_number}'" class="text-sm text-electric hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fas fa-print"></i> Print Slip
+                </button>
+                <button class="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+            </div>
+        `;
+        return div;
+    }
+</script>
+
+<style>
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

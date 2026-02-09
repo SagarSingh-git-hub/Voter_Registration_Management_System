@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center relative py-10">
+    
+    <!-- Cinematic Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-full bg-peacock/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="glass-panel p-6 md:p-12 rounded-3xl w-full max-w-2xl relative z-10 tilt-card animate-slide-in" style="animation-delay: 0.1s;">
+        
+        <div class="flex flex-col md:flex-row items-center justify-between mb-10 border-b border-white/10 pb-8">
+            <div>
+                <h2 class="font-display text-4xl font-bold text-white mb-2 tracking-tight">Citizen Registration</h2>
+                <p class="text-gray-400 font-light">Join the secure digital voting network.</p>
+            </div>
+            <div class="w-12 h-12 bg-electric/10 rounded-full flex items-center justify-center text-electric mt-4 md:mt-0 animate-pulse-slow">
+                <i class="fas fa-user-plus text-xl"></i>
+            </div>
+        </div>
+
+        <form method="POST" action="" class="space-y-8" id="register-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <!-- Full Name -->
+                <div class="group slide-in-bottom" style="animation-delay: 0.2s;">
+                    {{ form.full_name.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                    {{ form.full_name(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-4 py-3 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Legal Name") }}
+                    {% for error in form.full_name.errors %}
+                        <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Username -->
+                <div class="group slide-in-bottom" style="animation-delay: 0.25s;">
+                    {{ form.username.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                    {{ form.username(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-4 py-3 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Desired Voter ID") }}
+                    {% for error in form.username.errors %}
+                        <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Email -->
+                <div class="group md:col-span-2 slide-in-bottom" style="animation-delay: 0.3s;">
+                    {{ form.email.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                    {{ form.email(id="email", class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-4 py-3 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="official@email.com") }}
+                    {% for error in form.email.errors %}
+                        <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Password -->
+                <div class="group slide-in-bottom" style="animation-delay: 0.35s;">
+                    {{ form.password.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                    {{ form.password(id="password", class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-4 py-3 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="••••••••") }}
+                    {% for error in form.password.errors %}
+                        <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="group slide-in-bottom" style="animation-delay: 0.4s;">
+                    {{ form.confirm_password.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
+                    {{ form.confirm_password(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-4 py-3 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="••••••••") }}
+                    {% for error in form.confirm_password.errors %}
+                        <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="pt-6 slide-in-bottom" style="animation-delay: 0.5s;">
+                {{ form.submit(class="w-full bg-gradient-to-r from-peacock to-electric text-white font-display font-bold text-lg py-4 rounded-xl hover:shadow-glow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer tracking-wide") }}
+            </div>
+        </form>
+
+        <div class="mt-8 text-center border-t border-white/10 pt-6 slide-in-bottom" style="animation-delay: 0.6s;">
+            <p class="text-gray-500 text-sm">Already registered? 
+                <a href="{{ url_for('auth.login') }}" class="text-electric hover:text-white font-semibold transition-colors">
+                    Access System <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Firebase Signup Logic
+    async function syncWithBackend(user) {
+        // Secure Verification & Sync (Supabase)
+        try {
+            await window.firebaseAuth.verifyAndSyncUser(user);
+        } catch (e) {
+            console.warn("Supabase Sync failed, but proceeding:", e);
+        }
+
+        // Get ID Token for backend verification (Force Refresh)
+        let idToken;
+        try {
+            idToken = await user.getIdToken(true);
+        } catch (e) {
+            console.error("Error getting ID token", e);
+            alert("Security Error: Could not generate auth token.");
+            return;
+        }
+
+        // Sync with Backend (MongoDB) - Critical for Flask Login
+        const form = document.getElementById('register-form');
+        const formData = new FormData(form);
+        formData.append('skip_otp', 'true');
+        // Note: id_token is now sent in Headers, not body
+        
+        try {
+            const response = await fetch("{{ url_for('auth.register') }}", {
+                method: "POST",
+                body: formData,
+                headers: { 
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Authorization": "Bearer " + idToken 
+                }
+            });
+            
+            if (response.ok) {
+                alert("Signup Success! User: " + user.email);
+                window.location.href = "{{ url_for('auth.login') }}";
+            } else {
+                console.error("Backend Sync Failed");
+                let errorMessage = "Account created in Firebase but backend sync failed.";
+                try {
+                    const data = await response.json();
+                    if (data.message) {
+                        errorMessage += "\nError: " + data.message;
+                    }
+                } catch (e) {
+                    console.error("Could not parse error response", e);
+                }
+                alert(errorMessage);
+            }
+        } catch (err) {
+             console.error("Backend Sync Error:", err);
+             alert("Network error during backend sync.");
+        }
+    }
+
+    function signupEmail() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        // Visual feedback
+        const submitBtn = document.querySelector('input[type="submit"]');
+        const originalVal = submitBtn.value;
+        submitBtn.value = "Registering with Firebase...";
+        submitBtn.disabled = true;
+
+        window.firebaseAuth.createUserWithEmailAndPassword(window.firebaseAuth.auth, email, password)
+            .then(async (userCredential) => {
+                console.log("Created new Firebase user:", userCredential.user);
+                await syncWithBackend(userCredential.user);
+            })
+            .catch(async (error) => {
+                // Handle "Email already in use" by trying to sign in and sync
+                if (error.code === 'auth/email-already-in-use') {
+                    console.warn("Email already in use. Attempting to sign in and sync...");
+                    try {
+                        const userCredential = await window.firebaseAuth.signInWithEmailAndPassword(window.firebaseAuth.auth, email, password);
+                        console.log("Recovered existing Firebase user:", userCredential.user);
+                        await syncWithBackend(userCredential.user);
+                    } catch (signInError) {
+                        console.error("Recovery Sign-in failed:", signInError);
+                        if (signInError.code === 'auth/wrong-password') {
+                            alert("This email is already registered, but the password does not match. Please login or reset your password.");
+                        } else {
+                            alert("Error: " + error.message);
+                        }
+                    }
+                } else {
+                    alert("Error: " + error.message);
+                }
+            })
+            .finally(() => {
+                submitBtn.value = originalVal;
+                submitBtn.disabled = false;
+            });
+    }
+
+    // Attach to form submit
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        signupEmail();
+    });
+</script>
+{% endblock %}

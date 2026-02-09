@@ -1,0 +1,215 @@
+/* Custom utilities that are tricky with just Tailwind classes */
+body {
+    background-color: #05070A;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #05070A;
+}
+::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #00B4FF;
+}
+
+/* Glass Card Base */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Neon Text Glow */
+.text-glow {
+    text-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+}
+
+/* Input Autofill Fix for Dark Mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #0a0e14 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Smooth gradients */
+.bg-gradient-cinematic {
+    background: linear-gradient(135deg, rgba(15, 76, 117, 0.1) 0%, rgba(5, 7, 10, 0) 100%);
+}
+
+/* Loader/Spinner */
+.loader {
+    border-top-color: #00B4FF;
+    -webkit-animation: spinner 1.5s linear infinite;
+    animation: spinner 1.5s linear infinite;
+}
+@keyframes spinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animations */
+.slide-in-bottom, .animate-slide-in {
+    animation: slideInBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+@keyframes slideInBottom {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 3D Tilt Card Base */
+.tilt-card {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    will-change: transform;
+}
+
+/* Button Ripple */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Custom Dropdown Styles (From service_form.html) */
+.custom-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-trigger {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.05); /* Match bg-white/5 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem; /* 12px */
+    padding: 1rem 1.25rem; /* Adjusted to match form inputs (px-5 py-4) */
+    color: #d1d5db; /* gray-300 */
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.custom-select-trigger.has-value {
+    color: white;
+}
+
+.custom-select-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.custom-select-trigger.is-open {
+    border-color: #00B4FF;
+    box-shadow: 0 0 15px rgba(0, 180, 255, 0.15);
+    background-color: #0F172A;
+}
+
+.custom-select-trigger i {
+    transition: transform 0.3s ease;
+    color: #6b7280;
+}
+
+.custom-select-trigger.is-open i {
+    transform: rotate(180deg);
+    color: #00B4FF;
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: #0F172A; /* Slate 900 - Solid Background */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    z-index: 100; /* High Z-Index */
+    max-height: 300px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px); /* Ensure readability */
+}
+
+.custom-options.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    padding: 12px 16px;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.custom-option:last-child {
+    border-bottom: none;
+}
+
+.custom-option:hover {
+    background-color: rgba(0, 180, 255, 0.1);
+    color: #00B4FF;
+}
+
+.custom-option.selected {
+    background-color: rgba(0, 180, 255, 0.2);
+    color: #00B4FF;
+}
+
+/* Fix for Standard Select Options in Dark Mode */
+select option {
+    background-color: #0F172A; /* Slate 900 - Dark Background */
+    color: #ffffff; /* White Text */
+    padding: 10px;
+}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen pt-24 pb-12 px-6">
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Header -->
+        <div class="mb-10 slide-in-bottom">
+            <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-2">My Profile</h2>
+            <p class="text-gray-400">Manage your personal information and track your application status.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Profile Card -->
+            <div class="lg:col-span-1 space-y-6 slide-in-left" style="animation-delay: 0.1s;">
+                <div class="glass-panel p-8 rounded-3xl flex flex-col items-center text-center relative overflow-hidden group">
+                    <!-- Background Decoration -->
+                    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-peacock/20 to-transparent"></div>
+                    
+                    <!-- Avatar -->
+                    <div class="relative z-10 mb-4">
+                        <div class="w-24 h-24 rounded-full bg-dark flex items-center justify-center shadow-glow overflow-hidden relative">
+                            {% if application and application.photograph_path %}
+                                <img src="{{ url_for('voter.view_photo', filename=application.photograph_path) }}" class="w-full h-full object-cover" alt="Profile Photo">
+                            {% else %}
+                                <i class="fas fa-user text-4xl text-electric"></i>
+                            {% endif %}
+                        </div>
+                        <div class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-emerald border-4 border-dark" title="Active"></div>
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="relative z-10">
+                        <h3 class="font-display text-xl font-bold text-white mb-1">
+                            {{ application.full_name if application else current_user.full_name or current_user.username }}
+                        </h3>
+                        <p class="text-electric text-sm font-medium mb-4">{{ current_user.email }}</p>
+                        
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <i class="fas fa-id-badge text-gray-400 text-xs"></i>
+                            <span class="text-xs text-gray-300 font-mono">
+                                {% if application and application.epic_number %}
+                                    {{ application.epic_number }}
+                                {% else %}
+                                    NOT ASSIGNED
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="glass-panel p-6 rounded-3xl slide-in-bottom" style="animation-delay: 0.2s;">
+                    <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Application Status</h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Status</span>
+                            {% if application %}
+                                {% if application.status == 'Approved' %}
+                                    <span class="text-emerald font-bold text-sm bg-emerald/10 px-2 py-1 rounded">Approved</span>
+                                {% elif application.status == 'Rejected' %}
+                                    <span class="text-red-400 font-bold text-sm bg-red-500/10 px-2 py-1 rounded">Rejected</span>
+                                {% else %}
+                                    <span class="text-electric font-bold text-sm bg-electric/10 px-2 py-1 rounded">Pending</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-500 font-bold text-sm bg-gray-500/10 px-2 py-1 rounded">Not Submitted</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if application %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Submitted</span>
+                            <span class="text-white text-sm font-mono">{{ application.submitted_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+
+                        {% if application.status == 'Approved' and application.approved_at %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Approved On</span>
+                            <span class="text-white text-sm font-mono">{{ application.approved_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        {% elif application.status == 'Rejected' and application.rejected_at %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Rejected On</span>
+                            <span class="text-white text-sm font-mono">{{ application.rejected_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if application.last_updated %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300 text-sm">Last Profile Update</span>
+                            <span class="text-white text-sm font-mono">{{ application.last_updated.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Details & Edit -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Personal Details -->
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.3s;">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-display text-xl font-bold text-white flex items-center gap-3">
+                            <i class="fas fa-user-circle text-electric"></i> Personal Details
+                        </h3>
+                        {% if application and application.status != 'Approved' %}
+                        <button onclick="document.getElementById('edit-profile-modal').classList.remove('hidden')" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-electric transition-colors" title="Edit Details">
+                            <i class="fas fa-pen text-sm"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Mobile Number</div>
+                            <div class="text-white font-mono">{{ application.phone if application else current_user.phone or 'N/A' }}</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Date of Birth</div>
+                            <div class="text-white font-mono">{{ application.dob if application else 'N/A' }}</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Gender</div>
+                            <div class="text-white">{{ application.gender if application else 'N/A' }}</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Relative</div>
+                            <div class="text-white">
+                                {% if application %}
+                                    {{ application.relative_name }} <span class="text-gray-500 text-xs">({{ application.relative_type }})</span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Address</div>
+                            <div class="text-white">
+                                {% if application %}
+                                    {{ application.present_address }}, {{ application.district }}, {{ application.state }} - {{ application.pin_code }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.4s;">
+                    <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-file-alt text-electric"></i> Documents
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-dark flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium">ID Proof</h4>
+                                    <p class="text-gray-400 text-xs">
+                                        {% if application %}
+                                            {{ application.id_proof_type }} - 
+                                            <span class="font-mono">XXXX-XXXX-{{ application.id_proof_number[-4:] if application.id_proof_number else 'XXXX' }}</span>
+                                        {% else %}
+                                            Not Uploaded
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% if application and application.document_path %}
+                                <span class="text-emerald text-xs font-bold bg-emerald/10 px-2 py-1 rounded">Uploaded</span>
+                            {% else %}
+                                <span class="text-gray-500 text-xs font-bold bg-gray-500/10 px-2 py-1 rounded">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="document.getElementById('edit-profile-modal').classList.add('hidden')"></div>
+    
+    <!-- Modal Content -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6">
+        <div class="glass-panel p-8 rounded-3xl relative border border-white/10 shadow-2xl animate-scale-in">
+            <button onclick="document.getElementById('edit-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <h3 class="font-display text-2xl font-bold text-white mb-2">Edit Details</h3>
+                <p class="text-gray-400 text-sm">Update your contact information</p>
+            </div>
+            
+            <form action="{{ url_for('voter.update_profile') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Mobile Number</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-phone text-gray-500"></i>
+                        </div>
+                        <input type="tel" name="phone" value="{{ application.phone if application else current_user.phone }}" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all" required pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Present Address</label>
+                    <div class="relative">
+                        <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-gray-500"></i>
+                        </div>
+                        <textarea name="present_address" rows="3" class="w-full bg-dark/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-electric focus:bg-white/5 transition-all" required>{{ application.present_address if application else '' }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-gradient-to-r from-electric to-emerald text-dark font-bold py-3 rounded-xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

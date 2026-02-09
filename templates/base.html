@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title if title else 'VOTE.X | Secure Democratic System' }}</title>
+    
+    <!-- Fonts: Space Grotesk (Cinematic) + Inter (Clean) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              peacock: '#0F4C75',
+              electric: '#00B4FF',
+              dark: '#05070A',
+              emerald: '#00E676',
+              glass: 'rgba(255, 255, 255, 0.05)',
+              'glass-border': 'rgba(255, 255, 255, 0.1)',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Space Grotesk', 'sans-serif'],
+            },
+            boxShadow: {
+              'glow': '0 0 20px rgba(0, 180, 255, 0.3)',
+              'glow-lg': '0 0 40px rgba(0, 180, 255, 0.5)',
+              'glow-emerald': '0 0 20px rgba(0, 230, 118, 0.3)',
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              'glow-pulse': {
+                '0%, 100%': { textShadow: '0 0 10px rgba(0, 180, 255, 0.5), 0 0 20px rgba(0, 180, 255, 0.3)' },
+                '50%': { textShadow: '0 0 20px rgba(0, 180, 255, 0.8), 0 0 30px rgba(0, 180, 255, 0.5)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="bg-dark text-white font-sans antialiased overflow-x-hidden min-h-screen flex flex-col selection:bg-electric selection:text-dark">
+    
+    <!-- Ambient Background Elements -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="parallax-bg absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-peacock/30 rounded-full blur-[120px] animate-pulse-slow"></div>
+        <div class="parallax-bg absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-electric/10 rounded-full blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+        <div id="grid-overlay" class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgNDBMMCAwTDQwIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPjwvc3ZnPg==')] opacity-30"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 py-4" id="navbar">
+      <div class="max-w-7xl mx-auto">
+        <div class="backdrop-blur-md bg-dark/60 border border-glass-border rounded-2xl px-6 py-3 flex justify-between items-center shadow-lg hover:border-electric/30 transition-colors duration-500">
+            <a class="flex items-center gap-3 group" href="{{ url_for('main.index') }}">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-peacock to-electric flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-cube text-white text-xl"></i>
+                </div>
+                <span class="font-display font-bold text-xl tracking-wider text-white group-hover:text-electric transition-colors">VOTE.X</span>
+            </a>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-6">
+                {% if current_user.is_authenticated %}
+                  <a href="{{ url_for('main.dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    DASHBOARD
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full"></span>
+                  </a>
+                  {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin.profile') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      ADMIN
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald transition-all group-hover:w-full {% if request.endpoint == 'admin.profile' %} w-full {% endif %}"></span>
+                    </a>
+                  {% elif current_user.role == 'voter' %}
+                    <a href="{{ url_for('voter.profile') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      PROFILE
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full {% if request.endpoint == 'voter.profile' %} w-full {% endif %}"></span>
+                    </a>
+                  {% endif %}
+                  <div class="h-6 w-px bg-white/10"></div>
+                  <a href="{{ url_for('auth.logout') }}" class="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400 transition-all duration-300">
+                    LOGOUT
+                  </a>
+                {% else %}
+                  <a href="{{ url_for('auth.login') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">LOGIN</a>
+                  <a href="{{ url_for('auth.register') }}" class="px-6 py-2 rounded-xl bg-electric text-dark font-bold text-sm shadow-glow hover:bg-white hover:scale-105 transition-all duration-300">
+                    REGISTER
+                  </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white hover:text-electric transition-colors focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden mt-2 backdrop-blur-xl bg-dark/90 border border-glass-border rounded-2xl p-4 flex flex-col gap-4 shadow-xl origin-top transform transition-all duration-300">
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('main.dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                <i class="fas fa-tachometer-alt text-electric w-6 text-center"></i> DASHBOARD
+              </a>
+              {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.profile') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-user-shield text-emerald w-6 text-center"></i> ADMIN
+                </a>
+              {% elif current_user.role == 'voter' %}
+                <a href="{{ url_for('voter.profile') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-user text-electric w-6 text-center"></i> PROFILE
+                </a>
+              {% endif %}
+              <a href="{{ url_for('e_epic.index') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                <i class="fas fa-id-card text-electric w-6 text-center"></i> E-EPIC DOWNLOAD
+              </a>
+              <div class="h-px bg-white/10 my-1"></div>
+              <a href="{{ url_for('auth.logout') }}" class="p-3 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors flex items-center gap-3">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i> LOGOUT
+              </a>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                <i class="fas fa-sign-in-alt text-electric w-6 text-center"></i> LOGIN
+              </a>
+              <a href="{{ url_for('auth.register') }}" class="p-3 rounded-lg bg-electric text-dark font-bold text-center shadow-glow">
+                REGISTER
+              </a>
+            {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 flex-grow pt-32 pb-20 px-6">
+      <div class="max-w-7xl mx-auto">
+        <!-- Global Flash Messages (Exclude Login Page which handles its own) -->
+        {% if request.endpoint != 'auth.login' %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-8 space-y-4 max-w-2xl mx-auto">
+              {% for category, message in messages %}
+                <div class="p-4 rounded-xl backdrop-blur-md border flex items-center gap-3 shadow-lg transform translate-y-[-10px] opacity-0 animate-slide-in
+                  {% if category == 'success' %} bg-emerald/10 border-emerald/30 text-emerald-400
+                  {% elif category == 'danger' %} bg-red-500/10 border-red-500/30 text-red-400
+                  {% else %} bg-electric/10 border-electric/30 text-electric {% endif %}">
+                  <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} text-xl"></i>
+                  <span class="font-medium">{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Auto-hide Flash Messages Script (Cinematic VFX) -->
+            <script>
+              document.addEventListener('DOMContentLoaded', () => {
+                const alerts = document.querySelectorAll('.animate-slide-in');
+                if (alerts.length > 0) {
+                  setTimeout(() => {
+                    alerts.forEach((alert, index) => {
+                      gsap.to(alert, {
+                        opacity: 0,
+                        y: -50,           // Float up
+                        scale: 0.95,      // Slight shrink
+                        filter: "blur(10px)", // Cinematic blur out
+                        duration: 1.2,    // Smooth, slow fade
+                        delay: index * 0.1, // Stagger if multiple
+                        ease: "power2.inOut",
+                        onComplete: () => {
+                          alert.remove();
+                          // Adjust layout if needed (optional)
+                        }
+                      });
+                    });
+                  }, 4000); // 3 seconds visibility
+                }
+              });
+            </script>
+          {% endif %}
+        {% endwith %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/10 bg-dark/95 backdrop-blur-xl mt-auto pt-10 pb-6">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-start mb-8">
+                <!-- Brand Section -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-peacock to-electric flex items-center justify-center shadow-glow">
+                            <i class="fas fa-cube text-white text-xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-display font-bold text-xl tracking-wider text-white">VRMS</span>
+                            <span class="text-[10px] text-gray-400 tracking-widest uppercase">Voter Registration Management</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed max-w-xs">
+                        Digital platform for secure voter registration, verification, and E-EPIC services.
+                    </p>
+                </div>
+
+                <!-- Trust Tagline -->
+                    <div class="flex flex-col items-center justify-center h-full space-y-4 pt-4 md:pt-0">
+                         <div class="w-16 h-0.5 rounded-full bg-electric/70"></div>
+                         <p class="font-mono text-sm tracking-[0.2em] text-electric text-center font-bold animate-glow-pulse">
+                            SECURE • TRANSPARENT • VERIFIED
+                         </p>
+                         <div class="w-16 h-0.5 rounded-full bg-electric/70"></div>
+                    </div>
+
+                <!-- Copyright Section -->
+                <div class="text-center md:text-right space-y-2 pt-2">
+                    <p class="text-white font-bold text-lg">&copy; 2026 VRMS Platform</p>
+                    <p class="text-gray-500 text-sm">All Rights Reserved</p>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>
+
+            <!-- Bottom Section -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-gray-500">
+                <p class="max-w-md text-center md:text-left opacity-60 text-[12px]">
+                    This is a digital voter service platform for registration and management purposes.
+                </p>
+                
+                <div class="flex flex-wrap justify-center gap-8 font-medium">
+                    <a href="#" class="hover:text-cyan-300 hover:drop-shadow-[0_0_5px_rgba(103,232,249,0.5)] transition-all duration-300">Privacy Policy</a>
+                    <a href="#" class="hover:text-cyan-300 hover:drop-shadow-[0_0_5px_rgba(103,232,249,0.5)] transition-all duration-300">Terms of Service</a>
+                    <a href="#" class="hover:text-cyan-300 hover:drop-shadow-[0_0_5px_rgba(103,232,249,0.5)] transition-all duration-300">Help & Support</a>
+                    <a href="{{ url_for('main.faq') }}" class="hover:text-cyan-300 hover:drop-shadow-[0_0_5px_rgba(103,232,249,0.5)] transition-all duration-300">FAQs</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        
+        // 0. Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+        }
+
+        // 1. Entrance Animations
+        gsap.from("nav", { y: -50, opacity: 0, duration: 1, ease: "power3.out" });
+        gsap.from("main", { opacity: 0, duration: 1, delay: 0.2, ease: "power3.out" });
+        
+        // Fade in alerts
+        gsap.to(".animate-slide-in", {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "power2.out"
+        });
+
+        /*
+        // 2. Parallax Background
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            gsap.to('.bg-peacock\\/30', { x: x, y: y, duration: 2, ease: "power1.out" });
+            gsap.to('.bg-electric\\/10', { x: -x, y: -y, duration: 2, ease: "power1.out" });
+        });
+
+        // 3. 3D Card Effect
+        const cards = document.querySelectorAll('.tilt-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -8;
+                const rotateY = ((x - centerX) / centerX) * 8;
+
+                gsap.to(card, {
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    duration: 0.4,
+                    ease: "power2.out",
+                    transformPerspective: 1000,
+                    transformOrigin: "center"
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    rotationX: 0,
+                    rotationY: 0,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+        });
+        */
+
+        // 4. Button Ripple Effect
+        const buttons = document.querySelectorAll('button, .btn, a.px-5, a.px-6');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+            // Ensure relative positioning for ripple
+            if (getComputedStyle(btn).position === 'static') {
+                btn.style.position = 'relative';
+                btn.style.overflow = 'hidden';
+            }
+        });
+      });
+    </script>
+    
+    <!-- Environment Variables Injection -->
+    <script>
+        window.ENV = {
+            FIREBASE_API_KEY: "{{ config['FIREBASE_API_KEY'] }}",
+            FIREBASE_AUTH_DOMAIN: "{{ config['FIREBASE_AUTH_DOMAIN'] }}",
+            FIREBASE_PROJECT_ID: "{{ config['FIREBASE_PROJECT_ID'] }}",
+            FIREBASE_STORAGE_BUCKET: "{{ config['FIREBASE_STORAGE_BUCKET'] }}",
+            FIREBASE_MESSAGING_SENDER_ID: "{{ config['FIREBASE_MESSAGING_SENDER_ID'] }}",
+            FIREBASE_APP_ID: "{{ config['FIREBASE_APP_ID'] }}",
+            SUPABASE_URL: "{{ config['SUPABASE_URL'] }}",
+            SUPABASE_ANON_KEY: "{{ config['SUPABASE_ANON_KEY'] }}"
+        };
+    </script>
+
+    <!-- Firebase Configuration (Module) -->
+    <script type="module" src="{{ url_for('static', filename='js/firebase.js') }}"></script>
+
+    <!-- Page Specific Scripts -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Cinematic Scroll Animations (Exclude Admin & Auth Pages) -->
+    {% if not request.endpoint or not (request.endpoint.startswith('admin.') or request.endpoint.startswith('auth.')) %}
+    <script src="{{ url_for('static', filename='js/scroll-animations.js') }}"></script>
+    {% endif %}
+  </body>
+</html>

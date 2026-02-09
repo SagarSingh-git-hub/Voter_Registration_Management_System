@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="h-[80vh] flex flex-col relative pt-4 pb-0">
+    
+    <!-- Cinematic Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto w-full flex-grow flex flex-col relative z-10 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4 animate-slide-in">
+            <div>
+                <h2 class="font-display text-3xl font-bold text-white mb-1">Voter Mitra Chatbot</h2>
+                <p class="text-gray-400">Your AI assistant for electoral queries and complaints.</p>
+            </div>
+            <a href="{{ url_for('main.dashboard') }}" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 transition-all text-sm font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="glass-panel flex-grow flex flex-col rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl bg-gray-900/60 overflow-hidden animate-slide-in" style="animation-delay: 0.1s;">
+            
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-grow p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                <!-- Welcome Message -->
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shrink-0 shadow-lg">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <div class="bg-white/10 border border-white/5 rounded-2xl rounded-tl-none px-4 py-2 max-w-[80%] text-gray-200 shadow-md">
+                        <p>Hello! I am Voter Mitra. How can I assist you with your voter registration or complaints today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-white/10 bg-black/20">
+                <form id="chat-form" class="flex gap-4 relative">
+                    <input type="text" id="user-input" 
+                        class="flex-grow bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all shadow-inner"
+                        placeholder="Type your message here..." autocomplete="off">
+                    <button type="submit" 
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-indigo-500/25 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span>Send</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addMessage(text, isUser = false) {
+        const div = document.createElement('div');
+        div.className = `flex items-start gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`;
+        
+        const avatar = isUser ? 
+            `<div class="w-10 h-10 rounded-full bg-electric flex items-center justify-center shrink-0 shadow-lg">
+                <i class="fas fa-user text-white"></i>
+             </div>` :
+            `<div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shrink-0 shadow-lg">
+                <i class="fas fa-robot text-white"></i>
+             </div>`;
+            
+        const bubbleColor = isUser ? 'bg-electric/20 border-electric/30' : 'bg-white/10 border-white/5';
+        const rounded = isUser ? 'rounded-tr-none' : 'rounded-tl-none';
+        
+        // Handle line breaks in text
+        const formattedText = text.replace(/\n/g, '<br>');
+        
+        div.innerHTML = `
+            ${avatar}
+            <div class="${bubbleColor} border rounded-2xl ${rounded} px-4 py-2 max-w-[80%] text-gray-200 shadow-md">
+                <p class="whitespace-pre-wrap leading-relaxed">${formattedText}</p>
+            </div>
+        `;
+        
+        chatMessages.appendChild(div);
+        scrollToBottom();
+    }
+
+    function addTypingIndicator() {
+        const div = document.createElement('div');
+        div.id = 'typing-indicator';
+        div.className = 'flex items-start gap-4 animate-fade-in';
+        div.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shrink-0 shadow-lg">
+                <i class="fas fa-robot text-white"></i>
+            </div>
+            <div class="bg-white/10 border border-white/5 rounded-2xl rounded-tl-none px-6 py-4 text-gray-200 shadow-md flex items-center gap-2">
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+        `;
+        chatMessages.appendChild(div);
+        scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) indicator.remove();
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // Disable input
+        userInput.disabled = true;
+        const submitBtn = chatForm.querySelector('button');
+        submitBtn.disabled = true;
+
+        // Add user message
+        addMessage(message, true);
+        userInput.value = '';
+
+        // Add typing indicator
+        addTypingIndicator();
+
+        try {
+            const response = await fetch("{{ url_for('main.chatbot_message') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}" 
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    user_id: "{{ current_user.id }}" 
+                })
+            });
+
+            const data = await response.json();
+            removeTypingIndicator();
+
+            if (data.reply) {
+                addMessage(data.reply);
+            } else if (data.response) {
+                // Legacy fallback just in case
+                addMessage(data.response);
+            } else {
+                 addMessage("⚠️ I received an empty response. Please check the system connection.");
+            }
+
+        } catch (error) {
+            removeTypingIndicator();
+            addMessage("Sorry, I encountered an error connecting to the server.");
+            console.error(error);
+        } finally {
+            userInput.disabled = false;
+            submitBtn.disabled = false;
+            userInput.focus();
+        }
+    });
+</script>
+{% endblock %}

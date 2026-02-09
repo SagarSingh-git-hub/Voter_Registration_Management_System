@@ -1,0 +1,15 @@
+Flask
+Flask-PyMongo
+Flask-Login
+Flask-WTF
+Flask-Mail
+email-validator
+Werkzeug
+python-dotenv
+dnspython
+reportlab
+requests
+qrcode
+redis
+Flask-Limiter
+firebase-admin

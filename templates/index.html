@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<div class="relative min-h-[85vh] flex items-center">
+    <!-- Hero Background Effect -->
+    <div class="absolute inset-0 z-0">
+        <div class="absolute top-20 right-0 w-[800px] h-[800px] bg-gradient-to-br from-peacock/20 to-electric/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-emerald/10 to-transparent rounded-full blur-[80px]"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <!-- Text Content -->
+        <div class="text-center lg:text-left space-y-8 animate-slide-in opacity-0" style="animation-delay: 0.1s;">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric/10 border border-electric/20 text-electric text-xs font-bold uppercase tracking-widest mb-2">
+                <span class="w-2 h-2 rounded-full bg-electric animate-pulse"></span>
+                Official Gov Portal
+            </div>
+            
+            <h1 class="font-display text-4xl md:text-7xl font-bold leading-tight text-white">
+                Voter Registration <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-electric to-emerald">Management System</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-400 font-light max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                A Secure & Transparent Digital Platform for Voters. Empowering democracy with next-generation technology for seamless electoral participation.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" class="px-6 py-3 md:px-8 md:py-4 rounded-xl bg-electric text-dark font-display font-bold text-lg shadow-glow hover:bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                    Go to Dashboard <i class="fas fa-arrow-right"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.register') }}" class="px-6 py-3 md:px-8 md:py-4 rounded-xl bg-electric text-dark font-display font-bold text-lg shadow-glow hover:bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                    Register as Voter <i class="fas fa-user-plus"></i>
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="px-6 py-3 md:px-8 md:py-4 rounded-xl bg-white/5 border border-white/10 text-white font-display font-bold text-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-search"></i> Search Voter List
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="pt-4 flex items-center justify-center lg:justify-start gap-6 text-sm text-gray-500 font-mono">
+                <span class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald"></i> ISO 27001 Certified</span>
+                <span class="flex items-center gap-2"><i class="fas fa-shield-alt text-electric"></i> 256-bit Encryption</span>
+            </div>
+        </div>
+
+        <!-- Hero Visual/Illustration -->
+        <div class="relative hidden lg:block animate-slide-in opacity-0" style="animation-delay: 0.3s;">
+            <div class="relative z-10 glass-panel p-8 rounded-3xl border-t border-l border-white/10 tilt-card">
+                <!-- Abstract UI Representation -->
+                <div class="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald"></div>
+                    </div>
+                    <div class="text-xs font-mono text-gray-500">SECURE SYSTEM v2.0</div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Fake Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-xs text-gray-400 mb-1">Total Voters</div>
+                            <div class="text-2xl font-bold text-white">96.8 Cr+</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div class="text-xs text-gray-400 mb-1">Polling Stations</div>
+                            <div class="text-2xl font-bold text-electric">12 Lakh+</div>
+                        </div>
+                    </div>
+                    <!-- Fake Progress -->
+                    <div class="p-4 rounded-xl bg-emerald/10 border border-emerald/20">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-emerald">Registration Status</span>
+                            <span class="text-xs text-emerald-300">Active</span>
+                        </div>
+                        <div class="w-full bg-dark/50 rounded-full h-2">
+                            <div class="bg-emerald h-2 rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                     <!-- Map Placeholder -->
+                    <div class="h-32 rounded-xl bg-gradient-to-r from-peacock/20 to-dark border border-white/5 flex items-center justify-center relative overflow-hidden">
+                        <!-- <div class="absolute inset-0 opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bv/India_location_map.svg/1707px-India_location_map.svg.png')] bg-cover bg-center"></div> -->
+                        <div class="absolute inset-0 opacity-20 bg-gradient-to-br from-electric/30 to-peacock/30"></div>
+                        <span class="relative z-10 text-electric font-mono text-xs tracking-widest">PAN-INDIA COVERAGE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Floating Elements -->
+            <div class="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 1s;">
+                <i class="fas fa-vote-yea text-4xl text-white"></i>
+            </div>
+            <div class="absolute -bottom-5 -left-5 w-20 h-20 bg-gradient-to-br from-emerald to-teal-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 2s;">
+                <i class="fas fa-check text-3xl text-white"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TRUST STRIP -->
+<div class="border-y border-white/5 bg-white/5 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <div class="flex flex-wrap justify-center md:justify-between items-center gap-8">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald animate-pulse"></div>
+                <span class="text-sm font-mono text-gray-300">SYSTEM STATUS: <span class="text-emerald font-bold">ONLINE & SECURE</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <div class="flex items-center gap-2 text-gray-400">
+                    <i class="fas fa-check-circle text-electric"></i>
+                    <span class="text-sm font-medium">Verified Identity</span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-400">
+                    <i class="fas fa-lock text-electric"></i>
+                    <span class="text-sm font-medium">End-to-End Encrypted</span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-400">
+                    <i class="fas fa-bolt text-electric"></i>
+                    <span class="text-sm font-medium">Real-Time Processing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SERVICES PREVIEW -->
+<div class="py-24 relative">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="font-display text-4xl font-bold text-white mb-4">Digital Services</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Access all electoral services from the comfort of your home. Simple, fast, and transparent.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Service 1 -->
+            <a href="{% if current_user.is_authenticated %}{{ url_for('voter.voter_application') }}{% else %}{{ url_for('auth.register') }}{% endif %}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-electric">
+                <div class="w-14 h-14 rounded-xl bg-electric/10 text-electric flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">New Registration</h3>
+                <p class="text-gray-400 text-sm">Register as a new voter if you are 18+ years old.</p>
+            </a>
+            
+            <!-- Service 2 -->
+            <a href="{% if current_user.is_authenticated %}{{ url_for('main.dashboard') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-emerald">
+                <div class="w-14 h-14 rounded-xl bg-emerald/10 text-emerald flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-route"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Track Status</h3>
+                <p class="text-gray-400 text-sm">Track your application status in real-time.</p>
+            </a>
+            
+            <!-- Service 3 -->
+            <a href="{{ url_for('e_epic.index') }}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-cyan-400">
+                <div class="w-14 h-14 rounded-xl bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Download e-EPIC</h3>
+                <p class="text-gray-400 text-sm">Get your digital Voter ID card instantly.</p>
+            </a>
+            
+            <!-- Service 4 -->
+            <a href="{% if current_user.is_authenticated %}{{ url_for('voter.search_voter_page') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-pink-500">
+                <div class="w-14 h-14 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Search Voter List</h3>
+                <p class="text-gray-400 text-sm">Search your name in the electoral roll.</p>
+            </a>
+            
+            <!-- Service 5 -->
+            <a href="{% if current_user.is_authenticated %}{{ url_for('voter.service_form', service_type='blo_call') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-orange-500">
+                <div class="w-14 h-14 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Book BLO Call</h3>
+                <p class="text-gray-400 text-sm">Schedule a call with your Booth Level Officer.</p>
+            </a>
+            
+            <!-- Service 6 -->
+            <a href="{% if current_user.is_authenticated %}{{ url_for('voter.service_form', service_type='appeal') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="glass-panel p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-t-4 border-t-red-500">
+                <div class="w-14 h-14 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Submit Appeal</h3>
+                <p class="text-gray-400 text-sm">File an appeal against application rejection.</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="py-12 bg-white/5 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] opacity-30"></div>
+    
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        <div class="text-center mb-8">
+            <h2 class="font-display text-4xl font-bold text-white mb-4">How It Works</h2>
+            <p class="text-gray-400">Four simple steps to become a registered voter.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <!-- Step 1 -->
+            <div class="relative text-center group">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-dark border border-white/10 flex items-center justify-center text-3xl text-electric mb-6 shadow-glow group-hover:-translate-y-2 transition-transform duration-300">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="absolute top-10 left-1/2 w-full h-0.5 bg-white/10 -z-10 hidden md:block"></div>
+                <h3 class="text-lg font-bold text-white mb-2">1. Register</h3>
+                <p class="text-gray-400 text-sm">Create an account and fill Form 6.</p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="relative text-center group">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-dark border border-white/10 flex items-center justify-center text-3xl text-electric mb-6 shadow-glow group-hover:-translate-y-2 transition-transform duration-300">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="absolute top-10 left-1/2 w-full h-0.5 bg-white/10 -z-10 hidden md:block"></div>
+                <h3 class="text-lg font-bold text-white mb-2">2. Upload Docs</h3>
+                <p class="text-gray-400 text-sm">Upload proof of age and residence.</p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="relative text-center group">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-dark border border-white/10 flex items-center justify-center text-3xl text-electric mb-6 shadow-glow group-hover:-translate-y-2 transition-transform duration-300">
+                    <i class="fas fa-search-location"></i>
+                </div>
+                <div class="absolute top-10 left-1/2 w-full h-0.5 bg-white/10 -z-10 hidden md:block"></div>
+                <h3 class="text-lg font-bold text-white mb-2">3. Verification</h3>
+                <p class="text-gray-400 text-sm">BLO verifies your details physically.</p>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="relative text-center group">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-dark border border-white/10 flex items-center justify-center text-3xl text-emerald mb-6 shadow-glow-emerald group-hover:-translate-y-2 transition-transform duration-300">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">4. Approval</h3>
+                <p class="text-gray-400 text-sm">Get your digital EPIC card instantly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BENEFITS -->
+<div class="py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
+                <h2 class="font-display text-4xl font-bold text-white">Why Choose Digital?</h2>
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-electric/10 text-electric flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-1">Secure & Private</h3>
+                            <p class="text-gray-400">Your data is protected with state-of-the-art encryption and strictly used for electoral purposes.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-electric/10 text-electric flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-1">Fast Processing</h3>
+                            <p class="text-gray-400">Automated workflows ensure your application is processed 3x faster than manual submission.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-electric/10 text-electric flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-universal-access"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-1">Accessible to All</h3>
+                            <p class="text-gray-400">Designed for everyone, including senior citizens and PwD, with easy navigation and support.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+                 <div class="absolute -right-20 -top-20 w-64 h-64 bg-electric/10 rounded-full blur-3xl"></div>
+                 <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-peacock/20 rounded-full blur-3xl"></div>
+                 
+                 <div class="relative z-10 text-center space-y-6">
+                     <h3 class="text-2xl font-bold text-white">Select Your Role</h3>
+                     
+                     <div class="grid grid-cols-1 gap-4">
+                         <a href="{{ url_for('auth.login') }}" class="group p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-between">
+                             <div class="flex items-center gap-4">
+                                 <div class="w-10 h-10 rounded-full bg-electric/20 text-electric flex items-center justify-center">
+                                     <i class="fas fa-user"></i>
+                                 </div>
+                                 <div class="text-left">
+                                     <div class="font-bold text-white">Citizen / Voter</div>
+                                     <div class="text-xs text-gray-400">Login to access services</div>
+                                 </div>
+                             </div>
+                             <i class="fas fa-arrow-right text-gray-500 group-hover:text-white transition-colors"></i>
+                         </a>
+                         
+                         <a href="{{ url_for('auth.login') }}" class="group p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-between">
+                             <div class="flex items-center gap-4">
+                                 <div class="w-10 h-10 rounded-full bg-emerald/20 text-emerald flex items-center justify-center">
+                                     <i class="fas fa-user-shield"></i>
+                                 </div>
+                                 <div class="text-left">
+                                     <div class="font-bold text-white">Election Officer</div>
+                                     <div class="text-xs text-gray-400">Admin dashboard access</div>
+                                 </div>
+                             </div>
+                             <i class="fas fa-arrow-right text-gray-500 group-hover:text-white transition-colors"></i>
+                         </a>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ABOUT VRMS SECTION -->
+<div class="py-12 relative">
+    <div class="max-w-5xl mx-auto px-6">
+        <div class="glass-panel p-10 rounded-3xl border border-electric/30 relative overflow-hidden group hover:border-electric/50 transition-all duration-500 shadow-glow-lg">
+            <!-- Decorative Background Elements -->
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-electric/10 rounded-full blur-[80px] group-hover:bg-electric/20 transition-colors duration-700"></div>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-peacock via-electric to-emerald"></div>
+            
+            <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-6 relative z-10">About VRMS</h2>
+            
+            <div class="space-y-4 relative z-10">
+                <p class="text-gray-300 leading-relaxed text-lg">
+                    <span class="text-electric font-semibold">Voter Registration Management System (VRMS)</span> is a secure digital platform designed to streamline voter registration, verification, approval, and E-EPIC generation.
+                </p>
+                <p class="text-gray-300 leading-relaxed text-lg">
+                    The system enables citizens to apply for voter registration online, upload required documents, track application status, and download their <span class="text-white font-medium">Electronic EPIC (E-EPIC)</span> after approval. VRMS ensures transparency, accuracy, and efficiency in the voter onboarding process through secure authentication and administrative verification workflows.
+                </p>
+            </div>
+            
+            <div class="mt-8">
+                <a href="#" class="inline-flex items-center gap-2 text-electric font-bold hover:text-white transition-colors group/link">
+                    Read more 
+                    <i class="fas fa-arrow-right transform group-hover/link:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ PREVIEW -->
+<div class="py-12 bg-white/5 border-t border-white/5">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="font-display text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+        
+        <div class="space-y-4 text-left">
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="font-bold text-white mb-2">How long does it take to get approval?</h3>
+                <p class="text-gray-400 text-sm">Typically, verification takes 7-15 days depending on your constituency and document clarity.</p>
+            </div>
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="font-bold text-white mb-2">Can I register if I live overseas?</h3>
+                <p class="text-gray-400 text-sm">Yes, NRIs can register using Form 6A. You will need your passport details.</p>
+            </div>
+        </div>
+        
+        <div class="mt-10">
+            <a href="{{ url_for('main.faq') }}" class="inline-flex items-center gap-2 text-electric hover:text-white font-bold transition-colors">
+                View All FAQs <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

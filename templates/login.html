@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center relative z-10 py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Cinematic Background Glows (Local to this page for extra depth) -->
+    <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-electric/20 rounded-full blur-[100px] animate-pulse-slow -z-10"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-peacock/20 rounded-full blur-[100px] animate-pulse-slow delay-1000 -z-10"></div>
+
+    <!-- 3D Tilt Card Container -->
+    <div class="w-full max-w-md relative" id="login-card">
+        <!-- Fixed Horizontal Error Bar (Absolute & Independent) -->
+        <div id="login-error-zone" class="absolute -top-20 left-0 w-full flex justify-center z-50 pointer-events-none">
+            <!-- Server-side Flash Messages Injected Here -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="flash-message w-auto max-w-[120%] px-4 py-3 rounded-xl backdrop-blur-xl border flex items-center justify-center gap-2 shadow-2xl pointer-events-auto
+                      {% if category == 'success' %} bg-emerald/20 border-emerald/50 text-emerald-400
+                      {% elif category == 'danger' or category == 'warning' %} bg-red-500/20 border-red-500/50 text-red-400
+                      {% else %} bg-electric/20 border-electric/50 text-electric {% endif %}">
+                      <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' or category == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} text-base"></i>
+                      <span class="font-medium text-xs tracking-wide whitespace-nowrap">{{ message }}</span>
+                    </div>
+                  {% endfor %}
+              {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="glass-panel relative rounded-2xl px-8 pt-8 pb-4 border border-white/10 shadow-2xl backdrop-blur-xl bg-white/5 overflow-hidden transition-all duration-300 group slide-in-bottom tilt-card animate-slide-in" style="animation-delay: 0.1s;">
+            
+            <!-- Role Toggle -->
+            <div class="relative w-full h-14 bg-dark/40 rounded-full p-1.5 flex mb-8 border border-white/5 shadow-inner slide-in-bottom" style="animation-delay: 0.2s;">
+                <!-- Sliding Pill -->
+                <div id="role-pill" class="absolute top-1.5 left-1.5 w-[calc(50%-6px)] h-[calc(100%-12px)] bg-gradient-to-r from-electric to-peacock rounded-full shadow-glow transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-0"></div>
+                
+                <!-- Citizen Button -->
+                <button type="button" onclick="setRole('citizen')" class="relative z-10 w-1/2 h-full flex items-center justify-center text-sm font-bold tracking-wider uppercase transition-colors duration-300 text-white group-citizen cursor-pointer focus:outline-none" id="btn-citizen">
+                    <i class="fas fa-user mr-2"></i> CITIZEN LOGIN
+                </button>
+                
+                <!-- Admin Button -->
+                <button type="button" onclick="setRole('admin')" class="relative z-10 w-1/2 h-full flex items-center justify-center text-sm font-bold tracking-wider uppercase transition-colors duration-300 text-gray-400 hover:text-white group-admin cursor-pointer focus:outline-none" id="btn-admin">
+                    <i class="fas fa-shield-alt mr-2"></i> ADMIN LOGIN
+                </button>
+            </div>
+
+            <!-- Dynamic Header -->
+            <div class="text-center mb-8 transition-all duration-500 slide-in-bottom" style="animation-delay: 0.3s;" id="header-section">
+                <h2 class="text-3xl font-display font-bold text-white mb-2 text-glow transition-all duration-300" id="main-heading">
+                    Welcome to Voter Portal
+                </h2>
+                <p class="text-gray-400 text-sm font-light tracking-wide transition-all duration-300" id="sub-text">
+                    Register or track your application status securely.
+                </p>
+            </div>
+
+            <!-- Standard Login Form -->
+            <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6" id="login-form">
+                {{ form.csrf_token }}
+                {{ form.login_mode(id='login_mode') }}
+                
+                <!-- Input Fields Container -->
+                <div class="space-y-5" id="standard-login-fields">
+                    <!-- Username/Email Field -->
+                    <div class="group/input slide-in-bottom" style="animation-delay: 0.4s;">
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1 transition-colors" id="label-identity">
+                            USER ID / EMAIL
+                        </label>
+                        <div class="relative transform transition-all duration-300 group-hover/input:translate-x-1">
+                            <input type="text" name="username" id="email" class="w-full bg-dark/50 border border-white/10 rounded-xl px-4 py-3.5 pl-12 text-white focus:border-electric focus:ring-1 focus:ring-electric/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner" placeholder="Enter ID or Email" required>
+                            <div id="icon-user-container" class="absolute left-4 top-3.5 text-electric/70 transition-all duration-300 group-focus-within/input:text-electric group-focus-within/input:scale-110">
+                                <i class="fas fa-id-card text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="group/input slide-in-bottom" style="animation-delay: 0.5s;">
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">
+                            Password
+                        </label>
+                        <div class="relative transform transition-all duration-300 group-hover/input:translate-x-1">
+                            <input type="password" name="password" id="password-input" class="w-full bg-dark/50 border border-white/10 rounded-xl px-4 py-3.5 pl-12 pr-12 text-white focus:border-electric focus:ring-1 focus:ring-electric/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner" placeholder="••••••••" required>
+                            <div id="icon-pass-container" class="absolute left-4 top-3.5 text-electric/70 transition-all duration-300 group-focus-within/input:text-electric group-focus-within/input:scale-110">
+                                <i class="fas fa-lock text-lg"></i>
+                            </div>
+                            <!-- Show/Hide Password Toggle (Citizen Only) -->
+                            <button type="button" id="toggle-password" class="absolute right-4 top-3.5 text-gray-500 hover:text-white transition-colors focus:outline-none" onclick="togglePasswordVisibility()">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            
+                            <!-- Forgot Password Link -->
+                            <div id="forgot-password-container" class="absolute -bottom-6 right-0 z-20">
+                                <a href="{{ url_for('auth.forgot_password') }}" class="text-[11px] font-bold text-gray-500 hover:text-electric transition-colors tracking-wide">Forgot password?</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Only: OTP Field (Hidden by default) -->
+                    <div id="otp-container" class="group/input overflow-hidden transition-all duration-500 max-h-0 opacity-0 transform translate-y-4">
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">
+                            Security Key / OTP
+                        </label>
+                        <div class="relative transform transition-all duration-300 group-hover/input:translate-x-1">
+                            <input type="text" name="otp" class="w-full bg-dark/50 border border-white/10 rounded-xl px-4 py-3.5 pr-12 text-white focus:border-electric focus:ring-1 focus:ring-electric/50 outline-none transition-all duration-300 placeholder-gray-600 tracking-[0.2em] font-mono text-center shadow-inner" placeholder="******">
+                            <div id="icon-otp-container" class="absolute right-4 top-3.5 text-electric/70 transition-all duration-300 group-focus-within/input:text-electric group-focus-within/input:scale-110">
+                                <i class="fas fa-key text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Login Fields (Hidden by default) -->
+                <div id="phone-login-fields" class="space-y-5 hidden">
+                    <div class="group/input">
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">
+                            Mobile Number (India 🇮🇳)
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="phone" class="w-full bg-dark/50 border border-white/10 rounded-xl px-4 py-3.5 pl-12 pr-28 text-white focus:border-electric focus:ring-1 focus:ring-electric/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner" placeholder="9876543210">
+                            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-electric/70">
+                                <i class="fas fa-phone-alt text-lg"></i>
+                            </div>
+                            <button type="button" onclick="sendOTP()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-electric hover:bg-peacock text-white text-xs px-3 py-1.5 rounded-lg transition-colors shadow-lg hover:shadow-electric/50">
+                                Send OTP
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recaptcha Container (Moved inside Phone Login) -->
+                    <div id="recaptcha-container" class="flex justify-center my-4"></div>
+                    
+                    <div class="group/input" id="phone-otp-group" style="display:none;">
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">
+                            Enter OTP
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="otp-input" class="w-full bg-dark/50 border border-white/10 rounded-xl px-4 py-3.5 pl-12 text-white focus:border-electric focus:ring-1 focus:ring-electric/50 outline-none transition-all duration-300 placeholder-gray-600 tracking-[0.2em] font-mono text-center shadow-inner" placeholder="******">
+                            <div class="absolute left-4 top-3.5 text-electric/70">
+                                <i class="fas fa-key text-lg"></i>
+                            </div>
+                        </div>
+                        <button type="button" onclick="verifyOTP()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+                            Verify OTP & Login
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button (Standard Login) -->
+                <button type="submit" id="submit-btn" class="relative w-full py-4 mt-3 bg-gradient-to-r from-electric to-peacock rounded-xl font-bold text-white tracking-wide shadow-lg hover:shadow-electric/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 overflow-hidden group/btn slide-in-bottom">
+                    <span class="relative z-10" id="btn-text">Proceed to Login</span>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                </button>
+
+                <!-- Phone Login Toggle -->
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="toggleLoginMethod()" id="toggle-method-btn" class="text-xs font-bold text-electric hover:text-white transition-colors uppercase tracking-wide">
+                        <i class="fas fa-mobile-alt mr-1"></i> Login with Mobile OTP
+                    </button>
+                </div>
+
+                <!-- Footer / Warning -->
+                <div class="mt-6 text-center slide-in-bottom" style="animation-delay: 0.7s;">
+                    <p class="text-xs text-gray-500 transition-all duration-300" id="footer-text">
+                        Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-electric hover:text-white font-bold underline transition-colors">Register</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // --- Global State ---
+    let isPhoneLogin = false; // Moved to top to avoid ReferenceError
+    let currentActiveRole = 'citizen'; // Track active role state
+
+    // Initialize GSAP
+    try {
+        if (typeof gsap !== 'undefined') {
+            gsap.registerPlugin();
+        } else {
+            console.warn("GSAP not loaded");
+        }
+    } catch (e) {
+        console.warn("GSAP init error:", e);
+    }
+
+    // --- Firebase Auth Logic ---
+
+    // Initialize Recaptcha (Invisible or Normal)
+    function initRecaptcha() {
+        console.log("Initializing Recaptcha...");
+        try {
+            if (!window.firebaseAuth) {
+                console.warn("Firebase Auth not ready, retrying...");
+                setTimeout(initRecaptcha, 500);
+                return;
+            }
+
+            // Clear existing if any
+            if(window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+            }
+            
+            window.recaptchaVerifier = new window.firebaseAuth.RecaptchaVerifier(
+                window.firebaseAuth.auth,
+                'recaptcha-container',
+                { 
+                    'size': 'normal',
+                    'callback': (response) => {
+                        console.log("Recaptcha Solved", response);
+                    },
+                    'expired-callback': () => {
+                        console.warn("Recaptcha Expired");
+                        alert("Recaptcha expired, please try again.");
+                    }
+                }
+            );
+            
+            window.recaptchaVerifier.render().then((widgetId) => {
+                window.recaptchaWidgetId = widgetId;
+                console.log("Recaptcha Rendered with ID:", widgetId);
+            });
+            
+        } catch (e) {
+            console.error("Recaptcha Init Failed:", e);
+        }
+    }
+
+    // Send OTP
+    function sendOTP() {
+        const phoneVal = document.getElementById("phone").value;
+        if(!phoneVal) {
+            alert("Please enter a phone number");
+            return;
+        }
+        const phone = "+91" + phoneVal; // Adding India Country Code
+
+        window.firebaseAuth.signInWithPhoneNumber(window.firebaseAuth.auth, phone, window.recaptchaVerifier)
+            .then(confirmationResult => {
+                window.confirmationResult = confirmationResult;
+                alert("OTP Sent");
+                document.getElementById("phone-otp-group").style.display = "block";
+            })
+            .catch(error => {
+                console.error("OTP Error:", error);
+                if (error.code === 'auth/operation-not-allowed') {
+                    alert("SMS Login is not enabled in Firebase Console.\n\nPlease go to Authentication -> Sign-in method -> Phone -> Enable.");
+                } else if (error.code === 'auth/invalid-phone-number') {
+                    alert("Invalid Phone Number.\nPlease enter a valid 10-digit number.");
+                } else if (error.code === 'auth/missing-phone-number') {
+                    alert("Phone number is missing.");
+                } else if (error.code === 'auth/quota-exceeded') {
+                    alert("SMS Quota Exceeded. Please try again later.");
+                } else {
+                    alert("Error sending OTP: " + error.message);
+                }
+                
+                // Reset recaptcha if error
+                if(window.recaptchaVerifier) window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+            });
+    }
+
+    // Verify OTP
+    function verifyOTP() {
+        const otp = document.getElementById("otp-input").value;
+        if(!window.confirmationResult) {
+            alert("Please send OTP first");
+            return;
+        }
+
+        window.confirmationResult.confirm(otp)
+            .then(async (result) => {
+                console.log("Phone Login User:", result.user);
+                
+                // Secure Verification & Sync
+                try {
+                    await window.firebaseAuth.verifyAndSyncUser(result.user);
+                } catch (e) {
+                    console.warn("Sync failed, but proceeding:", e);
+                }
+                
+                alert("Phone Login Success");
+                window.location.href = "{{ url_for('main.dashboard') }}";
+            })
+            .catch(error => {
+                alert("Invalid OTP or Error: " + error.message);
+            });
+    }
+
+    // Auth State Listener
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkAuth = setInterval(() => {
+            if (window.firebaseAuth && window.firebaseAuth.auth) {
+                clearInterval(checkAuth);
+                window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, user => {
+                    if (user) {
+                        console.log("User Logged In", user.uid);
+                    } else {
+                        console.log("User Logged Out");
+                    }
+                });
+            }
+        }, 100);
+    });
+
+    // Logout Helper
+    function logout() {
+        window.firebaseAuth.signOut(window.firebaseAuth.auth).then(() => {
+            alert("Logged Out");
+            window.location.reload();
+        });
+    }
+
+    // --- UI Logic ---
+    // isPhoneLogin is already defined at the top
+
+    function toggleLoginMethod() {
+        console.log("Toggle Button Clicked. Current state:", isPhoneLogin);
+        isPhoneLogin = !isPhoneLogin;
+        
+        const standardFields = document.getElementById('standard-login-fields');
+        const phoneFields = document.getElementById('phone-login-fields');
+        const toggleBtn = document.getElementById('toggle-method-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (!standardFields || !phoneFields || !toggleBtn || !submitBtn) {
+            console.error("Critical: Missing DOM elements for toggle");
+            return;
+        }
+
+        if (isPhoneLogin) {
+            standardFields.classList.add('hidden');
+            phoneFields.classList.remove('hidden');
+            toggleBtn.innerHTML = '<i class="fas fa-envelope mr-1"></i> Login with Email/ID';
+            submitBtn.style.display = 'none'; // Hide standard submit
+            
+            // Initialize Recaptcha if not already done
+            if (!window.recaptchaVerifier) {
+                initRecaptcha();
+            }
+        } else {
+            standardFields.classList.remove('hidden');
+            phoneFields.classList.add('hidden');
+            toggleBtn.innerHTML = '<i class="fas fa-mobile-alt mr-1"></i> Login with Mobile OTP';
+            submitBtn.style.display = 'block';
+        }
+    }
+    
+    // Make it globally accessible and attach listener safely
+    window.toggleLoginMethod = toggleLoginMethod;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('toggle-method-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Extra safety
+                // The onclick attribute might also fire, but this ensures it works.
+                // We rely on the function handling state correctly.
+                // To avoid double-toggling if onclick also fires, we can remove onclick from HTML 
+                // or just rely on this listener if we remove onclick.
+                // For now, let's keep onclick in HTML as primary and this as backup/debug.
+                console.log("Toggle listener fired");
+            });
+        }
+    });
+
+    // Form Submission Handler
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', async function(e) {
+        // Only prevent default if we are in Phone Login mode
+        // Standard login (Citizen/Admin) should proceed normally via Backend
+        if (isPhoneLogin) {
+            e.preventDefault();
+            // Phone login is handled by buttons, not form submit
+            return false;
+        }
+        // Admin or Citizen Email/Password login -> Allow default submission to Flask
+    });
+
+    // --- Original UI Scripts (Animations, Flash Messages) ---
+
+    // Auto-dismiss Server-side Flash Messages
+    document.addEventListener('DOMContentLoaded', () => {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(msg => {
+            gsap.fromTo(msg, 
+                { y: 10, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
+            );
+            setTimeout(() => {
+                gsap.to(msg, {
+                    opacity: 0, y: -10, duration: 0.4, ease: "power2.in",
+                    onComplete: () => msg.remove()
+                });
+            }, 4000);
+        });
+    });
+
+    // Role Management
+    const rolePill = document.getElementById('role-pill');
+    const btnCitizen = document.getElementById('btn-citizen');
+    const btnAdmin = document.getElementById('btn-admin');
+    const otpContainer = document.getElementById('otp-container');
+    const loginModeInput = document.getElementById('login_mode');
+    const submitBtn = document.getElementById('submit-btn');
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const forgotPasswordContainer = document.getElementById('forgot-password-container');
+    const footerText = document.getElementById('footer-text'); // Get footer text element
+
+    function setRole(role, clearInputs = true) {
+        if (loginModeInput) loginModeInput.value = role;
+
+        // Clear existing flash messages & inputs ONLY when manually switching
+        if (clearInputs) {
+            document.querySelectorAll('.flash-message').forEach(el => el.remove());
+            document.querySelectorAll('input:not([type="hidden"])').forEach(input => input.value = '');
+        }
+
+        // Elements to update
+        const mainHeading = document.getElementById('main-heading');
+        const subText = document.getElementById('sub-text');
+        const labelIdentity = document.getElementById('label-identity');
+        const btnText = document.getElementById('btn-text');
+        
+        // Icons
+        const iconUser = document.getElementById('icon-user-container');
+        const iconPass = document.getElementById('icon-pass-container');
+        const iconOtp = document.getElementById('icon-otp-container');
+
+        // Styling
+        if (role === 'admin') {
+            rolePill.style.transform = 'translateX(calc(100% + 12px))'; 
+            rolePill.classList.remove('from-electric', 'to-peacock', 'shadow-glow');
+            rolePill.classList.add('from-emerald', 'to-green-700', 'shadow-glow-emerald');
+            
+            submitBtn.classList.remove('from-electric', 'to-peacock', 'hover:shadow-electric/40');
+            submitBtn.classList.add('from-emerald', 'to-green-700', 'hover:shadow-emerald/40');
+
+            if(togglePasswordBtn) togglePasswordBtn.style.display = 'none';
+            if(forgotPasswordContainer) forgotPasswordContainer.style.display = 'none';
+            if(footerText) footerText.style.display = 'none'; // Hide Register link for Admin
+
+            otpContainer.classList.remove('max-h-0', 'opacity-0', 'translate-y-4');
+            otpContainer.classList.add('max-h-24', 'opacity-100', 'translate-y-0');
+            
+            btnCitizen.classList.replace('text-white', 'text-gray-400');
+            btnAdmin.classList.replace('text-gray-400', 'text-white');
+            
+            // Disable Phone Login for Admin (Optional choice)
+            document.getElementById('toggle-method-btn').style.display = 'none';
+             // Force back to standard if in phone mode
+            if(isPhoneLogin) toggleLoginMethod();
+
+            // --- Admin Specific Text ---
+            if(mainHeading) mainHeading.textContent = "Authorized Officer Access";
+            if(subText) subText.textContent = "Secure gateway for election officials only.";
+            if(labelIdentity) labelIdentity.textContent = "OFFICER ID";
+            if(btnText) btnText.textContent = "Access Administration Panel";
+            
+            const emailInput = document.getElementById('email');
+            if(emailInput) emailInput.placeholder = "Enter Officer ID";
+
+            // --- Admin Specific Icons (Green) ---
+            // Remove blue, add green
+            [iconUser, iconPass, iconOtp].forEach(icon => {
+                if(icon) {
+                    icon.classList.remove('text-electric/70', 'group-focus-within/input:text-electric');
+                    icon.classList.add('text-emerald-400', 'group-focus-within/input:text-emerald-400');
+                }
+            });
+
+            // --- Admin Specific Inputs (Green Focus) ---
+            document.querySelectorAll('input:not([type="hidden"])').forEach(input => {
+                input.classList.remove('focus:border-electric', 'focus:ring-electric/50');
+                input.classList.add('focus:border-emerald-500', 'focus:ring-emerald-500/50');
+            });
+
+        } else {
+            // Citizen
+            rolePill.style.transform = 'translateX(0)';
+            rolePill.classList.add('from-electric', 'to-peacock', 'shadow-glow');
+            rolePill.classList.remove('from-emerald', 'to-green-700', 'shadow-glow-emerald');
+
+            submitBtn.classList.add('from-electric', 'to-peacock', 'hover:shadow-electric/40');
+            submitBtn.classList.remove('from-emerald', 'to-green-700', 'hover:shadow-emerald/40');
+
+            if(togglePasswordBtn) togglePasswordBtn.style.display = 'block';
+            if(forgotPasswordContainer) forgotPasswordContainer.style.display = 'block';
+            if(footerText) footerText.style.display = 'block'; // Show Register link for Citizen
+
+            otpContainer.classList.add('max-h-0', 'opacity-0', 'translate-y-4');
+            otpContainer.classList.remove('max-h-24', 'opacity-100', 'translate-y-0');
+
+            btnCitizen.classList.replace('text-gray-400', 'text-white');
+            btnAdmin.classList.replace('text-white', 'text-gray-400');
+
+            // Enable Phone Login for Citizen
+            document.getElementById('toggle-method-btn').style.display = 'inline-block';
+
+            // --- Citizen Specific Text ---
+            if(mainHeading) mainHeading.textContent = "Welcome to Voter Portal";
+            if(subText) subText.textContent = "Register or track your application status securely.";
+            if(labelIdentity) labelIdentity.textContent = "USER ID / EMAIL";
+            if(btnText) btnText.textContent = "Proceed to Login";
+
+            const emailInput = document.getElementById('email');
+            if(emailInput) emailInput.placeholder = "Enter ID or Email";
+
+             // --- Citizen Specific Icons (Blue) ---
+            [iconUser, iconPass, iconOtp].forEach(icon => {
+                if(icon) {
+                    icon.classList.add('text-electric/70', 'group-focus-within/input:text-electric');
+                    icon.classList.remove('text-emerald-400', 'group-focus-within/input:text-emerald-400');
+                }
+            });
+
+            // --- Citizen Specific Inputs (Blue Focus) ---
+            document.querySelectorAll('input:not([type="hidden"])').forEach(input => {
+                input.classList.add('focus:border-electric', 'focus:ring-electric/50');
+                input.classList.remove('focus:border-emerald-500', 'focus:ring-emerald-500/50');
+            });
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password-input');
+        const icon = document.querySelector('#toggle-password i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Initialize Role based on Server State (Preserves Error Messages & Inputs)
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialMode = loginModeInput && loginModeInput.value ? loginModeInput.value : 'citizen';
+        currentActiveRole = initialMode; // Sync global state with server state
+        // Pass false to prevent clearing the inputs/errors that the server just rendered
+        setRole(initialMode, false);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-12">
+    <!-- Header -->
+    <div class="text-center relative">
+        <h2 class="font-display text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight animate-slide-in opacity-0" style="animation-delay: 0.1s;">
+            Voter <span class="text-electric text-glow">Dashboard</span>
+        </h2>
+        <p class="text-xl text-gray-400 font-light animate-slide-in opacity-0" style="animation-delay: 0.2s;">
+            Welcome, <span class="text-white font-medium">{{ current_user.full_name }}</span>.
+        </p>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        {% if application %}
+            <!-- Status Card -->
+            <div class="glass-panel p-10 rounded-3xl tilt-card relative overflow-hidden animate-slide-in opacity-0" style="animation-delay: 0.3s;">
+                <!-- Status Background Glow -->
+                <div class="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] opacity-20 pointer-events-none
+                    {% if application.status == 'Pending' %} bg-electric
+                    {% elif application.status == 'Approved' %} bg-emerald
+                    {% else %} bg-red-500 {% endif %}">
+                </div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+                    <!-- Status Icon -->
+                    <div class="w-24 h-24 rounded-full flex items-center justify-center shadow-lg border-4 
+                        {% if application.status == 'Pending' %} border-electric/30 bg-electric/10 text-electric animate-pulse-slow
+                        {% elif application.status == 'Approved' %} border-emerald/30 bg-emerald/10 text-emerald animate-pulse
+                        {% else %} border-red-500/30 bg-red-500/10 text-red-500 {% endif %}">
+                        <i class="fas 
+                            {% if application.status == 'Pending' %} fa-hourglass-half
+                            {% elif application.status == 'Approved' %} fa-check
+                            {% else %} fa-times {% endif %} text-4xl"></i>
+                    </div>
+
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold uppercase tracking-widest mb-1 text-gray-400">Application Status</h3>
+                        <h2 class="text-4xl font-display font-bold mb-4
+                            {% if application.status == 'Pending' %} text-electric
+                            {% elif application.status == 'Approved' %} text-emerald text-glow
+                            {% else %} text-red-500 {% endif %}">
+                            {{ application.status }}
+                        </h2>
+                        
+                        {% if application.status == 'Pending' %}
+                            <p class="text-gray-300">Your application is currently under review by our administrative team. You will be notified via email upon any updates.</p>
+                        {% elif application.status == 'Approved' %}
+                            <p class="text-gray-300 mb-4">Congratulations! You are a registered voter. Your digital Voter ID is now active.</p>
+                            <div class="space-y-3">
+                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald/10 border border-emerald/20 text-emerald text-sm font-semibold">
+                                    <i class="fas fa-check-circle"></i> Active Voter
+                                </div>
+                                {% if application.epic_number %}
+                                <div class="p-4 rounded-xl bg-gradient-to-br from-emerald/10 to-teal-500/10 border border-emerald/30 relative overflow-hidden group max-w-sm">
+                                    <div class="absolute right-0 top-0 p-3 opacity-10">
+                                        <i class="fas fa-id-card text-6xl text-emerald"></i>
+                                    </div>
+                                    <p class="text-xs font-bold text-emerald uppercase tracking-wider mb-1">Your EPIC Number</p>
+                                    <p class="text-3xl font-mono font-bold text-white tracking-widest text-glow-emerald">{{ application.epic_number }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="text-gray-300 mb-4">Unfortunately, your application was not approved.</p>
+                            <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-left">
+                                <p class="text-xs font-bold text-red-400 uppercase mb-1">Reason for Rejection</p>
+                                <p class="text-white">{{ application.rejection_reason }}</p>
+                            </div>
+                            <a href="{{ url_for('voter.voter_application') }}" class="inline-block mt-4 text-electric hover:text-white underline transition-colors">Re-submit Application</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-mono">
+                    <span>ID: {{ application._id }}</span>
+                    <span>Submitted: {{ application.submitted_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- CTA Card -->
+            <div class="glass-panel p-6 md:p-12 rounded-3xl text-center tilt-card group animate-slide-in opacity-0" style="animation-delay: 0.3s;">
+                <div class="w-20 h-20 mx-auto bg-gradient-to-br from-peacock to-electric rounded-2xl flex items-center justify-center shadow-glow mb-6 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-file-signature text-white text-3xl"></i>
+                </div>
+                
+                <h2 class="text-3xl font-display font-bold text-white mb-4">Registration Required</h2>
+                <p class="text-gray-400 mb-8 max-w-lg mx-auto">You have not submitted your voter application details yet. Complete your profile to exercise your democratic right.</p>
+                
+                <a href="{{ url_for('voter.voter_application') }}" class="inline-flex items-center gap-3 bg-electric text-dark font-display font-bold text-lg px-8 py-4 rounded-xl hover:bg-white transition-all duration-300 shadow-glow hover:shadow-glow-lg transform hover:-translate-y-1">
+                    <span>Apply Now</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Notifications -->
+    {% if notifications %}
+    <div class="max-w-4xl mx-auto mt-8 animate-slide-in opacity-0" style="animation-delay: 0.4s;">
+        <h3 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fas fa-bell text-electric"></i> Notifications
+        </h3>
+        <div class="space-y-4">
+            {% for notification in notifications %}
+            <div class="glass-panel p-4 rounded-xl flex items-start gap-4 border-l-4 
+                {% if notification.type == 'success' %} border-l-emerald {% elif notification.type == 'error' %} border-l-red-500 {% else %} border-l-electric {% endif %}">
+                <div class="mt-1">
+                     {% if notification.type == 'success' %} <i class="fas fa-check-circle text-emerald"></i>
+                     {% elif notification.type == 'error' %} <i class="fas fa-times-circle text-red-500"></i>
+                     {% else %} <i class="fas fa-info-circle text-electric"></i> {% endif %}
+                </div>
+                <div>
+                    <p class="text-gray-300 text-sm">{{ notification.message }}</p>
+                    <p class="text-gray-500 text-xs mt-1">{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FORMS & SERVICES SECTION -->
+    <div class="max-w-7xl mx-auto mt-16 animate-slide-in opacity-0" style="animation-delay: 0.5s;">
+        
+        <!-- Section Header -->
+        <div class="relative mb-8 p-4 rounded-xl bg-gradient-to-r from-white/10 to-transparent border-l-4 border-electric backdrop-blur-sm">
+            <h3 class="font-display text-2xl font-bold text-white tracking-widest uppercase flex items-center gap-3">
+                <i class="fas fa-file-alt text-electric"></i> Forms
+            </h3>
+        </div>
+
+        <!-- Special Intensive Revision (SIR) – 2026 -->
+        <div class="mb-10 p-6 rounded-2xl bg-red-500/10 border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.15)] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-red-500/10 transition-colors duration-500"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider mb-3 border border-red-500/20 animate-pulse-slow">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span> Top Priority
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-white mb-2">Special Intensive Revision (SIR) – 2026</h3>
+                    <p class="text-gray-400 max-w-2xl">Important notice for all citizens: Check your enrollment status and submit necessary documents for the 2026 electoral roll revision.</p>
+                </div>
+                <div class="flex flex-wrap gap-4 w-full md:w-auto">
+                    <a href="{{ url_for('voter.search_voter_page') }}" class="flex-1 md:flex-none px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/20 transition-all hover:scale-105 flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i> Search Your Name
+                    </a>
+                    <a href="{{ url_for('voter.voter_application') }}" class="flex-1 md:flex-none px-6 py-3 rounded-xl bg-transparent border border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 font-semibold transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-file-upload"></i> Submit Documents
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Form 6: New Voter -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-emerald hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-emerald/10 text-emerald">
+                        <i class="fas fa-user-plus text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM 6</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-emerald transition-colors">New Voter Registration</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">Fill Form 6 if you are 18 years or above or will turn 18 in few months.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('voter.voter_application') }}" class="flex-1 px-4 py-2.5 rounded-lg bg-emerald text-dark font-bold text-sm text-center hover:bg-emerald-400 transition-colors shadow-glow-emerald">
+                        Fill Form 6 <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form6.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Download" target="_blank">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='docs', filename='Form6_Guidelines.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Guidelines" target="_blank">
+                        <i class="fas fa-book"></i>
+                    </a>
+                </div>
+                <div class="mt-3 flex gap-2">
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form6_Declaration.pdf') }}" class="text-xs text-emerald hover:text-emerald-300 hover:underline" target="_blank">Fill Declaration Form</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='PreDraft_Forms.pdf') }}" class="text-xs text-gray-500 hover:text-gray-300 hover:underline" target="_blank">Pre-Draft Forms</a>
+                </div>
+            </div>
+
+            <!-- Form 6A: Overseas (NRI) -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-electric hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-electric/10 text-electric">
+                        <i class="fas fa-plane-departure text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM 6A</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-electric transition-colors">Overseas Registration (NRI)</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">Fill Form 6A if you are a citizen of India and has not acquired citizenship of any other country.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('voter.service_form', service_type='form6a') }}" class="flex-1 px-4 py-2.5 rounded-lg bg-electric text-dark font-bold text-sm text-center hover:bg-cyan-400 transition-colors shadow-glow">
+                        Fill Form 6A <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form6A.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Download" target="_blank">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='docs', filename='Form6A_Guidelines.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Guidelines" target="_blank">
+                        <i class="fas fa-book"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form 7: Deletion -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-red-500 hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-red-500/10 text-red-500">
+                        <i class="fas fa-user-minus text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM 7</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-red-500 transition-colors">Deletion of Name</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">Fill Form 7 to get name deleted from the existing electoral roll.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('voter.service_form', service_type='form7') }}" class="flex-1 px-4 py-2.5 rounded-lg bg-red-500 text-white font-bold text-sm text-center hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20">
+                        Fill Form 7 <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form7.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Download" target="_blank">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='docs', filename='Form7_Guidelines.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Guidelines" target="_blank">
+                        <i class="fas fa-book"></i>
+                    </a>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ url_for('voter.service_form', service_type='form7_overseas') }}" class="text-xs text-red-400 hover:text-red-300 hover:underline">Fill Form 7 Overseas</a>
+                </div>
+            </div>
+
+            <!-- Form 8: Correction -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-amber-500 hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+                        <i class="fas fa-user-edit text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM 8</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-amber-500 transition-colors">Correction of Entries</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">Fill Form 8 to get EPIC updated or replacement or marking of PwD.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('voter.service_form', service_type='form8') }}" class="flex-1 px-4 py-2.5 rounded-lg bg-amber-500 text-dark font-bold text-sm text-center hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20">
+                        Fill Form 8 <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form8.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Download" target="_blank">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a href="{{ url_for('main.download_resource', type='docs', filename='Form8_Guidelines.pdf') }}" class="px-3 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition-colors" title="Guidelines" target="_blank">
+                        <i class="fas fa-book"></i>
+                    </a>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                    <a href="{{ url_for('voter.service_form', service_type='form8_overseas') }}" class="text-amber-500 hover:text-amber-400 hover:underline">Self Correction (Overseas)</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form8_Declaration.pdf') }}" class="text-gray-500 hover:text-gray-300 hover:underline" target="_blank">Declaration Form</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='PreDraft_Forms.pdf') }}" class="text-gray-500 hover:text-gray-300 hover:underline" target="_blank">Pre-Draft Forms</a>
+                </div>
+            </div>
+
+            <!-- Form M: Migrant Electors -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-purple-500 hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-purple-500/10 text-purple-500">
+                        <i class="fas fa-map-marker-alt text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM M</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-purple-500 transition-colors">Migrant Electors (Kashmir)</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">For Migrant Electors of Kashmir to cast vote from special polling stations (Delhi, Jammu, Udhampur).</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='FormM.pdf') }}" class="flex-1 px-4 py-2.5 rounded-lg border border-purple-500 text-purple-400 font-bold text-sm text-center hover:bg-purple-500 hover:text-white transition-all" target="_blank">
+                        <i class="fas fa-download mr-2"></i> Download Form M
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form 12C: Postal Ballot -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-t-indigo-500 hover:bg-white/5 transition-all duration-300 group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-500">
+                        <i class="fas fa-envelope-open-text text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">FORM 12C</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 group-hover:text-indigo-500 transition-colors">Postal Ballot (Migrants)</h4>
+                <p class="text-gray-400 text-sm mb-6 min-h-[40px]">For Migrant Electors of Kashmir who want to cast vote through postal ballot.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('main.download_resource', type='forms', filename='Form12C.pdf') }}" class="flex-1 px-4 py-2.5 rounded-lg border border-indigo-500 text-indigo-400 font-bold text-sm text-center hover:bg-indigo-500 hover:text-white transition-all" target="_blank">
+                        <i class="fas fa-download mr-2"></i> Download Form 12C
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SERVICES SECTION -->
+    <div class="max-w-7xl mx-auto mt-16 animate-slide-in opacity-0" style="animation-delay: 0.6s;">
+        <!-- Header -->
+        <div class="relative mb-8 p-4 rounded-xl bg-gradient-to-r from-electric/20 to-transparent border-l-4 border-electric backdrop-blur-sm">
+             <h3 class="font-display text-2xl font-bold text-white tracking-widest uppercase flex items-center gap-3">
+                <i class="fas fa-concierge-bell text-electric"></i> Services
+            </h3>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- 1. Download Electoral Roll -->
+            <div class="glass-panel p-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 hover:bg-sky-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-file-download text-2xl text-sky-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-sky-400 transition-colors">Download Electoral Roll</h4>
+                        <p class="text-gray-400 text-sm mb-4">Download electoral roll PDF and draft roll for states under SIR</p>
+                        <a href="{{ url_for('main.download_resource', type='docs', filename='Electoral_Roll.pdf') }}" class="inline-flex items-center gap-2 text-sm font-bold text-sky-400 hover:text-white transition-colors" target="_blank">
+                            Download Electoral Roll <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Register Complaint / Share Suggestion -->
+            <div class="glass-panel p-6 rounded-2xl border border-indigo-400/20 bg-indigo-400/5 hover:bg-indigo-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-bullhorn text-2xl text-indigo-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors">Register Complaint/ Share Suggestion</h4>
+                        <p class="text-gray-400 text-sm mb-4">Register complaints or share suggestions related to electoral services</p>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <a href="{{ url_for('voter.service_form', service_type='complaint') }}" class="inline-flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-white transition-colors">
+                                Register Complaint <i class="fas fa-arrow-right text-xs"></i>
+                            </a>
+                            <a href="{{ url_for('main.chatbot') }}" class="text-xs text-gray-500 hover:text-indigo-300 transition-colors flex items-center gap-1">
+                                Chatbot Assistant <i class="fas fa-robot text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Chatbot Icon Decoration -->
+                     <div class="absolute bottom-2 right-2 opacity-80">
+                         <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg">
+                             <i class="fas fa-robot text-white text-sm"></i>
+                         </div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- 3. Track Application Status -->
+            <div class="glass-panel p-6 rounded-2xl border border-amber-400/20 bg-amber-400/5 hover:bg-amber-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-route text-2xl text-amber-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">Track Application Status</h4>
+                        <p class="text-gray-400 text-sm mb-4">Track all your form status here.</p>
+                        <a href="#top" class="inline-flex items-center gap-2 text-sm font-bold text-amber-400 hover:text-white transition-colors">
+                            Track Application Status <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Book a Call with BLO -->
+            <div class="glass-panel p-6 rounded-2xl border border-orange-400/20 bg-orange-400/5 hover:bg-orange-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-headset text-2xl text-orange-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-orange-400 transition-colors">Book a Call with BLO</h4>
+                        <p class="text-gray-400 text-sm mb-4">Book A Call Request With BLO.</p>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <a href="{{ url_for('voter.service_form', service_type='blo_call') }}" class="inline-flex items-center gap-2 text-sm font-bold text-orange-400 hover:text-white transition-colors">
+                                Book Call with BLO <i class="fas fa-arrow-right text-xs"></i>
+                            </a>
+                            <a href="#top" class="text-xs text-gray-500 hover:text-orange-300 transition-colors flex items-center gap-1">
+                                Track Appeal <i class="fas fa-external-link-alt text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Submit Appeal -->
+            <div class="glass-panel p-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 hover:bg-emerald-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-balance-scale text-2xl text-emerald-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">Submit Appeal</h4>
+                        <p class="text-gray-400 text-sm mb-4">Submit appeal against application decision</p>
+                        <a href="{{ url_for('voter.service_form', service_type='appeal') }}" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-white transition-colors">
+                            Submit Appeal <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                    <div class="absolute bottom-2 right-2 opacity-80">
+                         <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
+                             <i class="fas fa-map-marked-alt text-emerald-400 text-sm"></i>
+                         </div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- 6. E-EPIC Download -->
+            <div class="glass-panel p-6 rounded-2xl border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-id-card text-2xl text-cyan-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">E-EPIC Download</h4>
+                        <p class="text-gray-400 text-sm mb-4">Get digital version of your Electoral Photo Identity Card.</p>
+                        <a href="{{ url_for('main.download_resource', type='docs', filename='E_EPIC.pdf') }}" class="inline-flex items-center gap-2 text-sm font-bold text-cyan-400 hover:text-white transition-colors" target="_blank">
+                            Download e-EPIC <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Search Your Name -->
+            <div class="glass-panel p-6 rounded-2xl border border-pink-400/20 bg-pink-400/5 hover:bg-pink-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-search text-2xl text-pink-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-pink-400 transition-colors">Search Your Name in Voter List</h4>
+                        <p class="text-gray-400 text-sm mb-4">Search Your Name in Voter List, Know Your Polling Details, Know Your MP/MLA</p>
+                        <a href="{{ url_for('voter.search_voter_page') }}" class="inline-flex items-center gap-2 text-sm font-bold text-pink-400 hover:text-white transition-colors">
+                            Search Voter Details <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. FAQs -->
+             <div class="glass-panel p-6 rounded-2xl border border-lime-400/20 bg-lime-400/5 hover:bg-lime-400/10 transition-all duration-300 group relative overflow-hidden">
+                <div class="flex items-start gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg shrink-0">
+                        <i class="fas fa-question text-2xl text-lime-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-1 group-hover:text-lime-400 transition-colors">FAQs</h4>
+                        <p class="text-gray-400 text-sm mb-4">Frequently Asked Questions</p>
+                        <a href="{{ url_for('main.faq') }}" class="inline-flex items-center gap-2 text-sm font-bold text-lime-400 hover:text-white transition-colors">
+                            View FAQs <i class="fas fa-external-link-alt text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+    <!-- Real-time Status Polling -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize current status from server-side template
+            const initialStatus = "{{ application.status if application else 'None' }}";
+            let currentStatus = initialStatus;
+            
+            console.log('Dashboard initialized. Current Status:', currentStatus);
+
+            function pollStatus() {
+                fetch('/voter/api/application-status')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Check if status has changed
+                        // We compare strict status strings. 
+                        // Note: 'None' from API means no application found.
+                        if (data.status !== currentStatus) {
+                            console.log(`Status changed! ${currentStatus} -> ${data.status}`);
+                            
+                            // Visual feedback before reload (optional but nice)
+                            const statusCard = document.querySelector('.tilt-card');
+                            if (statusCard) {
+                                statusCard.style.opacity = '0.5';
+                            }
+                            
+                            // Reload page to fetch fresh data (Notifications, Flash messages, Updated UI)
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error polling status:', error);
+                    });
+            }
+
+            // Poll every 3 seconds for near real-time updates
+            setInterval(pollStatus, 3000);
+        });
+    </script>
+{% endblock %}

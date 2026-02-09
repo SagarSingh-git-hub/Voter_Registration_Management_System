@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center relative">
+    <div class="glass-panel p-8 md:p-12 rounded-3xl w-full max-w-md relative z-10 text-center tilt-card animate-slide-in" style="animation-delay: 0.1s;">
+        
+        <div class="w-20 h-20 mx-auto bg-gradient-to-br from-peacock to-electric rounded-full flex items-center justify-center shadow-glow mb-8 animate-pulse-slow">
+            <i class="fas fa-shield-alt text-white text-3xl"></i>
+        </div>
+
+        <h2 class="font-display text-3xl font-bold text-white mb-2 slide-in-bottom" style="animation-delay: 0.2s;">Security Verification</h2>
+        <p class="text-gray-400 font-light mb-8 slide-in-bottom" style="animation-delay: 0.25s;">Please enter the One-Time Password sent to your registered email address.</p>
+        
+        <form method="POST" action="" class="space-y-6">
+            {{ form.hidden_tag() }}
+            
+            <div class="group slide-in-bottom" style="animation-delay: 0.3s;">
+                {{ form.otp(class="w-full bg-white/5 border-2 border-white/10 rounded-xl text-white text-center text-3xl tracking-[1em] font-mono py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow transition-all placeholder-gray-700", placeholder="000000", maxlength="6") }}
+                {% for error in form.otp.errors %}
+                    <span class="text-red-400 text-xs mt-2 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="pt-4 slide-in-bottom" style="animation-delay: 0.4s;">
+                {{ form.submit(class="w-full bg-electric text-dark font-display font-bold text-lg py-4 rounded-xl hover:bg-white transition-all duration-300 shadow-glow transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer") }}
+            </div>
+        </form>
+
+        <p class="mt-6 text-xs text-gray-500 slide-in-bottom" style="animation-delay: 0.5s;">
+            Didn't receive code? <a href="{{ url_for('auth.resend_otp', user_id=user_id) }}" class="text-electric hover:text-white transition-colors">Resend OTP</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

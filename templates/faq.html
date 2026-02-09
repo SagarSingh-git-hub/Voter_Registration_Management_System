@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="min-h-screen pt-12 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+    
+    <!-- Back Button -->
+    <div class="max-w-7xl mx-auto mb-12">
+        <button onclick="window.history.back()" class="inline-flex items-center text-gray-400 hover:text-electric transition-colors group">
+            <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+            <span class="font-medium">Back</span>
+        </button>
+    </div>
+
+    <!-- 1. PAGE HEADER -->
+    <div class="max-w-7xl mx-auto text-center mb-6">
+        <h1 class="text-4xl font-display font-bold text-white mb-2">Frequently Asked Questions</h1>
+        <p class="text-lg text-gray-400 max-w-2xl mx-auto">Find answers related to voter registration, elections, and electoral processes.</p>
+    </div>
+
+    <!-- 2. SEARCH BAR -->
+    <div class="max-w-3xl mx-auto mb-8 relative">
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400 text-lg group-hover:text-electric transition-colors"></i>
+            </div>
+            <input type="text" 
+                   id="faqSearch" 
+                   placeholder="Search FAQs (e.g., 'eligibility', 'EVM', 'Form 6')" 
+                   class="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-electric focus:border-transparent focus:bg-white/10 shadow-glow-sm transition-all text-lg backdrop-blur-sm"
+            >
+        </div>
+        <p id="noResults" class="hidden text-center text-gray-500 mt-4">No results found matching your query.</p>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- 3. CATEGORY TABS -->
+            <div class="lg:col-span-3"> <!-- Sidebar on desktop, Scrollable top on mobile -->
+                <div class="sticky top-24 space-y-2 overflow-x-auto lg:overflow-visible flex lg:block gap-2 pb-4 lg:pb-0 scrollbar-hide" id="categoryTabs">
+                    {% for category in faq_data %}
+                    <button onclick="switchTab('{{ category.id }}')" 
+                            class="tab-btn group flex items-center justify-between w-full p-4 rounded-xl text-left transition-all duration-200 whitespace-nowrap lg:whitespace-normal border border-transparent hover:bg-white/5 hover:shadow-glow-sm shrink-0 {{ 'bg-gradient-to-r from-peacock to-electric shadow-glow border-white/10' if loop.first else 'bg-white/5 border-white/5 text-gray-400 hover:text-white' }}"
+                            data-tab="{{ category.id }}">
+                        <span class="font-medium {{ 'text-white' if loop.first else 'group-hover:text-electric' }}">{{ category.name }}</span>
+                        <i class="fas fa-chevron-right text-xs opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block {{ 'text-white' if loop.first else 'text-gray-400' }}"></i>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 4. FAQ CONTENT AREA -->
+            <div class="lg:col-span-9 space-y-6 min-h-[500px]" id="faqContainer">
+                {% for category in faq_data %}
+                <div id="{{ category.id }}" class="faq-category-section {{ 'hidden' if not loop.first }} space-y-4 animate-fade-in">
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span class="w-1 h-8 bg-electric rounded-full shadow-glow"></span>
+                        {{ category.name }}
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        {% for faq in category.faqs %}
+                        <div class="faq-item glass-panel rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-glow hover:border-electric/30" data-question="{{ faq.q | lower }}" data-answer="{{ faq.a | lower }}">
+                            <button class="w-full px-6 py-5 text-left flex justify-between items-start gap-4 focus:outline-none" onclick="toggleAccordion(this)">
+                                <span class="font-semibold text-white text-lg group-hover:text-electric transition-colors">{{ faq.q }}</span>
+                                <span class="transform transition-transform duration-300 mt-1 text-gray-400 group-hover:text-electric">
+                                    <i class="fas fa-chevron-down"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out bg-black/20">
+                                <div class="px-6 pb-6 pt-2 text-gray-300 leading-relaxed border-t border-white/5">
+                                    {{ faq.a | safe }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab Switching Logic
+    function switchTab(categoryId) {
+        // Update Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.dataset.tab === categoryId) {
+                // Active State
+                btn.className = 'tab-btn group flex items-center justify-between w-full p-4 rounded-xl text-left transition-all duration-200 whitespace-nowrap lg:whitespace-normal border shrink-0 bg-gradient-to-r from-peacock to-electric shadow-glow border-white/10';
+                btn.querySelector('span').classList.remove('group-hover:text-electric');
+                btn.querySelector('span').classList.add('text-white');
+                const icon = btn.querySelector('.fa-chevron-right');
+                if(icon) icon.className = 'fas fa-chevron-right text-xs opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block text-white';
+            } else {
+                // Inactive State
+                btn.className = 'tab-btn group flex items-center justify-between w-full p-4 rounded-xl text-left transition-all duration-200 whitespace-nowrap lg:whitespace-normal border shrink-0 bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/5 hover:shadow-glow-sm';
+                btn.querySelector('span').classList.add('group-hover:text-electric');
+                btn.querySelector('span').classList.remove('text-white');
+                const icon = btn.querySelector('.fa-chevron-right');
+                if(icon) icon.className = 'fas fa-chevron-right text-xs opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block text-gray-400';
+            }
+        });
+
+        // Show/Hide Sections
+        document.querySelectorAll('.faq-category-section').forEach(section => {
+            if (section.id === categoryId) {
+                section.classList.remove('hidden');
+                section.classList.add('animate-fade-in');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+
+        // Clear search on tab switch
+        const searchInput = document.getElementById('faqSearch');
+        if (searchInput.value) {
+            searchInput.value = '';
+            filterFAQs(''); 
+        }
+    }
+
+    // Accordion Logic
+    function toggleAccordion(button) {
+        const item = button.parentElement;
+        const answer = item.querySelector('.faq-answer');
+        const icon = button.querySelector('.fa-chevron-down');
+        const title = button.querySelector('span.font-semibold');
+        
+        const isOpen = item.classList.contains('active');
+
+        // Close others
+        document.querySelectorAll('.faq-item').forEach(otherItem => {
+            if (otherItem !== item) {
+                otherItem.classList.remove('active');
+                otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                const otherIcon = otherItem.querySelector('.fa-chevron-down');
+                const otherTitle = otherItem.querySelector('span.font-semibold');
+                if (otherIcon) {
+                    otherIcon.style.transform = 'rotate(0deg)';
+                    otherIcon.classList.remove('text-electric');
+                }
+                if (otherTitle) otherTitle.classList.remove('text-electric');
+            }
+        });
+
+        if (!isOpen) {
+            item.classList.add('active');
+            answer.style.maxHeight = answer.scrollHeight + "px";
+            icon.style.transform = 'rotate(180deg)';
+            icon.classList.add('text-electric');
+            title.classList.add('text-electric');
+        } else {
+            item.classList.remove('active');
+            answer.style.maxHeight = null;
+            icon.style.transform = 'rotate(0deg)';
+            icon.classList.remove('text-electric');
+            title.classList.remove('text-electric');
+        }
+    }
+
+    // Search Logic
+    const searchInput = document.getElementById('faqSearch');
+    searchInput.addEventListener('input', (e) => {
+        filterFAQs(e.target.value.toLowerCase());
+    });
+
+    function filterFAQs(query) {
+        const allSections = document.querySelectorAll('.faq-category-section');
+        const allItems = document.querySelectorAll('.faq-item');
+        const noResults = document.getElementById('noResults');
+        const tabsContainer = document.getElementById('categoryTabs');
+        
+        if (!query) {
+            tabsContainer.classList.remove('opacity-50', 'pointer-events-none');
+            // Find active tab by checking class
+            const activeTabBtn = document.querySelector('.tab-btn.bg-gradient-to-r'); 
+            const activeId = activeTabBtn ? activeTabBtn.dataset.tab : 'resident_electors';
+            switchTab(activeId);
+            
+            allItems.forEach(item => item.classList.remove('hidden'));
+            noResults.classList.add('hidden');
+            return;
+        }
+
+        tabsContainer.classList.add('opacity-50', 'pointer-events-none');
+        
+        let hasResults = false;
+
+        allSections.forEach(section => {
+            let sectionHasMatch = false;
+            const items = section.querySelectorAll('.faq-item');
+            
+            items.forEach(item => {
+                const q = item.dataset.question;
+                const a = item.dataset.answer;
+                
+                if (q.includes(query) || a.includes(query)) {
+                    item.classList.remove('hidden');
+                    sectionHasMatch = true;
+                    hasResults = true;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            if (sectionHasMatch) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+
+        if (!hasResults) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+</script>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+{% endblock %}
