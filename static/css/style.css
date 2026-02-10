@@ -115,6 +115,10 @@ input:-webkit-autofill:active{
     width: 100%;
 }
 
+.custom-select-container.is-active {
+    z-index: 999;
+}
+
 .custom-select-trigger {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.05); /* Match bg-white/5 */
@@ -173,12 +177,14 @@ input:-webkit-autofill:active{
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(12px); /* Ensure readability */
+    pointer-events: none; /* Prevent clicks when hidden */
 }
 
 .custom-options.is-open {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    pointer-events: auto; /* Enable clicks when open */
 }
 
 .custom-option {
@@ -197,7 +203,8 @@ input:-webkit-autofill:active{
     border-bottom: none;
 }
 
-.custom-option:hover {
+.custom-option:hover,
+.custom-option.focused {
     background-color: rgba(0, 180, 255, 0.1);
     color: #00B4FF;
 }

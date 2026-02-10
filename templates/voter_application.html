@@ -1260,7 +1260,7 @@
             }, 1000);
         }
 
-        // --- CUSTOM DROPDOWN IMPLEMENTATION (From service_form.html) ---
+        // --- CUSTOM DROPDOWN IMPLEMENTATION (Refined) ---
         function initCustomSelect(nativeSelectId, placeholder) {
             const nativeSelect = document.getElementById(nativeSelectId);
             if (!nativeSelect) return;
@@ -1277,6 +1277,7 @@
             // Create Trigger
             const trigger = document.createElement('div');
             trigger.className = 'custom-select-trigger';
+            trigger.setAttribute('tabindex', '0'); // Enable keyboard focus
             
             // Determine initial text
             let initialText = placeholder;
@@ -1293,59 +1294,104 @@
             optionsContainer.className = 'custom-options';
             container.appendChild(optionsContainer);
 
-            // Toggle Dropdown
-            function toggleDropdown(open) {
-                if (open) {
-                    // Close others first
-                    document.querySelectorAll('.custom-options').forEach(opt => {
-                        if (opt !== optionsContainer) {
-                            opt.classList.remove('is-open');
-                            opt.previousElementSibling.classList.remove('is-open');
-                            // Reset z-index of other containers/groups
-                            const otherContainer = opt.closest('.custom-select-container');
-                            if (otherContainer) {
-                                otherContainer.style.zIndex = 'auto';
-                                const otherGroup = otherContainer.closest('.group');
-                                if (otherGroup) {
-                                    otherGroup.style.zIndex = ''; 
-                                    otherGroup.style.position = '';
-                                }
-                            }
-                        }
-                    });
+            let focusedIndex = -1;
 
+            // Helper to toggle state
+            function setOpen(isOpen) {
+                if (isOpen) {
+                    container.classList.add('is-active');
                     optionsContainer.classList.add('is-open');
                     trigger.classList.add('is-open');
                     
-                    // Boost Z-Index to ensure it floats above other fields
-                    container.style.zIndex = '100';
-                    const parentGroup = container.closest('.group');
-                    if (parentGroup) {
-                        parentGroup.style.zIndex = '50';
-                        parentGroup.style.position = 'relative'; // Ensure z-index works
+                    // Reset focus index based on selection
+                    const selected = optionsContainer.querySelector('.custom-option.selected');
+                    const allOptions = Array.from(optionsContainer.querySelectorAll('.custom-option'));
+                    if (selected) {
+                        focusedIndex = allOptions.indexOf(selected);
+                    } else {
+                        focusedIndex = -1;
                     }
+                    if (focusedIndex >= 0) highlightOption(focusedIndex);
+
                 } else {
+                    // Delay removing z-index to allow animation to finish
+                    setTimeout(() => container.classList.remove('is-active'), 200);
                     optionsContainer.classList.remove('is-open');
                     trigger.classList.remove('is-open');
-                    
-                    // Reset Z-Index delay slightly to allow transition
-                    setTimeout(() => {
-                        if (!optionsContainer.classList.contains('is-open')) {
-                            container.style.zIndex = 'auto';
-                            const parentGroup = container.closest('.group');
-                            if (parentGroup) {
-                                parentGroup.style.zIndex = '';
-                                parentGroup.style.position = '';
-                            }
-                        }
-                    }, 200);
+                    focusedIndex = -1;
+                    clearHighlights();
                 }
             }
 
+            function highlightOption(index) {
+                const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                allOptions.forEach((opt, i) => {
+                    if (i === index) {
+                        opt.classList.add('focused');
+                        opt.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        opt.classList.remove('focused');
+                    }
+                });
+            }
+
+            function clearHighlights() {
+                optionsContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('focused'));
+            }
+
+            // Toggle Dropdown
             trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isOpen = optionsContainer.classList.contains('is-open');
-                toggleDropdown(!isOpen);
+                
+                // Close other dropdowns
+                document.querySelectorAll('.custom-options').forEach(opt => {
+                    if (opt !== optionsContainer) {
+                        opt.classList.remove('is-open');
+                        opt.previousElementSibling.classList.remove('is-open');
+                        const otherContainer = opt.closest('.custom-select-container');
+                        if (otherContainer) otherContainer.classList.remove('is-active');
+                    }
+                });
+
+                const willOpen = !optionsContainer.classList.contains('is-open');
+                setOpen(willOpen);
+            });
+
+            // Keyboard Navigation
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (optionsContainer.classList.contains('is-open')) {
+                        if (focusedIndex >= 0) {
+                            const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                            if (allOptions[focusedIndex]) allOptions[focusedIndex].click();
+                        } else {
+                            setOpen(false);
+                        }
+                    } else {
+                        setOpen(true);
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!optionsContainer.classList.contains('is-open')) setOpen(true);
+                    const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                    if (focusedIndex < allOptions.length - 1) {
+                        focusedIndex++;
+                        highlightOption(focusedIndex);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!optionsContainer.classList.contains('is-open')) setOpen(true);
+                    if (focusedIndex > 0) {
+                        focusedIndex--;
+                        highlightOption(focusedIndex);
+                    }
+                } else if (e.key === 'Escape') {
+                    setOpen(false);
+                    trigger.focus();
+                } else if (e.key === 'Tab') {
+                    setOpen(false);
+                }
             });
 
             // Handle Label Click
@@ -1354,15 +1400,17 @@
                 label.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const isOpen = optionsContainer.classList.contains('is-open');
-                    toggleDropdown(!isOpen);
+                    const willOpen = !optionsContainer.classList.contains('is-open');
+                    setOpen(willOpen);
                 });
             }
 
             // Close when clicking outside
             document.addEventListener('click', (e) => {
                 if (!container.contains(e.target) && (!label || !label.contains(e.target))) {
-                    toggleDropdown(false);
+                    if (optionsContainer.classList.contains('is-open')) {
+                        setOpen(false);
+                    }
                 }
             });
 
@@ -1396,7 +1444,7 @@
                         trigger.classList.add('has-value');
                         
                         // Close Dropdown
-                        toggleDropdown(false);
+                        setOpen(false);
                         
                         // Update Selection Styling
                         optionsContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
@@ -1404,6 +1452,15 @@
 
                         // Remove error state if any
                         trigger.classList.remove('border-red-500', 'animate-pulse');
+                        trigger.focus();
+                    });
+
+                    // Mouse interaction
+                    customOption.addEventListener('mouseenter', () => {
+                        const allOptions = Array.from(optionsContainer.querySelectorAll('.custom-option'));
+                        focusedIndex = allOptions.indexOf(customOption);
+                        clearHighlights();
+                        customOption.classList.add('focused');
                     });
 
                     optionsContainer.appendChild(customOption);

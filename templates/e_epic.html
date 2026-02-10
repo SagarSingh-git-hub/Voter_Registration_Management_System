@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="min-h-screen pt-16 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="max-w-3xl mx-auto">
         
         <!-- Header -->
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-display font-bold text-white mb-3">Download e-EPIC</h1>
+        <div class="text-center mb-5">
+            <h1 class="text-4xl font-display font-bold text-white mb-2">Download e-EPIC</h1>
             <p class="text-lg text-gray-400">Electronic Electors Photo Identity Card</p>
         </div>
 
@@ -32,15 +32,7 @@
             </div>
 
             <div class="p-8">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="mb-6 p-4 rounded-xl {{ 'bg-red-500/20 text-red-200 border border-red-500/30' if category == 'danger' else 'bg-blue-500/20 text-blue-200 border border-blue-500/30' }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+
 
                 {% if step == 'login' %}
                 <!-- Step 1: Login -->
@@ -98,38 +90,67 @@
                     </div>
 
                     <!-- Digital Card Preview -->
-                    <div class="bg-white text-gray-900 rounded-lg p-6 max-w-md mx-auto shadow-2xl relative overflow-hidden border-2 border-navy-900">
-                        <!-- Watermark -->
-                        <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none transform -rotate-45">
-                            <span class="text-6xl font-bold">ECI</span>
-                        </div>
-                        
-                        <!-- Header -->
-                        <div class="text-center border-b-2 border-gray-200 pb-4 mb-4">
-                            <h3 class="font-bold text-xl text-blue-900">ELECTION COMMISSION OF INDIA</h3>
-                            <p class="font-semibold text-sm text-gray-600">ELECTOR'S PHOTO IDENTITY CARD</p>
-                        </div>
+                    <div class="relative w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-2xl border border-electric/20 bg-gradient-to-br from-gray-900 via-[#0F4C75] to-black group hover:border-electric/40 transition-all duration-500">
+                        <!-- Background Effects -->
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                        <div class="absolute -top-24 -left-24 w-64 h-64 bg-electric/10 rounded-full blur-3xl"></div>
+                        <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-peacock/40 rounded-full blur-3xl"></div>
 
-                        <div class="flex gap-4">
-                            <!-- Photo Placeholder -->
-                            <div class="w-24 h-32 bg-gray-200 border border-gray-300 flex items-center justify-center flex-shrink-0">
-                                <span class="text-xs text-gray-500">PHOTO</span>
+                        <!-- Content -->
+                        <div class="relative z-10 p-6">
+                            <!-- Header -->
+                            <div class="text-center mb-6">
+                                <h3 class="font-display font-bold text-lg text-white tracking-wide uppercase">Election Commission of India</h3>
+                                <p class="text-xs text-electric/80 uppercase tracking-widest mt-1">Elector's Photo Identity Card</p>
+                            </div>
+                            
+                            <!-- Divider -->
+                            <div class="h-px w-full bg-gradient-to-r from-transparent via-electric/50 to-transparent mb-6"></div>
+
+                            <div class="flex gap-5">
+                                <!-- Photo Placeholder -->
+                                <div class="w-28 h-36 bg-black/30 border border-electric/20 rounded-sm flex items-center justify-center flex-shrink-0 backdrop-blur-sm shadow-inner relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/40"></div>
+                                    <div class="text-center relative z-10">
+                                        <i class="fas fa-user text-4xl text-electric/40 mb-2"></i>
+                                        <p class="text-[10px] text-electric/50 uppercase tracking-wider">Photo</p>
+                                    </div>
+                                </div>
+
+                                <!-- Details -->
+                                <div class="space-y-3 text-sm flex-1">
+                                    <div>
+                                        <span class="block text-gray-400 text-xs font-medium mb-0.5">Name</span>
+                                        <span class="block text-white font-display font-semibold tracking-wide text-base">{{ voter.full_name }}</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <span class="block text-gray-400 text-xs font-medium mb-0.5">EPIC No</span>
+                                        <span class="block text-electric font-bold tracking-wider font-mono text-base shadow-glow-sm">{{ voter.voter_id_number }}</span>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <span class="block text-gray-400 text-xs font-medium mb-0.5">Gender</span>
+                                            <span class="block text-white/90">{{ voter.gender }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-gray-400 text-xs font-medium mb-0.5">DOB</span>
+                                            <span class="block text-white/90">{{ voter.dob }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                         <span class="block text-gray-400 text-xs font-medium mb-0.5">Constituency</span>
+                                         <span class="block text-white/90 leading-tight text-xs">{{ voter.assembly_constituency }}</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Details -->
-                            <div class="space-y-1 text-sm flex-1">
-                                <p><span class="font-bold text-gray-600">Name:</span> <span class="font-semibold">{{ voter.full_name }}</span></p>
-                                <p><span class="font-bold text-gray-600">EPIC No:</span> <span class="font-bold text-blue-800">{{ voter.voter_id_number }}</span></p>
-                                <p><span class="font-bold text-gray-600">Gender:</span> {{ voter.gender }}</p>
-                                <p><span class="font-bold text-gray-600">DOB:</span> {{ voter.dob }}</p>
-                                <p><span class="font-bold text-gray-600">Constituency:</span></p>
-                                <p class="text-xs">{{ voter.assembly_constituency }}</p>
+                            <!-- Footer -->
+                            <div class="mt-6 pt-4 border-t border-white/5 text-center">
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider">This is a computer generated digital card.</p>
                             </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="mt-6 pt-4 border-t border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">This is a computer generated digital card.</p>
                         </div>
                     </div>
 

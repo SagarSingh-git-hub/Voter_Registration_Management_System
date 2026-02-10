@@ -23,32 +23,53 @@ def login():
         return redirect(url_for('e_epic.index'))
     
     # Try to find in final_voters first (approved voters)
-    # If not found, check applications (pending/rejected) for better error messaging
     voter = mongo.db.final_voters.find_one({
         "$or": [{"voter_id_number": identifier}, {"phone": identifier}]
     })
     
+    # DEMO/MOCK LOGIC: If not found, create a mock voter to ensure flow continuity as requested
+    is_demo = False
     if not voter:
-        # Check applications for better error messaging
+        # Check applications just to get some real data if available, otherwise pure mock
         application = mongo.db.voter_applications.find_one({
              "$or": [{"voter_id_number": identifier}, {"phone": identifier}]
         })
         
         if application:
-             status = application.get('status', 'pending')
-             flash(f'Your application found but status is: {status.upper()}. Approval required for E-EPIC.', 'warning')
-             return redirect(url_for('e_epic.index'))
+             # Use application data for the mock
+             voter = {
+                 "voter_id_number": application.get('voter_id_number', 'APP1234567'),
+                 "full_name": application.get('name', 'Applicant User'),
+                 "phone": application.get('phone', identifier),
+                 "dob": application.get('dob', '01-01-2000'),
+                 "gender": application.get('gender', 'Unknown'),
+                 "assembly_constituency": application.get('constituency', 'Delhi Cantt'),
+                 "part_number": "N/A",
+                 "serial_number": "N/A"
+             }
         else:
-             flash('No voter record found with these details.', 'danger')
-             return redirect(url_for('e_epic.index'))
-    
+             # Pure mock
+             voter = {
+                 "voter_id_number": identifier if ' ' not in identifier else 'DEMO123456',
+                 "full_name": "Demo Voter",
+                 "phone": identifier,
+                 "dob": "01-01-1995",
+                 "gender": "Male",
+                 "assembly_constituency": "New Delhi",
+                 "part_number": "42",
+                 "serial_number": "101"
+             }
+        is_demo = True
+
     # Generate OTP
     otp = generate_otp()
     session['e_epic_otp'] = otp
     session['e_epic_identifier'] = identifier
+    session['is_demo_voter'] = is_demo
     # In production, store this securely with expiry
     
     # Mock sending OTP
+    print(f"OTP for {identifier}: {otp}") # Console log for debug
     flash(f'OTP sent to your registered mobile. (DEV: {otp})', 'info')
     
     return render_template('e_epic.html', step='otp', identifier=identifier)
@@ -59,6 +80,39 @@ def verify():
     if entered_otp == session.get('e_epic_otp'):
         identifier = session.get('e_epic_identifier')
         
+        # Check if this is a demo/mock user
+        if session.get('is_demo_voter'):
+            # Recreate mock/application voter data
+            application = mongo.db.voter_applications.find_one({
+                 "$or": [{"voter_id_number": identifier}, {"phone": identifier}]
+            })
+            
+            if application:
+                 session_voter = {
+                     "full_name": application.get('name', 'Applicant User'),
+                     "voter_id_number": application.get('voter_id_number', 'APP1234567'),
+                     "dob": application.get('dob', '01-01-2000'),
+                     "gender": application.get('gender', 'Unknown'),
+                     "assembly_constituency": application.get('constituency', 'Delhi Cantt'),
+                     "part_number": "N/A",
+                     "serial_number": "N/A",
+                     "phone": application.get('phone', identifier)
+                 }
+            else:
+                 session_voter = {
+                     "full_name": "Demo Voter",
+                     "voter_id_number": identifier if ' ' not in identifier else 'DEMO123456',
+                     "dob": "01-01-1995",
+                     "gender": "Male",
+                     "assembly_constituency": "New Delhi",
+                     "part_number": "42",
+                     "serial_number": "101",
+                     "phone": identifier
+                 }
+            
+            session['e_epic_voter'] = session_voter
+            return render_template('e_epic.html', step='preview', voter=session_voter)
+
         # Fetch voter details again
         voter = mongo.db.final_voters.find_one({
             "$or": [{"voter_id_number": identifier}, {"phone": identifier}]
@@ -113,19 +167,23 @@ def download():
         return redirect(url_for('e_epic.index'))
         
     # Fetch fresh data from DB
-    voter = mongo.db.final_voters.find_one({"voter_id_number": voter_id})
-    if not voter:
-        flash('Security Alert: Voter record mismatch. Please login again.', 'danger')
-        return redirect(url_for('e_epic.index'))
+    if session.get('is_demo_voter'):
+        voter = session_voter
+    else:
+        voter = mongo.db.final_voters.find_one({"voter_id_number": voter_id})
+        if not voter:
+            flash('Security Alert: Voter record mismatch. Please login again.', 'danger')
+            return redirect(url_for('e_epic.index'))
 
-    # Log the download history
-    mongo.db.e_epic_downloads.insert_one({
-        "voter_id_number": voter.get('voter_id_number'),
-        "full_name": voter.get('full_name'),
-        "downloaded_at": datetime.now(),
-        "ip_address": request.remote_addr,
-        "user_agent": request.user_agent.string
-    })
+    # Log the download history (Skip or mark for demo)
+    if not session.get('is_demo_voter'):
+        mongo.db.e_epic_downloads.insert_one({
+            "voter_id_number": voter.get('voter_id_number'),
+            "full_name": voter.get('full_name'),
+            "downloaded_at": datetime.now(),
+            "ip_address": request.remote_addr,
+            "user_agent": request.user_agent.string
+        })
 
     # Generate PDF
     buffer = io.BytesIO()

@@ -21,14 +21,24 @@
     <div class="max-w-4xl mx-auto mb-12">
         <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all">
             
-            <!-- Search Type Toggle -->
-            <div class="flex gap-4 mb-6 border-b border-white/10 pb-4">
-                <button onclick="toggleSearchType('details')" id="btnDetails" class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-electric text-white shadow-lg">
-                    Search by Details
-                </button>
-                <button onclick="toggleSearchType('epic')" id="btnEpic" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">
-                    Search by EPIC No.
-                </button>
+            <!-- Search Type Toggle (Premium Glassmorphism) -->
+            <div class="flex justify-center mb-10">
+                <div class="relative inline-flex bg-black/40 backdrop-blur-xl rounded-full p-1.5 border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] group hover:border-white/20 transition-all duration-300">
+                    <!-- Sliding Glider -->
+                    <div id="toggleGlider" class="absolute top-1.5 left-1.5 bottom-1.5 w-64 bg-gradient-to-r from-electric to-blue-600 shadow-[0_0_20px_rgba(0,180,255,0.4)] rounded-full transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) border border-white/20 z-0">
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full opacity-50"></div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <button onclick="toggleSearchType('details')" id="btnDetails" class="relative z-10 w-64 py-2.5 rounded-full text-sm font-display font-bold transition-colors duration-300 text-white tracking-wide flex items-center justify-center gap-2">
+                        <i class="fas fa-user-edit text-lg"></i>
+                        Search by Details
+                    </button>
+                    <button onclick="toggleSearchType('epic')" id="btnEpic" class="relative z-10 w-64 py-2.5 rounded-full text-sm font-display font-bold transition-colors duration-300 text-gray-400 hover:text-white tracking-wide flex items-center justify-center gap-2">
+                        <i class="fas fa-id-card text-lg"></i>
+                        Search by EPIC No.
+                    </button>
+                </div>
             </div>
 
             <!-- Search Form: Details -->
@@ -47,11 +57,35 @@
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">State</label>
                     <select id="stateInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                         <option value="" class="bg-dark">Select State</option>
+                        <option value="Andhra Pradesh" class="bg-dark">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh" class="bg-dark">Arunachal Pradesh</option>
+                        <option value="Assam" class="bg-dark">Assam</option>
+                        <option value="Bihar" class="bg-dark">Bihar</option>
+                        <option value="Chhattisgarh" class="bg-dark">Chhattisgarh</option>
                         <option value="Delhi" class="bg-dark">Delhi</option>
-                        <option value="Maharashtra" class="bg-dark">Maharashtra</option>
-                        <option value="Uttar Pradesh" class="bg-dark">Uttar Pradesh</option>
+                        <option value="Goa" class="bg-dark">Goa</option>
+                        <option value="Gujarat" class="bg-dark">Gujarat</option>
+                        <option value="Haryana" class="bg-dark">Haryana</option>
+                        <option value="Himachal Pradesh" class="bg-dark">Himachal Pradesh</option>
+                        <option value="Jharkhand" class="bg-dark">Jharkhand</option>
                         <option value="Karnataka" class="bg-dark">Karnataka</option>
-                        <!-- Add more states as needed -->
+                        <option value="Kerala" class="bg-dark">Kerala</option>
+                        <option value="Madhya Pradesh" class="bg-dark">Madhya Pradesh</option>
+                        <option value="Maharashtra" class="bg-dark">Maharashtra</option>
+                        <option value="Manipur" class="bg-dark">Manipur</option>
+                        <option value="Meghalaya" class="bg-dark">Meghalaya</option>
+                        <option value="Mizoram" class="bg-dark">Mizoram</option>
+                        <option value="Nagaland" class="bg-dark">Nagaland</option>
+                        <option value="Odisha" class="bg-dark">Odisha</option>
+                        <option value="Punjab" class="bg-dark">Punjab</option>
+                        <option value="Rajasthan" class="bg-dark">Rajasthan</option>
+                        <option value="Sikkim" class="bg-dark">Sikkim</option>
+                        <option value="Tamil Nadu" class="bg-dark">Tamil Nadu</option>
+                        <option value="Telangana" class="bg-dark">Telangana</option>
+                        <option value="Tripura" class="bg-dark">Tripura</option>
+                        <option value="Uttar Pradesh" class="bg-dark">Uttar Pradesh</option>
+                        <option value="Uttarakhand" class="bg-dark">Uttarakhand</option>
+                        <option value="West Bengal" class="bg-dark">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -65,7 +99,7 @@
                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                 </div>
                  <div class="flex items-end">
-                    <button type="button" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
+                    <button type="button" id="btnSearchDetails" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
                         <i class="fas fa-search"></i> Search Records
                     </button>
                 </div>
@@ -118,27 +152,38 @@
         
         const btnDetails = document.getElementById('btnDetails');
         const btnEpic = document.getElementById('btnEpic');
+        const glider = document.getElementById('toggleGlider');
         const formDetails = document.getElementById('searchByDetails');
         const formEpic = document.getElementById('searchByEpic');
 
         if (type === 'details') {
-            btnDetails.classList.add('bg-electric', 'text-white', 'shadow-lg');
-            btnDetails.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            // Glider Animation
+            if(glider) glider.style.transform = 'translateX(0)';
             
-            btnEpic.classList.remove('bg-electric', 'text-white', 'shadow-lg');
-            btnEpic.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            // Text Colors
+            btnDetails.classList.remove('text-gray-400');
+            btnDetails.classList.add('text-white');
             
+            btnEpic.classList.add('text-gray-400');
+            btnEpic.classList.remove('text-white');
+            
+            // Form Visibility
             formDetails.classList.remove('hidden');
             formDetails.classList.add('grid');
             formEpic.classList.add('hidden');
             formEpic.classList.remove('flex');
         } else {
-            btnEpic.classList.add('bg-electric', 'text-white', 'shadow-lg');
-            btnEpic.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            // Glider Animation
+            if(glider) glider.style.transform = 'translateX(100%)';
             
-            btnDetails.classList.remove('bg-electric', 'text-white', 'shadow-lg');
-            btnDetails.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+            // Text Colors
+            btnEpic.classList.remove('text-gray-400');
+            btnEpic.classList.add('text-white');
             
+            btnDetails.classList.add('text-gray-400');
+            btnDetails.classList.remove('text-white');
+            
+            // Form Visibility
             formEpic.classList.remove('hidden');
             formEpic.classList.add('flex');
             formDetails.classList.add('hidden');
@@ -303,6 +348,218 @@
         `;
         return div;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        function initCustomSelect(nativeSelectId, placeholder, options = {}) {
+            const nativeSelect = document.getElementById(nativeSelectId);
+            if (!nativeSelect) return;
+
+            // Hide native select
+            nativeSelect.style.display = 'none';
+
+            // Create Container
+            const container = document.createElement('div');
+            container.className = 'custom-select-container';
+            nativeSelect.parentNode.insertBefore(container, nativeSelect);
+            container.appendChild(nativeSelect); // Move native select inside for cleaner DOM
+
+            // Create Trigger
+            const trigger = document.createElement('div');
+            trigger.className = 'custom-select-trigger';
+            trigger.setAttribute('tabindex', '0'); // Enable keyboard focus
+            
+            // Determine initial text
+            let initialText = placeholder;
+            if (nativeSelect.selectedIndex >= 0 && nativeSelect.options[nativeSelect.selectedIndex].value) {
+                initialText = nativeSelect.options[nativeSelect.selectedIndex].text;
+                trigger.classList.add('has-value');
+            }
+            
+            trigger.innerHTML = `<span>${initialText}</span><i class="fas fa-chevron-down"></i>`;
+            container.appendChild(trigger);
+
+            // Create Options Container
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'custom-options';
+            container.appendChild(optionsContainer);
+
+            let focusedIndex = -1;
+
+            // Helper to toggle state
+            function setOpen(isOpen) {
+                if (isOpen) {
+                    container.classList.add('is-active');
+                    optionsContainer.classList.add('is-open');
+                    trigger.classList.add('is-open');
+                    
+                    // Reset focus index based on selection
+                    const selected = optionsContainer.querySelector('.custom-option.selected');
+                    const allOptions = Array.from(optionsContainer.querySelectorAll('.custom-option'));
+                    if (selected) {
+                        focusedIndex = allOptions.indexOf(selected);
+                    } else {
+                        focusedIndex = -1;
+                    }
+                    if (focusedIndex >= 0) highlightOption(focusedIndex);
+
+                } else {
+                    // Delay removing z-index to allow animation to finish
+                    setTimeout(() => container.classList.remove('is-active'), 200);
+                    optionsContainer.classList.remove('is-open');
+                    trigger.classList.remove('is-open');
+                    focusedIndex = -1;
+                    clearHighlights();
+                }
+                if (options.onToggle) options.onToggle(isOpen);
+            }
+
+            function highlightOption(index) {
+                const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                allOptions.forEach((opt, i) => {
+                    if (i === index) {
+                        opt.classList.add('focused');
+                        opt.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        opt.classList.remove('focused');
+                    }
+                });
+            }
+
+            function clearHighlights() {
+                optionsContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('focused'));
+            }
+
+            // Toggle Dropdown
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Close other dropdowns
+                document.querySelectorAll('.custom-options').forEach(opt => {
+                    if (opt !== optionsContainer) {
+                        opt.classList.remove('is-open');
+                        opt.previousElementSibling.classList.remove('is-open');
+                        const otherContainer = opt.closest('.custom-select-container');
+                        if (otherContainer) otherContainer.classList.remove('is-active');
+                    }
+                });
+
+                const willOpen = !optionsContainer.classList.contains('is-open');
+                setOpen(willOpen);
+            });
+
+            // Keyboard Navigation
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (optionsContainer.classList.contains('is-open')) {
+                        if (focusedIndex >= 0) {
+                            const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                            if (allOptions[focusedIndex]) allOptions[focusedIndex].click();
+                        } else {
+                            setOpen(false);
+                        }
+                    } else {
+                        setOpen(true);
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!optionsContainer.classList.contains('is-open')) setOpen(true);
+                    const allOptions = optionsContainer.querySelectorAll('.custom-option');
+                    if (focusedIndex < allOptions.length - 1) {
+                        focusedIndex++;
+                        highlightOption(focusedIndex);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!optionsContainer.classList.contains('is-open')) setOpen(true);
+                    if (focusedIndex > 0) {
+                        focusedIndex--;
+                        highlightOption(focusedIndex);
+                    }
+                } else if (e.key === 'Escape') {
+                    setOpen(false);
+                    trigger.focus();
+                } else if (e.key === 'Tab') {
+                    setOpen(false);
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    if (optionsContainer.classList.contains('is-open')) {
+                        setOpen(false);
+                    }
+                }
+            });
+
+            // Expose update function to refresh options from native select
+            container.updateOptions = function() {
+                optionsContainer.innerHTML = '';
+                
+                Array.from(nativeSelect.options).forEach(opt => {
+                    if (opt.disabled || opt.value === "") return;
+
+                    const customOption = document.createElement('div');
+                    customOption.className = 'custom-option';
+                    customOption.textContent = opt.text;
+                    customOption.dataset.value = opt.value;
+                    
+                    if (opt.selected) {
+                        customOption.classList.add('selected');
+                    }
+
+                    customOption.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Update Native Select
+                        nativeSelect.value = customOption.dataset.value;
+                        
+                        // Trigger Change Event on Native Select
+                        const event = new Event('change', { bubbles: true });
+                        nativeSelect.dispatchEvent(event);
+
+                        // Update Trigger UI
+                        trigger.querySelector('span').textContent = customOption.textContent;
+                        trigger.classList.add('has-value');
+                        
+                        // Close Dropdown
+                        setOpen(false);
+                        
+                        // Update Selection Styling
+                        optionsContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                        customOption.classList.add('selected');
+                        trigger.focus();
+                    });
+
+                    // Mouse interaction
+                    customOption.addEventListener('mouseenter', () => {
+                        const allOptions = Array.from(optionsContainer.querySelectorAll('.custom-option'));
+                        focusedIndex = allOptions.indexOf(customOption);
+                        clearHighlights();
+                        customOption.classList.add('focused');
+                    });
+
+                    optionsContainer.appendChild(customOption);
+                });
+            };
+
+            // Initial population
+            container.updateOptions();
+
+            return container;
+        }
+
+        // Initialize UI wrappers
+        initCustomSelect('stateInput', 'Select State', {
+            onToggle: (isOpen) => {
+                const btn = document.getElementById('btnSearchDetails');
+                if (btn) {
+                    // Use visibility: hidden to preserve layout space, avoiding jumps
+                    btn.style.visibility = isOpen ? 'hidden' : 'visible';
+                }
+            }
+        });
+    });
 </script>
 
 <style>
@@ -312,6 +569,143 @@
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Custom Select Styles */
+    .custom-select-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .custom-select-container.is-active {
+        z-index: 50;
+    }
+
+    .custom-select-trigger {
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.05); /* Match bg-white/5 */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem; /* 12px */
+        padding: 0.75rem 1rem; /* Match py-3 px-4 */
+        color: #d1d5db; /* gray-300 */
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        user-select: none;
+    }
+
+    .custom-select-trigger.has-value {
+        color: white;
+    }
+
+    .custom-select-trigger:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-select-trigger.is-open {
+        border-color: #00f2ea; /* Electric Blue */
+        box-shadow: 0 0 15px rgba(0, 242, 234, 0.15);
+        background-color: #0F172A;
+    }
+
+    .custom-select-trigger i {
+        transition: transform 0.3s ease;
+        color: #6b7280;
+    }
+
+    .custom-select-trigger.is-open i {
+        transform: rotate(180deg);
+        color: #00f2ea;
+    }
+
+    .custom-options {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background-color: #0F172A; /* Slate 900 - Solid Background */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        z-index: 100; /* High Z-Index */
+        max-height: 300px;
+        overflow-y: auto;
+        overscroll-behavior: contain; /* Prevent scroll chaining */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-options.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .custom-option {
+        padding: 12px 16px;
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    
+    .custom-option:last-child {
+        border-bottom: none;
+    }
+
+    .custom-option:hover {
+        background-color: rgba(0, 242, 234, 0.1); /* Electric Blue with opacity */
+        color: #00f2ea;
+        padding-left: 20px; /* Subtle shift */
+    }
+
+    .custom-option.selected {
+        background-color: rgba(0, 242, 234, 0.15);
+        color: white;
+        font-weight: 500;
+    }
+    
+    .custom-option.selected::after {
+        content: '\f00c';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: #00f2ea;
+        font-size: 0.8rem;
+    }
+
+    /* Custom Scrollbar - Slim & Minimal */
+    .custom-options::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-options::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-options::-webkit-scrollbar-thumb {
+        background: rgba(0, 242, 234, 0.2); /* Soft Electric Blue */
+        border-radius: 10px;
+        transition: background 0.2s ease;
+    }
+
+    .custom-options::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 242, 234, 0.5); /* Brighter on hover */
+    }
+
+    /* Firefox Scrollbar Support */
+    .custom-options {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 242, 234, 0.2) transparent;
     }
 </style>
 {% endblock %}
