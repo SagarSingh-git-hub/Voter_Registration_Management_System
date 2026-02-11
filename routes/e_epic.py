@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from datetime import datetime
+import base64
 
 e_epic = Blueprint('e_epic', __name__)
 
@@ -45,7 +46,8 @@ def login():
                  "gender": application.get('gender', 'Unknown'),
                  "assembly_constituency": application.get('constituency', 'Delhi Cantt'),
                  "part_number": "N/A",
-                 "serial_number": "N/A"
+                 "serial_number": "N/A",
+                 "mother_name": application.get('relative_name') if application.get('relative_type') == 'Mother' else ""
              }
         else:
              # Pure mock
@@ -96,7 +98,8 @@ def verify():
                      "assembly_constituency": application.get('constituency', 'Delhi Cantt'),
                      "part_number": "N/A",
                      "serial_number": "N/A",
-                     "phone": application.get('phone', identifier)
+                     "phone": application.get('phone', identifier),
+                     "mother_name": application.get('relative_name') if application.get('relative_type') == 'Mother' else ""
                  }
             else:
                  session_voter = {
@@ -111,7 +114,12 @@ def verify():
                  }
             
             session['e_epic_voter'] = session_voter
-            return render_template('e_epic.html', step='preview', voter=session_voter)
+            qr_data = f"EPIC:{session_voter.get('voter_id_number')}|Name:{session_voter.get('full_name')}"
+            _buf = io.BytesIO()
+            qrcode.make(qr_data).save(_buf, format="PNG")
+            _buf.seek(0)
+            qr_b64 = base64.b64encode(_buf.read()).decode("ascii")
+            return render_template('e_epic.html', step='preview', voter=session_voter, qr_png_b64=qr_b64)
 
         # Fetch voter details again
         voter = mongo.db.final_voters.find_one({
@@ -146,11 +154,17 @@ def verify():
             "assembly_constituency": voter.get("assembly_constituency"),
             "part_number": voter.get("part_number", ""),
             "serial_number": voter.get("serial_number", ""),
-            "phone": voter.get("phone", "")
+            "phone": voter.get("phone", ""),
+            "mother_name": voter.get("mother_name", "")
         }
             
         session['e_epic_voter'] = session_voter
-        return render_template('e_epic.html', step='preview', voter=session_voter)
+        qr_data = f"EPIC:{session_voter.get('voter_id_number')}|Name:{session_voter.get('full_name')}"
+        _buf = io.BytesIO()
+        qrcode.make(qr_data).save(_buf, format="PNG")
+        _buf.seek(0)
+        qr_b64 = base64.b64encode(_buf.read()).decode("ascii")
+        return render_template('e_epic.html', step='preview', voter=session_voter, qr_png_b64=qr_b64)
     else:
         flash('Invalid OTP. Please try again.', 'danger')
         return render_template('e_epic.html', step='otp', identifier=session.get('e_epic_identifier'))

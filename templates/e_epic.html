@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="min-h-screen pt-16 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-[1100px] mx-auto">
         
         <!-- Header -->
         <div class="text-center mb-5">
@@ -89,68 +89,85 @@
                         <p class="text-gray-400 mt-2">Please verify your details before downloading.</p>
                     </div>
 
-                    <!-- Digital Card Preview -->
-                    <div class="relative w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-2xl border border-electric/20 bg-gradient-to-br from-gray-900 via-[#0F4C75] to-black group hover:border-electric/40 transition-all duration-500">
-                        <!-- Background Effects -->
-                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-                        <div class="absolute -top-24 -left-24 w-64 h-64 bg-electric/10 rounded-full blur-3xl"></div>
-                        <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-peacock/40 rounded-full blur-3xl"></div>
-
-                        <!-- Content -->
-                        <div class="relative z-10 p-6">
-                            <!-- Header -->
-                            <div class="text-center mb-6">
-                                <h3 class="font-display font-bold text-lg text-white tracking-wide uppercase">Election Commission of India</h3>
-                                <p class="text-xs text-electric/80 uppercase tracking-widest mt-1">Elector's Photo Identity Card</p>
-                            </div>
-                            
-                            <!-- Divider -->
-                            <div class="h-px w-full bg-gradient-to-r from-transparent via-electric/50 to-transparent mb-6"></div>
-
-                            <div class="flex gap-5">
-                                <!-- Photo Placeholder -->
-                                <div class="w-28 h-36 bg-black/30 border border-electric/20 rounded-sm flex items-center justify-center flex-shrink-0 backdrop-blur-sm shadow-inner relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/40"></div>
-                                    <div class="text-center relative z-10">
-                                        <i class="fas fa-user text-4xl text-electric/40 mb-2"></i>
-                                        <p class="text-[10px] text-electric/50 uppercase tracking-wider">Photo</p>
-                                    </div>
+                    <div class="relative mx-auto w-[85.6mm] h-[54mm] bg-white rounded-3xl shadow-2xl ring-1 ring-gray-200 overflow-hidden">
+                        <div class="absolute inset-0 origin-top-left scale-[0.319] w-[1012px] h-[638px]">
+                        <div class="px-8 pt-8">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-md bg-slate-100 ring-1 ring-gray-200 shadow-sm flex items-center justify-center overflow-hidden">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Emblem_of_India.svg/64px-Emblem_of_India.svg.png" alt="Emblem of India" class="w-10 h-10 object-contain" />
                                 </div>
+                                <div class="text-center flex-1">
+                                    <h3 class="font-display font-bold text-xl text-slate-900 tracking-[0.25em] uppercase">ELECTION COMMISSION OF INDIA</h3>
+                                </div>
+                                <div class="w-12 h-8 rounded-md bg-slate-100 ring-1 ring-gray-200 shadow-sm flex items-center justify-center overflow-hidden">
+                                    <img src="https://flagcdn.com/w40/in.png" alt="India Flag" class="w-10 h-6 object-cover" />
+                                </div>
+                            </div>
+                            <div class="mt-4 h-px w-full bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                            <div class="mt-6">
+                                <div class="inline-flex flex-col rounded-xl bg-slate-50 ring-1 ring-gray-200 shadow-sm px-4 py-3">
+                                    <span class="text-xs text-slate-500 font-medium tracking-wider">EPIC No.</span>
+                                    <span class="text-slate-900 font-bold font-mono text-xl tracking-wider">{{ voter.voter_id_number }}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <!-- Details -->
-                                <div class="space-y-3 text-sm flex-1">
-                                    <div>
-                                        <span class="block text-gray-400 text-xs font-medium mb-0.5">Name</span>
-                                        <span class="block text-white font-display font-semibold tracking-wide text-base">{{ voter.full_name }}</span>
-                                    </div>
-                                    
-                                    <div>
-                                        <span class="block text-gray-400 text-xs font-medium mb-0.5">EPIC No</span>
-                                        <span class="block text-electric font-bold tracking-wider font-mono text-base shadow-glow-sm">{{ voter.voter_id_number }}</span>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <span class="block text-gray-400 text-xs font-medium mb-0.5">Gender</span>
-                                            <span class="block text-white/90">{{ voter.gender }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="block text-gray-400 text-xs font-medium mb-0.5">DOB</span>
-                                            <span class="block text-white/90">{{ voter.dob }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                         <span class="block text-gray-400 text-xs font-medium mb-0.5">Constituency</span>
-                                         <span class="block text-white/90 leading-tight text-xs">{{ voter.assembly_constituency }}</span>
+                        <div class="px-8 pb-8 pt-6 grid grid-cols-12 gap-8 items-start">
+                            <div class="col-span-12 md:col-span-4">
+                                <div class="relative">
+                                    <div class="absolute -inset-2 rounded-3xl bg-sky-100/60 blur-xl"></div>
+                                    <div class="relative w-40 h-52 md:w-48 md:h-60 bg-white ring-2 ring-sky-200 rounded-2xl shadow-xl flex items-center justify-center">
+                                        <div class="absolute inset-2 rounded-xl ring-1 ring-slate-300"></div>
+                                        {% if voter.photo_url %}
+                                            <img src="{{ voter.photo_url }}" alt="Photo" class="relative z-10 w-28 h-36 object-cover rounded-md"/>
+                                        {% else %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" class="relative z-10 w-28 h-36">
+                                                <rect x="0" y="0" width="128" height="160" fill="none"/>
+                                                <circle cx="64" cy="44" r="22" fill="#f6bfa7"/>
+                                                <path d="M42 52c2-16 12-26 22-26s20 10 22 26c-6 4-14 6-22 6s-16-2-22-6z" fill="#111827"/>
+                                                <path d="M24 120c4-20 24-32 40-32s36 12 40 32v16H24z" fill="#111827"/>
+                                                <path d="M32 118c6-10 18-18 32-18s26 8 32 18v18H32z" fill="#374151"/>
+                                                <path d="M58 74h12c8 0 14 6 14 14v8H44v-8c0-8 6-14 14-14z" fill="#f6bfa7"/>
+                                                <rect x="44" y="96" width="40" height="10" fill="#6b7280"/>
+                                            </svg>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Footer -->
-                            <div class="mt-6 pt-4 border-t border-white/5 text-center">
-                                <p class="text-[10px] text-gray-500 uppercase tracking-wider">This is a computer generated digital card.</p>
+                            <div class="col-span-12 md:col-span-6 space-y-6">
+                                <div class="space-y-1">
+                                    <div class="text-xs text-slate-500 font-medium">Name</div>
+                                    <div class="text-3xl md:text-4xl font-extrabold text-slate-900">{{ voter.full_name }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="text-xs text-slate-500 font-medium">Mother's Name</div>
+                                    <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ voter.mother_name if voter.mother_name is defined and voter.mother_name else '-' }}</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-8">
+                                    <div class="space-y-1">
+                                        <div class="text-xs text-slate-500 font-medium">Gender</div>
+                                        <div class="text-slate-900 font-semibold">{{ voter.gender }}</div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <div class="text-xs text-slate-500 font-medium">Date of Birth</div>
+                                        <div class="text-slate-900 font-semibold">{{ voter.dob }}</div>
+                                    </div>
+                                </div>
                             </div>
+                            <div class="col-span-12 md:col-span-2">
+                                <div class="rounded-2xl bg-white ring-1 ring-gray-200 shadow-lg p-4 flex flex-col items-center">
+                                    <img src="data:image/png;base64,{{ qr_png_b64 }}" alt="QR code" class="w-28 h-28 rounded-md" />
+                                    <span class="text-[10px] text-slate-500 mt-2 tracking-wider">Scan for verification</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-8 pb-0">
+                            <div class="pt-0 text-center">
+                                <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                                <p class="mt-0 text-[11px] text-slate-700 tracking-[0.28em] uppercase font-semibold">E-ELECTORS PHOTO IDENTITY CARD</p>
+                            </div>
+                        </div>
                         </div>
                     </div>
 
