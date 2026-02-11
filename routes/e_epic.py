@@ -9,6 +9,8 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors
 from datetime import datetime
 import base64
+import requests
+from reportlab.lib.utils import ImageReader
 
 e_epic = Blueprint('e_epic', __name__)
 
@@ -199,66 +201,91 @@ def download():
             "user_agent": request.user_agent.string
         })
 
-    # Generate PDF
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-    
-    # Draw Background/Watermark
-    c.saveState()
-    c.setFillColor(colors.grey)
-    c.setFont("Helvetica-Bold", 60)
-    c.translate(width/2, height/2)
-    c.rotate(45)
-    c.setFillAlpha(0.1)
-    c.drawCentredString(0, 0, "ELECTION COMMISSION OF INDIA")
-    c.restoreState()
-    
-    # Header
-    c.setFillColor(colors.navy)
-    c.setFont("Helvetica-Bold", 20)
-    c.drawCentredString(width/2, height - 100, "ELECTION COMMISSION OF INDIA")
-    
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width/2, height - 130, "ELECTOR'S PHOTO IDENTITY CARD")
-    
-    # Border
-    c.setStrokeColor(colors.navy)
-    c.setLineWidth(2)
-    c.rect(50, height - 400, width - 100, 320)
-    
-    # Photo Placeholder
-    c.rect(70, height - 250, 100, 120)
+    m = 36
+    card_w = width - 2 * m
+    card_h = 380
+    card_x = m
+    card_y = height - m - card_h
+    c.setFillColor(colors.white)
+    c.rect(card_x, card_y, card_w, card_h, fill=1, stroke=0)
+    try:
+        emblem = requests.get("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Emblem_of_India.svg/128px-Emblem_of_India.svg.png", timeout=3)
+        emblem_img = ImageReader(io.BytesIO(emblem.content)) if emblem.status_code == 200 else None
+    except:
+        emblem_img = None
+    try:
+        flag = requests.get("https://flagcdn.com/w80/in.png", timeout=3)
+        flag_img = ImageReader(io.BytesIO(flag.content)) if flag.status_code == 200 else None
+    except:
+        flag_img = None
+    if emblem_img:
+        c.drawImage(emblem_img, card_x + 10, card_y + card_h - 38, width=28, height=28, mask="auto")
+    if flag_img:
+        c.drawImage(flag_img, card_x + card_w - 50, card_y + card_h - 34, width=40, height=24, mask="auto")
+    c.setFillColor(colors.HexColor("#0f172a"))
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(card_x + card_w / 2, card_y + card_h - 22, "ELECTION COMMISSION OF INDIA")
+    c.setStrokeColor(colors.HexColor("#e5e7eb"))
+    c.setLineWidth(1)
+    c.line(card_x + 10, card_y + card_h - 40, card_x + card_w - 10, card_y + card_h - 40)
+    c.setFillColor(colors.HexColor("#f1f5f9"))
+    c.rect(card_x + 20, card_y + card_h - 90, 180, 48, fill=1, stroke=0)
+    c.setFillColor(colors.HexColor("#0f172a"))
     c.setFont("Helvetica", 10)
-    c.drawCentredString(120, height - 200, "PHOTO")
-    
-    # Details
+    c.drawString(card_x + 32, card_y + card_h - 66, "EPIC No.")
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(card_x + 32, card_y + card_h - 78, voter.get("voter_id_number"))
+    c.setStrokeColor(colors.HexColor("#bae6fd"))
+    c.setLineWidth(2)
+    c.rect(card_x + 20, card_y + card_h - 300, 170, 210, fill=0, stroke=1)
+    c.setStrokeColor(colors.HexColor("#94a3b8"))
+    c.rect(card_x + 30, card_y + card_h - 290, 150, 190, fill=0, stroke=1)
+    c.setFont("Helvetica", 10)
+    c.setFillColor(colors.HexColor("#334155"))
+    c.drawString(card_x + 220, card_y + card_h - 110, "Name")
+    c.setFont("Helvetica-Bold", 20)
+    c.setFillColor(colors.HexColor("#0f172a"))
+    c.drawString(card_x + 220, card_y + card_h - 134, voter.get("full_name"))
+    c.setFont("Helvetica", 10)
+    c.setFillColor(colors.HexColor("#334155"))
+    c.drawString(card_x + 220, card_y + card_h - 164, "Mother's Name")
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(200, height - 180, f"Name: {voter.get('full_name')}")
-    c.drawString(200, height - 210, f"EPIC No: {voter.get('voter_id_number')}")
-    c.drawString(200, height - 240, f"Gender: {voter.get('gender')}")
-    c.drawString(200, height - 270, f"DOB: {voter.get('dob')}")
-    c.drawString(200, height - 300, f"Constituency: {voter.get('assembly_constituency')}")
-    
-    # QR Code (In-memory)
+    c.setFillColor(colors.HexColor("#0f172a"))
+    c.drawString(card_x + 220, card_y + card_h - 182, voter.get("mother_name", ""))
+    c.setFont("Helvetica", 10)
+    c.setFillColor(colors.HexColor("#334155"))
+    c.drawString(card_x + 220, card_y + card_h - 212, "Gender")
+    c.drawString(card_x + 360, card_y + card_h - 212, "Date of Birth")
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColor(colors.HexColor("#0f172a"))
+    c.drawString(card_x + 220, card_y + card_h - 230, voter.get("gender"))
+    c.drawString(card_x + 360, card_y + card_h - 230, voter.get("dob"))
     qr_data = f"EPIC:{voter.get('voter_id_number')}|Name:{voter.get('full_name')}"
     qr = qrcode.make(qr_data)
     qr_buffer = io.BytesIO()
     qr.save(qr_buffer, format="PNG")
     qr_buffer.seek(0)
-    
-    from reportlab.lib.utils import ImageReader
     qr_image = ImageReader(qr_buffer)
-    c.drawImage(qr_image, width - 180, height - 250, width=100, height=100)
-    
-    # Footer
-    c.setFont("Helvetica", 10)
-    c.drawCentredString(width/2, height - 380, "This is a computer generated digital card.")
-    c.drawCentredString(width/2, height - 395, f"Downloaded on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
+    c.setFillColor(colors.white)
+    c.rect(card_x + card_w - 140, card_y + card_h - 220, 110, 110, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#e2e8f0"))
+    c.rect(card_x + card_w - 140, card_y + card_h - 220, 110, 110, fill=0, stroke=1)
+    c.drawImage(qr_image, card_x + card_w - 132, card_y + card_h - 212, width=94, height=94)
+    c.setFont("Helvetica", 8)
+    c.setFillColor(colors.HexColor("#64748b"))
+    c.drawCentredString(card_x + card_w - 85, card_y + card_h - 228, "Scan for verification")
+    c.setStrokeColor(colors.HexColor("#e5e7eb"))
+    c.line(card_x + 10, card_y + 26, card_x + card_w - 10, card_y + 26)
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(colors.HexColor("#334155"))
+    c.drawCentredString(card_x + card_w / 2, card_y + 12, "E-ELECTORS PHOTO IDENTITY CARD")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(colors.HexColor("#475569"))
+    c.drawCentredString(width / 2, m - 10, f"Downloaded on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     c.showPage()
     c.save()
-    
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"e-epic_{voter.get('voter_id_number')}.pdf", mimetype='application/pdf')
