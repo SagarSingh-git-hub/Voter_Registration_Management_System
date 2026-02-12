@@ -224,8 +224,7 @@
                     <!-- PIN Code -->
                     <div class="group">
                         {{ form.pin_code.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
-                        {{ form.pin_code(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXXX", maxlength="6", inputmode="numeric", list="pincode-list") }}
-                        <datalist id="pincode-list"></datalist>
+                        {{ form.pin_code(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXXX", maxlength="6", inputmode="numeric") }}
                         {% for error in form.pin_code.errors %}
                             <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
                         {% endfor %}
@@ -334,6 +333,25 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+    /* Hide PIN Code spinner and appearance */
+    #pin_code {
+        -moz-appearance: textfield;
+        appearance: none;
+    }
+    #pin_code::-webkit-outer-spin-button,
+    #pin_code::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    #pin_code::-ms-expand {
+        display: none;
+    }
+    #pin_code::-webkit-calendar-picker-indicator {
+        display: none !important;
+        -webkit-appearance: none;
+    }
+</style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- STEPPER LOGIC ---
@@ -1818,32 +1836,72 @@
 
         // Handle State Change to load Districts
         document.getElementById('state').addEventListener('change', function() {
-            loadDistricts(this.value);
+            const state = this.value;
+            loadDistricts(state);
+            
+            // Clear district and pincode selection on state change
+            const districtSelect = document.getElementById('district');
+            districtSelect.value = '';
+            if (csDistrict && csDistrict.updateOptions) csDistrict.updateOptions();
+            
+            const pinInput = document.getElementById('pin_code');
+            if (pinInput) pinInput.value = '';
         });
 
-        // Handle Pin Code Auto-lookup
+        // Handle District Change to load PIN Code
+        document.getElementById('district').addEventListener('change', async function() {
+            const district = this.value;
+            const state = document.getElementById('state').value;
+            const pinInput = document.getElementById('pin_code');
+            
+            if (district && state && pinInput) {
+                try {
+                    const response = await fetch(`/voter/api/pincodes?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+                    const pincodes = await response.json();
+                    if (pincodes && pincodes.length > 0) {
+                        pinInput.value = pincodes[0]; // Set first PIN as default
+                        // Trigger lookup for constituencies based on auto-filled PIN
+                        pinInput.dispatchEvent(new Event('input'));
+                    } else {
+                        pinInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Error loading pincode:', error);
+                }
+            }
+        });
+
+        // Handle Pin Code Input (Validation and Auto-lookup)
         const pinInput = document.getElementById('pin_code');
         if (pinInput) {
-            pinInput.addEventListener('change', async function() {
+            pinInput.setAttribute('maxlength', '6');
+            
+            // Strict numeric only validation
+            pinInput.addEventListener('keydown', function(e) {
+                if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                    ((e.keyCode === 65 || e.keyCode === 86 || e.keyCode === 67 || e.keyCode === 88) && (e.ctrlKey === true || e.metaKey === true)) || 
+                    (e.keyCode >= 35 && e.keyCode <= 40)) {
+                    return;
+                }
+                if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                }
+            });
+
+            pinInput.addEventListener('input', async function() {
+                this.value = this.value.replace(/\D/g, '').substring(0, 6);
                 const pin = this.value;
+                
                 if (pin.length === 6) {
                     try {
-                        const response = await fetch(`/voter/api/lookup?pin_code=${pin}`);
+                        const state = document.getElementById('state').value;
+                        const district = document.getElementById('district').value;
+                        const response = await fetch(`/voter/api/lookup?pin_code=${pin}&state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
                         const data = await response.json();
-                        if (data.state) {
-                            const stateSelect = document.getElementById('state');
-                            stateSelect.value = data.state;
-                            stateSelect.dispatchEvent(new Event('change'));
-                            
-                            // Small delay to let districts load
-                            setTimeout(() => {
-                                const distSelect = document.getElementById('district');
-                                distSelect.value = data.district;
-                                if (csDistrict && csDistrict.updateOptions) csDistrict.updateOptions();
-                                
-                                document.getElementById('assembly_constituency').value = data.assembly_constituency;
-                                document.getElementById('loksabha_constituency').value = data.loksabha_constituency;
-                            }, 500);
+                        
+                        if (data.assembly_constituency) {
+                            document.getElementById('assembly_constituency').value = data.assembly_constituency;
+                            document.getElementById('loksabha_constituency').value = data.loksabha_constituency;
                         }
                     } catch (error) {
                         console.error('Error in pin lookup:', error);
