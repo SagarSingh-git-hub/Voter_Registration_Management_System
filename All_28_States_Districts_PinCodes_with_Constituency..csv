@@ -1,0 +1,645 @@
+State,District,Pin Code,Constituency
+Andhra Pradesh,Alluri Sitharama Raju,531001,Araku
+Andhra Pradesh,Anakapalli,531001,"Anakapalli, Visakhapatnam"
+Andhra Pradesh,Anantapuramu,515001,"Anantapur, Hindupur"
+Andhra Pradesh,Annamayya,517001,Tirupati
+Andhra Pradesh,Bapatla,524001,Bapatla
+Andhra Pradesh,Chittoor,517001,"Chittoor, Tirupati"
+Andhra Pradesh,Dr. B.R. Ambedkar Konaseema,533001,Amalapuram
+Andhra Pradesh,East Godavari,533001,"Amalapuram, Kakinada, Rajahmundry"
+Andhra Pradesh,Eluru,534001,Eluru
+Andhra Pradesh,Guntur,522001,"Guntur, Narasaraopet"
+Andhra Pradesh,Kakinada,533001,Kakinada
+Andhra Pradesh,Krishna,521001,"Machilipatnam, Vijayawada"
+Andhra Pradesh,Kurnool,518001,"Kurnool, Nandyal"
+Andhra Pradesh,Nandyal,518001,Nandyal
+Andhra Pradesh,NTR,521001,Vijayawada
+Andhra Pradesh,Palnadu,522001,Narasaraopet
+Andhra Pradesh,Parvathipuram Manyam,531001,Araku
+Andhra Pradesh,Prakasam,524001,"Ongole, Bapatla"
+Andhra Pradesh,Sri Potti Sriramulu Nellore,524001,Nellore
+Andhra Pradesh,Srikakulam,532001,"Srikakulam, Vizianagaram"
+Andhra Pradesh,Tirupati,517001,Tirupati
+Andhra Pradesh,Visakhapatnam,530001,Visakhapatnam
+Andhra Pradesh,Vizianagaram,535001,Vizianagaram
+Andhra Pradesh,West Godavari,534001,"Eluru, Narasapuram"
+Arunachal Pradesh,Anjaw,790101,Arunachal East
+Arunachal Pradesh,Changlang,792101,Arunachal East
+Arunachal Pradesh,Dibang Valley,791101,Arunachal East
+Arunachal Pradesh,East Kameng,792111,Arunachal West
+Arunachal Pradesh,East Siang,792101,Arunachal East
+Arunachal Pradesh,Kamle,791131,Arunachal West
+Arunachal Pradesh,Kra Daadi,791151,Arunachal West
+Arunachal Pradesh,Kurung Kumey,791161,Arunachal West
+Arunachal Pradesh,Lepa Rada,791171,Arunachal West
+Arunachal Pradesh,Lohit,792101,Arunachal East
+Arunachal Pradesh,Longding,792121,Arunachal East
+Arunachal Pradesh,Lower Dibang Valley,791191,Arunachal East
+Arunachal Pradesh,Lower Siang,791201,Arunachal East
+Arunachal Pradesh,Lower Subansiri,791211,Arunachal West
+Arunachal Pradesh,Namsai,792101,Arunachal East
+Arunachal Pradesh,Pakke Kessang,792131,Arunachal West
+Arunachal Pradesh,Papum Pare,790001,Arunachal West
+Arunachal Pradesh,Siang,792141,Arunachal East
+Arunachal Pradesh,Tawang,790101,Arunachal West
+Arunachal Pradesh,Tirap,792121,Arunachal East
+Arunachal Pradesh,Upper Siang,791311,Arunachal East
+Arunachal Pradesh,Upper Subansiri,791321,Arunachal West
+Arunachal Pradesh,West Kameng,790121,Arunachal West
+Arunachal Pradesh,West Siang,791331,Arunachal West
+Assam,Barpeta,781301,Barpeta
+Assam,Bongaigaon,783380,"Barpeta, Kokrajhar"
+Assam,Cachar,788001,Silchar
+Assam,Chirang,91800,Kokrajhar
+Assam,Darrang,781301,Mangaldoi
+Assam,Dhemaji,787057,Lakhimpur
+Assam,Dhubri,783324,Dhubri
+Assam,Dibrugarh,786001,Dibrugarh
+Assam,Dima Hasao,788101,Autonomous District
+Assam,East Kameng,790101,Arunachal West
+Assam,Goalpara,783101,Dhubri
+Assam,Golaghat,785621,"Jorhat, Kaliabor"
+Assam,Hailakandi,788150,Karimganj
+Assam,Hojai,782435,Nowgong
+Assam,Jorhat,785001,Jorhat
+Assam,Kamrup,781101,Gauhati
+Assam,Kamrup Metropolitan,781101,Gauhati
+Assam,Karbi Anglong,782101,Autonomous District
+Assam,Karimganj,788710,Karimganj
+Assam,Kokrajhar,783370,Kokrajhar
+Assam,Lakhimpur,787001,Lakhimpur
+Assam,Longding,792121,Arunachal East
+Assam,Morigaon,782101,Nowgong
+Assam,Nagaon,782001,"Nowgong, Kaliabor"
+Assam,Nalbari,781335,Mangaldoi
+Assam,Sivasagar,785640,"Jorhat, Dibrugarh"
+Assam,Sonitpur,784110,Tezpur
+Assam,Tinsukia,786125,"Dibrugarh, Lakhimpur"
+Assam,Udalguri,787071,Mangaldoi
+Assam,West Karbi Anglong,781101,Autonomous District
+Bihar,Araria,854301,Araria
+Bihar,Arwal,804401,Jahanabad
+Bihar,Aurangabad,824101,Aurangabad
+Bihar,Banka,813201,Banka
+Bihar,Begusarai,851101,Begusarai
+Bihar,Bhagalpur,812001,Bhagalpur
+Bihar,Bhojpur,802301,"Arrah, Buxar"
+Bihar,Buxar,802101,"Buxar, Sasaram"
+Bihar,Darbhanga,846004,"Darbhanga, Madhubani"
+Bihar,East Champaran,845427,East Champaran
+Bihar,Gaya,823001,"Gaya, Aurangabad"
+Bihar,Gopalganj,841428,Gopalganj
+Bihar,Jamui,813111,Munger
+Bihar,Jehanabad,804401,Jahanabad
+Bihar,Jhabua,804401,Ratlam
+Bihar,Khagaria,851204,Khagaria
+Bihar,Katihar,854105,"Katihar, Purnia"
+Bihar,Kishanganj,855101,Kishanganj
+Bihar,Lakhisarai,811311,Munger
+Bihar,Madhepura,852113,Madhepura
+Bihar,Madhubani,847211,Madhubani
+Bihar,Muzaffarpur,842001,"Muzaffarpur, Vaishali"
+Bihar,Nalanda,803101,"Nalanda, Pataliputra"
+Bihar,Nawada,805101,Nawada
+Bihar,Patna,800001,"Pataliputra, Patna Sahib"
+Bihar,Purnia,854301,"Purnia, Katihar"
+Bihar,Rohtas,802112,"Sasaram, Karakat"
+Bihar,Saharsa,852201,Saharsa
+Bihar,Samastipur,848101,"Samastipur, Begusarai"
+Bihar,Saran,841301,"Saran, Maharajganj"
+Bihar,Sheikhpura,811101,Munger
+Bihar,Sheohar,843329,Sitamarhi
+Bihar,Sitamarhi,843301,Sitamarhi
+Bihar,Siwan,841226,"Siwan, Maharajganj"
+Chhattisgarh,Balod,491226,Mahasamund
+Chhattisgarh,Baloda Bazar,493226,Raipur
+Chhattisgarh,Balrampur,497226,Shrawasti
+Chhattisgarh,Bastar,494447,Bastar
+Chhattisgarh,Bemetara,491226,Durg
+Chhattisgarh,Bijapur,494446,Bastar
+Chhattisgarh,Bilaspur,495001,Hamirpur
+Chhattisgarh,Dantewada,494443,Bastar
+Chhattisgarh,Dhamtari,491111,Mahasamund
+Chhattisgarh,Durg,490001,Durg
+Chhattisgarh,Gariaband,493886,Mahasamund
+Chhattisgarh,Indore,490001,Indore
+Chhattisgarh,Kanker,494334,"Rajnandgaon, Bastar"
+Chhattisgarh,Kondagaon,494446,Bastar
+Chhattisgarh,Korba,495677,Korba
+Chhattisgarh,Koriya,497776,Surguja
+Chhattisgarh,Mungeli,495225,Bilaspur
+Chhattisgarh,Narayanpur,494445,Bastar
+Chhattisgarh,Raigarh,496441,Raigarh
+Chhattisgarh,Raipur,492001,Raipur
+Chhattisgarh,Rajnandgaon,491441,Rajnandgaon
+Chhattisgarh,Sukma,494444,Bastar
+Chhattisgarh,Surajpur,497001,Surguja
+Chhattisgarh,Vidisha,464001,Vidisha
+Chhattisgarh,Wardha,497001,Wardha
+Chhattisgarh,Washim,496001,Yavatmal-Washim
+Chhattisgarh,Yavatmal,495331,Yavatmal-Washim
+Goa,North Goa,403001,North Goa
+Goa,South Goa,403801,South Goa
+Gujarat,Ahmedabad,380001,"Ahmedabad East, Ahmedabad West, Gandhinagar"
+Gujarat,Amreli,364601,"Amreli, Junagadh"
+Gujarat,Anand,388001,"Anand, Kheda"
+Gujarat,Aravalli,383001,Panchmahal
+Gujarat,Banaskantha,385001,"Banaskantha, Patan"
+Gujarat,Bharuch,392001,Bharuch
+Gujarat,Bhavnagar,364001,Bhavnagar
+Gujarat,Botad,364710,"Bhavnagar, Amreli"
+Gujarat,Chhota Udaipur,389001,Chhota Udaipur
+Gujarat,Dahod,389151,Dahod
+Gujarat,Dang,396521,Bardoli
+Gujarat,Gandhinagar,382001,Gandhinagar
+Gujarat,Gir Somnath,362290,Junagadh
+Gujarat,Jamnagar,361001,Jamnagar
+Gujarat,Junagadh,362001,Junagadh
+Gujarat,Kheda,388001,"Kheda, Anand"
+Gujarat,Kutch,370001,Kutch
+Gujarat,Mahisagar,389001,Panchmahal
+Gujarat,Mehsana,384001,"Mehsana, Patan"
+Gujarat,Morbi,363641,Rajkot
+Gujarat,Narmada,393001,Bharuch
+Gujarat,Navsari,396521,Navsari
+Gujarat,Panchmahal,389001,Panchmahal
+Gujarat,Patan,384401,Patan
+Gujarat,Porbandar,360575,"Porbandar, Jamnagar"
+Gujarat,Rajkot,360001,Rajkot
+Gujarat,Sabarkantha,383001,Sabarkantha
+Gujarat,Surat,395001,Surat
+Gujarat,Surendranagar,363001,Surendranagar
+Gujarat,Tapi,394601,Bardoli
+Gujarat,Vadodara,390001,Vadodara
+Haryana,Ambala,134002,"Ambala, Kurukshetra"
+Haryana,Bhiwani,127021,Bhiwani-Mahendragarh
+Haryana,Charkhi Dadri,127338,Bhiwani-Mahendragarh
+Haryana,Faridabad,121001,Faridabad
+Haryana,Fatehabad,125050,Sirsa
+Haryana,Gurugram,122001,Gurgaon
+Haryana,Hisar,125001,Hisar
+Haryana,Jhajjar,124104,Rohtak
+Haryana,Jind,126102,Hisar
+Haryana,Kaithal,136027,Kurukshetra
+Haryana,Karnal,132001,"Karnal, Kurukshetra"
+Haryana,Kurukshetra,136118,Kurukshetra
+Haryana,Mahendragarh,123001,Bhiwani-Mahendragarh
+Haryana,Palwal,121102,Faridabad
+Haryana,Panchkula,134109,Ambala
+Haryana,Panipat,132103,"Karnal, Sonipat"
+Haryana,Rewari,123401,Gurgaon
+Haryana,Rohtak,124001,Rohtak
+Haryana,Sirsa,125055,Sirsa
+Haryana,Sonipat,131001,Sonipat
+Himachal Pradesh,Bilaspur,174001,Hamirpur
+Himachal Pradesh,Chamba,176310,Kangra
+Himachal Pradesh,Kangra,176001,Kangra
+Himachal Pradesh,Kinnaur,171800,Mandi
+Himachal Pradesh,Kullu,175101,Mandi
+Himachal Pradesh,Mandi,175001,Mandi
+Himachal Pradesh,Shimla,171001,Shimla
+Himachal Pradesh,Sirmaur,173025,Shimla
+Himachal Pradesh,Solan,173211,Shimla
+Himachal Pradesh,Una,177001,Hamirpur
+Himachal Pradesh,Hamirpur,177001,Hamirpur
+Jharkhand,Bokaro,827001,"Dhanbad, Giridih"
+Jharkhand,Chatra,825401,Chatra
+Jharkhand,Dhanbad,826001,Dhanbad
+Jharkhand,Dumka,814101,Dumka
+Jharkhand,East Singhbhum,831001,Jamshedpur
+Jharkhand,Giridih,815301,Giridih
+Jharkhand,Godda,855104,Godda
+Jharkhand,Gumla,835324,Lohardaga
+Jharkhand,Hazaribagh,825301,"Hazaribagh, Kodarma"
+Jharkhand,Jamtara,815107,Dumka
+Jharkhand,Khunti,835228,Ranchi
+Jharkhand,Koderma,825101,Kodarma
+Jharkhand,Latehar,828202,Palamu
+Jharkhand,Lohardaga,835325,Lohardaga
+Jharkhand,Madhubani,847211,Madhubani
+Jharkhand,Munger,813201,Munger
+Jharkhand,Muzaffarpur,842001,"Muzaffarpur, Vaishali"
+Jharkhand,Pakur,855102,Rajmahal
+Jharkhand,Palamu,822114,Palamu
+Jharkhand,Purnia,854301,"Purnia, Katihar"
+Jharkhand,Ramgarh,829122,"Ranchi, Hazaribagh"
+Jharkhand,Ranchi,834001,Ranchi
+Jharkhand,Sahebganj,855210,Rajmahal
+Jharkhand,Simdega,835323,Lohardaga
+Jharkhand,Supaul,855104,Supaul
+Karnataka,Bagalkot,587102,Bagalkot
+Karnataka,Ballari,583101,Ballari
+Karnataka,Belagavi,590001,"Belagavi, Chikkodi"
+Karnataka,Bengaluru Rural,560001,"Bangalore Rural, Bangalore North"
+Karnataka,Bengaluru Urban,560001,"Bangalore North, Bangalore Central, Bangalore South"
+Karnataka,Bidar,585401,Bidar
+Karnataka,Chitradurga,577501,Chitradurga
+Karnataka,Dakshina Kannada,574142,Dakshina Kannada
+Karnataka,Davanagere,577001,Davanagere
+Karnataka,Dharwad,580001,Dharwad
+Karnataka,Yadgir,585202,Raichur
+Karnataka,Hassan,573201,Hassan
+Karnataka,Haveri,581110,Haveri
+Karnataka,Kodagu,571201,Mysore
+Karnataka,Kolar,563101,Kolar
+Karnataka,Koppal,583231,Koppal
+Karnataka,Mandya,571401,Mandya
+Karnataka,Mysuru,570001,"Mysore, Chamarajanagar"
+Karnataka,Raichur,584101,Raichur
+Karnataka,Shivamogga,577201,Shimoga
+Karnataka,Udupi,576101,Udupi Chikmagalur
+Karnataka,Uttara Kannada,581359,Uttara Kannada
+Karnataka,Vikarabad,577501,Chevella
+Karnataka,Vijayapura,586103,Vijayapura
+Kerala,Alappuzha,688013,"Alappuzha, Mavelikkara"
+Kerala,Ernakulam,682014,"Ernakulam, Chalakudy, Thrissur"
+Kerala,Idukki,685553,Idukki
+Kerala,Kannur,670001,"Kannur, Kasaragod"
+Kerala,Kasaragod,670002,Kasaragod
+Kerala,Kollam,691001,"Kollam, Attingal"
+Kerala,Kottayam,686001,"Kottayam, Pathanamthitta"
+Kerala,Kozhikode,673001,"Kozhikode, Vadakara"
+Kerala,Malappuram,676501,"Malappuram, Ponnani"
+Kerala,Palakkad,678001,"Palakkad, Alathur"
+Kerala,Pathanamthitta,689645,Pathanamthitta
+Kerala,Thiruvananthapuram,695001,"Thiruvananthapuram, Attingal"
+Kerala,Thrissur,680001,"Thrissur, Chalakudy"
+Madhya Pradesh,Agar Malwa,465001,Dewas
+Madhya Pradesh,Alirajpur,457001,Ratlam
+Madhya Pradesh,Anuppur,484224,Shahdol
+Madhya Pradesh,Ashoknagar,475001,Guna
+Madhya Pradesh,Balaghat,481001,Balaghat
+Madhya Pradesh,Barwani,451001,Khandwa
+Madhya Pradesh,Betul,460001,Betul
+Madhya Pradesh,Bhind,477001,Bhind
+Madhya Pradesh,Bhopal,462001,Bhopal
+Madhya Pradesh,Burhanpur,450331,Khandwa
+Madhya Pradesh,Chhindwara,480001,Chhindwara
+Madhya Pradesh,Chhatarpur,471001,Khajuraho
+Madhya Pradesh,Damoh,470661,Damoh
+Madhya Pradesh,Datia,475001,Gwalior
+Madhya Pradesh,Dewas,455001,Dewas
+Madhya Pradesh,Dhar,454001,"Dhar, Indore"
+Madhya Pradesh,Dindori,481001,Mandla
+Madhya Pradesh,Guna,473001,Guna
+Madhya Pradesh,Gwalior,474001,Gwalior
+Madhya Pradesh,Harda,461001,Hoshangabad
+Madhya Pradesh,Hoshangabad,461001,Hoshangabad
+Madhya Pradesh,Indore,452001,Indore
+Madhya Pradesh,Jabalpur,482001,Jabalpur
+Madhya Pradesh,Jhabua,457001,Ratlam
+Madhya Pradesh,Mandsaur,458001,Mandsaur
+Madhya Pradesh,Mandla,481001,Mandla
+Madhya Pradesh,Morena,476001,Morena
+Madhya Pradesh,Narsinghpur,461001,Hoshangabad
+Madhya Pradesh,Neemuch,458441,Mandsaur
+Madhya Pradesh,Niwari,475001,Tikamgarh
+Madhya Pradesh,Panna,488001,Khajuraho
+Madhya Pradesh,Raisen,464001,"Bhopal, Rajgarh"
+Madhya Pradesh,Rajgarh,465001,Rajgarh
+Madhya Pradesh,Ratlam,457001,Ratlam
+Madhya Pradesh,Rewa,488001,Rewa
+Madhya Pradesh,Sagar,470002,Sagar
+Madhya Pradesh,Satna,485001,Satna
+Madhya Pradesh,Sehore,466001,Bhopal
+Madhya Pradesh,Seoni,481001,Chhindwara
+Madhya Pradesh,Shahdol,484001,Shahdol
+Madhya Pradesh,Shajapur,465001,Dewas
+Madhya Pradesh,Sheopur,477001,Morena
+Madhya Pradesh,Shivpuri,473001,Guna
+Madhya Pradesh,Sidhi,484001,Sidhi
+Madhya Pradesh,Singrauli,488447,Sidhi
+Madhya Pradesh,Tikamgarh,475001,Tikamgarh
+Madhya Pradesh,Ujjain,456001,Ujjain
+Madhya Pradesh,Umaria,484224,Shahdol
+Madhya Pradesh,Vidisha,464001,Vidisha
+Maharashtra,Ahmednagar,414001,"Ahmednagar, Shirdi"
+Maharashtra,Akola,444001,Akola
+Maharashtra,Aurangabad,431001,Aurangabad
+Maharashtra,Beed,431122,Beed
+Maharashtra,Bhandara,441904,Bhandara-Gondiya
+Maharashtra,Buldhana,443001,Buldhana
+Maharashtra,Chandrapur,441201,Chandrapur
+Maharashtra,Chhatarpur,471001,Khajuraho
+Maharashtra,Dhule,424001,Dhule
+Maharashtra,Gadchiroli,442605,Gadchiroli-Chimur
+Maharashtra,Hingoli,431513,Hingoli
+Maharashtra,Jalgaon,425001,Jalgaon
+Maharashtra,Jalna,431203,Jalna
+Maharashtra,Kolhapur,416001,Kolhapur
+Maharashtra,Latur,413512,Latur
+Maharashtra,Mumbai City,400001,"Mumbai North, Mumbai North Central, Mumbai North East, Mumbai North West, Mumbai South, Mumbai South Central"
+Maharashtra,Mumbai Suburban,400001,"Mumbai North West, Mumbai North East, Mumbai North, Mumbai North Central"
+Maharashtra,Nagpur,440001,"Nagpur, Ramtek"
+Maharashtra,Nanded,431601,Nanded
+Maharashtra,Nandurbar,425412,Nandurbar
+Maharashtra,Nashik,422001,Nashik
+Maharashtra,Parbhani,431401,Parbhani
+Maharashtra,Pune,411001,"Pune, Baramati, Shirur"
+Maharashtra,Raigad,402201,"Raigad, Maval"
+Maharashtra,Ratnagiri,415639,Ratnagiri-Sindhudurg
+Maharashtra,Sangli,416416,Sangli
+Maharashtra,Satara,415001,Satara
+Maharashtra,Sindhudurg,416511,Ratnagiri-Sindhudurg
+Maharashtra,Solapur,413001,Solapur
+Maharashtra,Thane,400601,"Thane, Kalyan, Bhiwandi"
+Maharashtra,Wardha,442001,Wardha
+Maharashtra,Washim,444505,Yavatmal-Washim
+Maharashtra,Yavatmal,445001,Yavatmal-Washim
+Manipur,Bishnupur,795143,Inner Manipur
+Manipur,Chandel,795101,Outer Manipur
+Manipur,Churachandpur,795128,Outer Manipur
+Manipur,Imphal East,795001,Inner Manipur
+Manipur,Imphal West,795001,Inner Manipur
+Manipur,Jiribam,795131,Outer Manipur
+Manipur,Kakching,795108,Inner Manipur
+Manipur,Kamjong,795113,Outer Manipur
+Manipur,Kangpokpi,795106,Outer Manipur
+Manipur,Noney,795127,Outer Manipur
+Manipur,Pherzawl,795126,Outer Manipur
+Manipur,Senapati,795103,Outer Manipur
+Manipur,Tamenglong,794104,Outer Manipur
+Manipur,Tengnoupal,795129,Outer Manipur
+Manipur,Thoubal,795138,Inner Manipur
+Manipur,Ukhrul,795142,Outer Manipur
+Meghalaya,East Garo Hills,794109,Tura
+Meghalaya,East Jaintia Hills,794105,Shillong
+Meghalaya,East Khasi Hills,793001,Shillong
+Meghalaya,North Garo Hills,794109,Tura
+Meghalaya,Ri Bhoi,793101,Shillong
+Meghalaya,South Garo Hills,794101,Tura
+Meghalaya,South West Garo Hills,794106,Tura
+Meghalaya,West Garo Hills,794101,Tura
+Meghalaya,West Jaintia Hills,794102,Shillong
+Meghalaya,West Khasi Hills,793001,Shillong
+Mizoram,Aizawl,796001,Mizoram
+Mizoram,Champhai,796621,Mizoram
+Mizoram,Kolasib,796081,Mizoram
+Mizoram,Lawngtlai,796881,Mizoram
+Mizoram,Lunglei,796701,Mizoram
+Mizoram,Mamit,796901,Mizoram
+Mizoram,Saiha,796901,Mizoram
+Mizoram,Saitual,796701,Mizoram
+Mizoram,Serchhip,796601,Mizoram
+Nagaland,Dimapur,797112,Nagaland
+Nagaland,Kiphire,797109,Nagaland
+Nagaland,Kohima,797001,Nagaland
+Nagaland,Longleng,798627,Nagaland
+Nagaland,Mokokchung,798601,Nagaland
+Nagaland,Mon,798627,Nagaland
+Nagaland,Noklak,798627,Nagaland
+Nagaland,Peren,797107,Nagaland
+Nagaland,Phek,798103,Nagaland
+Nagaland,Tuensang,798627,Nagaland
+Nagaland,Wokha,798105,Nagaland
+Nagaland,Zunheboto,797106,Nagaland
+Odisha,Angul,759122,Dhenkanal
+Odisha,Balangir,767001,Balangir
+Odisha,Balasore,756001,Balasore
+Odisha,Bargarh,768001,Bargarh
+Odisha,Bhadrak,756100,Bhadrak
+Odisha,Boudh,754020,Kandhamal
+Odisha,Cuttack,753001,Cuttack
+Odisha,Debagarh,768026,Sambalpur
+Odisha,Dhenkanal,759001,Dhenkanal
+Odisha,Gajapati,761041,Berhampur
+Odisha,Ganjam,761001,Berhampur
+Odisha,Jagatsinghpur,754205,Jagatsinghpur
+Odisha,Jajpur,755001,Jajpur
+Odisha,Jharsuguda,768201,Sambalpur
+Odisha,Kalahandi,766001,Kalahandi
+Odisha,Kandhamal,762018,Kandhamal
+Odisha,Kendrapara,754211,Kendrapara
+Odisha,Kendujhar,758001,Keonjhar
+Odisha,Khordha,752050,"Bhubaneswar, Puri"
+Odisha,Koraput,764001,Koraput
+Odisha,Malkangiri,764041,Nabarangpur
+Odisha,Mayurbhanj,757001,Mayurbhanj
+Odisha,Nabarangpur,764066,Nabarangpur
+Odisha,Nayagarh,752069,Kandhamal
+Odisha,Nuapada,766001,Kalahandi
+Odisha,Puri,752001,Puri
+Odisha,Rayagada,765001,Koraput
+Odisha,Sambalpur,768001,Sambalpur
+Odisha,Subarnapur,767001,Bargarh
+Odisha,Sundargarh,770001,Sundargarh
+Punjab,Amritsar,143001,Amritsar
+Punjab,Barnala,148101,Sangrur
+Punjab,Bathinda,151001,Bathinda
+Punjab,Fatehgarh Sahib,140406,Anandpur Sahib
+Punjab,Gurdaspur,143521,Gurdaspur
+Punjab,Hoshiarpur,146001,Hoshiarpur
+Punjab,Jalandhar,144001,Jalandhar
+Punjab,Kapurthala,144601,Jalandhar
+Punjab,Ludhiana,141001,Ludhiana
+Punjab,Mansa,151505,Bathinda
+Punjab,Moga,142001,Faridkot
+Punjab,Muktsar,152106,Faridkot
+Punjab,Pathankot,145001,Gurdaspur
+Punjab,Patiala,147001,Patiala
+Punjab,Rupnagar,160001,Anandpur Sahib
+Punjab,Sangrur,148001,Sangrur
+Punjab,Tarn Taran,143403,Khadoor Sahib
+Rajasthan,Ajmer,305001,Ajmer
+Rajasthan,Alwar,301001,Alwar
+Rajasthan,Banswara,327001,Banswara
+Rajasthan,Baran,325213,Kota
+Rajasthan,Barmer,344001,Barmer
+Rajasthan,Bhilwara,311001,Bhilwara
+Rajasthan,Bikaner,334001,Bikaner
+Rajasthan,Bundi,323001,Kota
+Rajasthan,Chittorgarh,312001,Chittorgarh
+Rajasthan,Churu,331001,Churu
+Rajasthan,Dausa,303303,Dausa
+Rajasthan,Dholpur,328001,Bharatpur
+Rajasthan,Dungarpur,314001,Udaipur
+Rajasthan,Ganganagar,335001,Ganganagar
+Rajasthan,Jaipur,302001,"Jaipur, Jaipur Rural"
+Rajasthan,Jaisalmer,345001,Jaisalmer
+Rajasthan,Jalore,343001,Jalore
+Rajasthan,Jhalawar,326001,Jhalawar-Baran
+Rajasthan,Jhunjhunu,333001,Jhunjhunu
+Rajasthan,Jodhpur,342001,Jodhpur
+Rajasthan,Karauli,326701,Karauli-Dholpur
+Rajasthan,Kota,324001,Kota
+Rajasthan,Nagaur,341001,Nagaur
+Rajasthan,Pali,306401,Pali
+Rajasthan,Pratapgarh,312605,Pratapgarh
+Rajasthan,Rajsamand,313325,Rajsamand
+Rajasthan,Sawai Madhopur,322001,Tonk-Sawai Madhopur
+Rajasthan,Sikar,332001,Sikar
+Rajasthan,Sirohi,307625,Udaipur
+Rajasthan,Udaipur,313001,Udaipur
+Sikkim,East Sikkim,737001,Sikkim
+Sikkim,North Sikkim,737101,Sikkim
+Sikkim,South Sikkim,737001,Sikkim
+Sikkim,West Sikkim,737141,Sikkim
+Tamil Nadu,Ariyalur,621704,Chidambaram
+Tamil Nadu,Chengalpattu,603001,"Kancheepuram, Sriperumbudur"
+Tamil Nadu,Chennai,600001,"Chennai North, Chennai South, Chennai Central"
+Tamil Nadu,Coimbatore,641001,"Coimbatore, Pollachi"
+Tamil Nadu,Cuddalore,607001,Cuddalore
+Tamil Nadu,Dharmapuri,635601,Dharmapuri
+Tamil Nadu,Dindigul,624001,Dindigul
+Tamil Nadu,Erode,638001,Erode
+Tamil Nadu,Kallakurichi,606101,Kallakurichi
+Tamil Nadu,Kanyakumari,629001,Kanyakumari
+Tamil Nadu,Karur,639001,Karur
+Tamil Nadu,Krishnagiri,635001,Krishnagiri
+Tamil Nadu,Madurai,625001,Madurai
+Tamil Nadu,Mayiladuthurai,609001,Mayiladuthurai
+Tamil Nadu,Nagapattinam,609001,Nagapattinam
+Tamil Nadu,Namakkal,637001,Namakkal
+Tamil Nadu,Nilgiris,643001,Nilgiris
+Tamil Nadu,Perambalur,621212,Perambalur
+Tamil Nadu,Pudukkottai,622001,Sivaganga
+Tamil Nadu,Ranipet,632401,Arakkonam
+Tamil Nadu,Salem,636001,Salem
+Tamil Nadu,Sivaganga,630561,Sivaganga
+Tamil Nadu,Tenkasi,627811,Tenkasi
+Tamil Nadu,Thanjavur,613001,Thanjavur
+Tamil Nadu,Theni,625531,Theni
+Tamil Nadu,Tirupathur,635601,Tirupattur
+Tamil Nadu,Tiruppur,641601,Tiruppur
+Tamil Nadu,Tiruvannamalai,606603,Tiruvannamalai
+Tamil Nadu,Vellore,632001,Vellore
+Tamil Nadu,Virudhunagar,626001,Virudhunagar
+Telangana,Adilabad,504001,Adilabad
+Telangana,Hyderabad,500001,"Hyderabad, Secunderabad"
+Telangana,Jagtial,505328,Karimnagar
+Telangana,Jangaon,506167,Warangal
+Telangana,Jayashankar Bhupalpally,506332,Warangal
+Telangana,Jogulamba Gadwal,509001,Nagarkurnool
+Telangana,Kamareddy,503101,Nizamabad
+Telangana,Karimnagar,505001,Karimnagar
+Telangana,Khammam,507001,Khammam
+Telangana,Mahabubabad,506167,Warangal
+Telangana,Mancherial,503001,Peddapalli
+Telangana,Medak,502110,Medak
+Telangana,Nagarkurnool,509001,Nagarkurnool
+Telangana,Nalgonda,508001,"Nalgonda, Bhongir"
+Telangana,Narayanpet,509001,Mahbubnagar
+Telangana,Nirmal,504106,Adilabad
+Telangana,Nizamabad,503001,Nizamabad
+Telangana,Peddapalli,505172,Peddapalli
+Telangana,Rajanna Sircilla,505328,Karimnagar
+Telangana,Ranga Reddy,501401,Chevella
+Telangana,Sangareddy,502001,Medak
+Telangana,Siddipet,502103,Medak
+Telangana,Suryapet,508213,Nalgonda
+Telangana,Vikarabad,501101,Chevella
+Telangana,Wanaparthy,509001,Nagarkurnool
+Telangana,Warangal,506001,Warangal
+Telangana,Yadadri Bhuvanagiri,508001,Bhongir
+Tripura,Dhalai,792126,Tripura West
+Tripura,Gomati,799001,Tripura West
+Tripura,Khowai,798610,Tripura West
+Tripura,North Tripura,799001,Tripura East
+Tripura,Sepahijala,799001,Tripura West
+Tripura,South Tripura,799001,Tripura West
+Tripura,Udaipur,799001,Udaipur
+Tripura,Unakoti,799001,Tripura East
+Tripura,West Tripura,799001,Tripura West
+Uttar Pradesh,Agra,282001,"Agra, Fatehpur Sikri"
+Uttar Pradesh,Aligarh,202001,Aligarh
+Uttar Pradesh,Ambedkar Nagar,224122,Ambedkar Nagar
+Uttar Pradesh,Amethi,227405,Amethi
+Uttar Pradesh,Amroha,244201,Amroha
+Uttar Pradesh,Auraiya,284401,Etawah
+Uttar Pradesh,Azamgarh,276001,Azamgarh
+Uttar Pradesh,Baghpat,250609,Baghpat
+Uttar Pradesh,Bahraich,271801,Bahraich
+Uttar Pradesh,Ballia,277001,Ballia
+Uttar Pradesh,Balrampur,271201,Shrawasti
+Uttar Pradesh,Banda,210201,Banda
+Uttar Pradesh,Barabanki,225001,Barabanki
+Uttar Pradesh,Bareilly,243001,"Bareilly, Aonla"
+Uttar Pradesh,Basti,272001,Basti
+Uttar Pradesh,Bijnor,246701,Bijnor
+Uttar Pradesh,Budaun,243601,Budaun
+Uttar Pradesh,Bulandshahr,203001,Bulandshahr
+Uttar Pradesh,Chandauli,232104,Chandauli
+Uttar Pradesh,Chhatarpur,203001,Khajuraho
+Uttar Pradesh,Chitrakoot,210204,Banda
+Uttar Pradesh,Deoria,274001,Deoria
+Uttar Pradesh,Etah,203001,Etah
+Uttar Pradesh,Etawah,206001,Etawah
+Uttar Pradesh,Farrukhabad,209625,Farrukhabad
+Uttar Pradesh,Fatehpur,212601,Fatehpur
+Uttar Pradesh,Firozabad,283201,Firozabad
+Uttar Pradesh,Ghaziabad,201001,Ghaziabad
+Uttar Pradesh,Ghazipur,233001,Ghazipur
+Uttar Pradesh,Gonda,271001,Gonda
+Uttar Pradesh,Gorakhpur,273001,Gorakhpur
+Uttar Pradesh,Hapur,245101,Ghaziabad
+Uttar Pradesh,Hardoi,241001,Hardoi
+Uttar Pradesh,Hathras,204101,Hathras
+Uttar Pradesh,Jalaun,285001,Jalaun
+Uttar Pradesh,Jaunpur,231001,Jaunpur
+Uttar Pradesh,Jhansi,284001,Jhansi
+Uttar Pradesh,Kannauj,209725,Kannauj
+Uttar Pradesh,Kanpur Dehat,208001,Akbarpur
+Uttar Pradesh,Kasganj,207401,Etah
+Uttar Pradesh,Kaushambi,212001,Phulpur
+Uttar Pradesh,Kheri,262001,Kheri
+Uttar Pradesh,Kinnaur,282001,Mandi
+Uttar Pradesh,Lalitpur,284001,Lalitpur
+Uttar Pradesh,Lucknow,226001,Lucknow
+Uttar Pradesh,Maharajganj,273001,Maharajganj
+Uttar Pradesh,Mahoba,210427,Mahoba
+Uttar Pradesh,Mainpuri,205001,Mainpuri
+Uttar Pradesh,Mathura,281001,Mathura
+Uttar Pradesh,Mau,275101,Mau
+Uttar Pradesh,Meerut,250001,Meerut
+Uttar Pradesh,Mirzapur,231001,Mirzapur
+Uttar Pradesh,Moradabad,244001,Moradabad
+Uttar Pradesh,Muzaffarnagar,251001,Muzaffarnagar
+Uttar Pradesh,Raipur,488001,Raipur
+Uttar Pradesh,Rampur,244901,Rampur
+Uttar Pradesh,Rewa,488001,Rewa
+Uttar Pradesh,Saharanpur,247001,Saharanpur
+Uttar Pradesh,Sambhal,244001,Sambhal
+Uttar Pradesh,Sant Kabir Nagar,272001,Sant Kabir Nagar
+Uttar Pradesh,Saran,282001,"Saran, Maharajganj"
+Uttar Pradesh,Satna,488001,Satna
+Uttar Pradesh,Shamli,247776,Shamli
+Uttar Pradesh,Sitapur,261001,Sitapur
+Uttar Pradesh,Siwan,282001,"Siwan, Maharajganj"
+Uttar Pradesh,Sonbhadra,231222,Robertsganj
+Uttar Pradesh,Surguja,282001,Surguja
+Uttarakhand,Almora,263601,Almora
+Uttarakhand,Bageshwar,263681,Almora
+Uttarakhand,Chamoli,246401,Garhwal
+Uttarakhand,Champawat,262523,Nainital-Udhamsingh Nagar
+Uttarakhand,Chamba,263623,Kangra
+Uttarakhand,Dehradun,248001,Dehradun
+Uttarakhand,Haridwar,249401,Haridwar
+Uttarakhand,Nainital,263001,Nainital-Udhamsingh Nagar
+Uttarakhand,Pauri Garhwal,246001,Garhwal
+Uttarakhand,Pithoragarh,262501,Almora
+Uttarakhand,Rudraprayag,246171,Garhwal
+Uttarakhand,Tehri Garhwal,249155,Tehri Garhwal
+Uttarakhand,Udham Singh Nagar,263153,Nainital-Udhamsingh Nagar
+Uttarakhand,Uttarkashi,249193,Tehri Garhwal
+West Bengal,Alipurduar,736122,Alipurduars
+West Bengal,Bankura,722101,Bankura
+West Bengal,Birbhum,731201,Birbhum
+West Bengal,Darjeeling,734101,Darjeeling
+West Bengal,Dakshin Dinajpur,733201,Raiganj
+West Bengal,Hooghly,712201,"Hooghly, Arambagh"
+West Bengal,Howrah,711101,"Howrah, Uluberia"
+West Bengal,Jalpaiguri,735101,Jalpaiguri
+West Bengal,Jhargram,721507,Jhargram
+West Bengal,Kalimpong,734301,Darjeeling
+West Bengal,Kolkata,700001,"Kolkata North, Kolkata South"
+West Bengal,Malda,732101,"Maldaha Uttar, Maldaha Dakshin"
+West Bengal,Murshidabad,742101,"Murshidabad, Jangipur"
+West Bengal,Nadia,741101,"Krishnanagar, Ranaghat"
+West Bengal,North 24 Parganas,743701,"Barasat, Basirhat, Dum Dum"
+West Bengal,Paschim Medinipur,712102,"Ghatal, Jhargram"
+West Bengal,Purba Bardhaman,713201,"Bardhaman Purba, Katwa"
+West Bengal,Purba Medinipur,721101,"Tamluk, Kanthi"
+West Bengal,Purulia,723101,Purulia
+West Bengal,South 24 Parganas,743701,"Jadavpur, Diamond Harbour, Jaynagar"
+West Bengal,Uttar Dinajpur,733301,Raiganj
+West Bengal,Birbhum,731201,Birbhum

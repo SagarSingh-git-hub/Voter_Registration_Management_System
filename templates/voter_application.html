@@ -53,7 +53,7 @@
                     </div>
 
                     <!-- Full Name -->
-                    <div class="group">
+                    <div class="group relative z-[60]">
                         {{ form.full_name.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         {{ form.full_name(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Full Name as per ID") }}
                         {% for error in form.full_name.errors %}
@@ -62,7 +62,7 @@
                     </div>
 
                     <!-- Relative Name & Type -->
-                    <div class="group">
+                    <div class="group relative z-[50]">
                         {{ form.relative_name.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         <div class="flex gap-2">
                             <div class="w-1/3">
@@ -78,7 +78,7 @@
                     </div>
 
                     <!-- DOB & Age -->
-                    <div class="group">
+                    <div class="group relative z-[50]">
                         {{ form.dob.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         {{ form.dob(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all text-gray-400", type="date") }}
                         <div id="age-calc" class="text-xs mt-2 font-mono text-gray-500"></div>
@@ -88,7 +88,7 @@
                     </div>
 
                     <!-- Gender -->
-                    <div class="group">
+                    <div class="group relative z-[40]">
                         {{ form.gender.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         {{ form.gender(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all appearance-none cursor-pointer") }}
                         {% for error in form.gender.errors %}
@@ -97,11 +97,11 @@
                     </div>
 
                     <!-- Mobile -->
-                    <div class="group">
+                    <div class="group relative z-[30]">
                         {{ form.phone.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         <div class="relative">
                             <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-mono pointer-events-none transition-colors group-focus-within:text-electric">+91</span>
-                            {{ form.phone(class="w-full bg-white/5 border border-white/10 rounded-xl text-white pl-16 pr-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXX XXXXX", maxlength="15", inputmode="numeric") }}
+                            {{ form.phone(class="w-full bg-white/5 border border-white/10 rounded-xl text-white pl-16 pr-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXX XXXXX", maxlength="11", inputmode="numeric") }}
                             <button type="button" id="btn-send-otp" class="absolute right-2 top-2 bottom-2 bg-electric/10 hover:bg-electric/20 text-electric text-xs font-bold px-3 rounded-lg transition-colors border border-electric/30">Verify OTP</button>
                             <div id="phone-verified-badge" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-emerald-400 text-xs font-bold hidden bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20">
                                 <i class="fas fa-check-circle"></i> <span>Verified</span>
@@ -127,7 +127,7 @@
                     </div>
 
                     <!-- Email (Optional) -->
-                    <div class="group">
+                    <div class="group relative z-[30]">
                         {{ form.email.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         {{ form.email(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600", placeholder="Email Address (Optional)") }}
                         {% for error in form.email.errors %}
@@ -224,7 +224,8 @@
                     <!-- PIN Code -->
                     <div class="group">
                         {{ form.pin_code.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
-                        {{ form.pin_code(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXXX", maxlength="6", inputmode="numeric") }}
+                        {{ form.pin_code(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all placeholder-gray-600 font-mono tracking-wider", placeholder="XXXXXX", maxlength="6", inputmode="numeric", list="pincode-list") }}
+                        <datalist id="pincode-list"></datalist>
                         {% for error in form.pin_code.errors %}
                             <span class="text-red-400 text-xs mt-1 block">{{ error }}</span>
                         {% endfor %}
@@ -600,6 +601,38 @@
 
         // initCustomSelect removed to restore native behavior
 
+        async function populateStates(preSelectedValue = null) {
+            const stateNative = document.getElementById('state');
+            if (!stateNative) return;
+            stateNative.innerHTML = '';
+            const loadingOpt = document.createElement('option');
+            loadingOpt.value = '';
+            loadingOpt.disabled = true;
+            loadingOpt.selected = true;
+            loadingOpt.textContent = 'Loading States...';
+            stateNative.appendChild(loadingOpt);
+            try {
+                const response = await fetch(`{{ url_for('voter.get_states') }}`);
+                const states = await response.json();
+                stateNative.innerHTML = '';
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.disabled = true;
+                defaultOpt.selected = !preSelectedValue;
+                defaultOpt.textContent = 'Select State';
+                stateNative.appendChild(defaultOpt);
+                states.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = s;
+                    if (preSelectedValue && s === preSelectedValue) opt.selected = true;
+                    stateNative.appendChild(opt);
+                });
+            } catch (e) {
+                stateNative.innerHTML = '<option value=\"\" disabled selected>Error loading states</option>';
+            }
+        }
+
         async function populateDistricts(state, preSelectedValue = null) {
             const districtNative = document.getElementById('district');
             if (!districtNative) return;
@@ -655,9 +688,53 @@
             }
         }
 
-        document.getElementById('state').addEventListener('change', (e) => {
+        async function populatePincodes(state, district, preSelectedValue = null) {
+            const list = document.getElementById('pincode-list');
+            if (!list) return;
+            list.innerHTML = '';
+            const opt = document.createElement('option');
+            opt.value = '';
+            list.appendChild(opt);
+            try {
+                const response = await fetch(`{{ url_for('voter.get_pincodes') }}?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+                const pins = await response.json();
+                list.innerHTML = '';
+                pins.forEach(p => {
+                    const o = document.createElement('option');
+                    o.value = p;
+                    list.appendChild(o);
+                });
+                if (preSelectedValue) {
+                    const pinInput = document.getElementById('pin_code');
+                    if (pinInput) pinInput.value = preSelectedValue;
+                }
+            } catch (e) {
+                list.innerHTML = '';
+            }
+        }
+
+        async function updateLookup() {
+            const state = document.getElementById('state').value;
+            const district = document.getElementById('district').value;
+            const pin = document.getElementById('pin_code').value;
+            if (!state || !district) return;
+            try {
+                const response = await fetch(`{{ url_for('voter.constituency_lookup') }}?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&pin_code=${encodeURIComponent(pin)}`);
+                const data = await response.json();
+                const assemblyInput = document.getElementById('assembly_constituency');
+                const loksabhaInput = document.getElementById('loksabha_constituency');
+                if (assemblyInput) assemblyInput.value = data.assembly_constituency || '';
+                if (loksabhaInput) loksabhaInput.value = data.loksabha_constituency || '';
+            } catch (e) {}
+        }
+
+        document.getElementById('state').addEventListener('change', async (e) => {
             if (e.target.value) {
-                populateDistricts(e.target.value);
+                await populateDistricts(e.target.value);
+                const districtNative = document.getElementById('district');
+                const pinInput = document.getElementById('pin_code');
+                if (districtNative) districtNative.value = '';
+                if (pinInput) pinInput.value = '';
             } else {
                  const districtNative = document.getElementById('district');
                  districtNative.innerHTML = '<option value="" disabled selected>Select District</option>';
@@ -665,13 +742,16 @@
                     csDistrict.updateOptions();
                  }
             }
+            await updateLookup();
         });
         
         // Initial load check
         const initialState = document.getElementById('state').value;
         const preSelectedDistrict = "{{ form.district.data if form.district.data else '' }}";
+        const preSelectedPin = "{{ form.pin_code.data if form.pin_code.data else '' }}";
+        populateStates(initialState);
         if (initialState) {
-            populateDistricts(initialState, preSelectedDistrict);
+            populateDistricts(initialState, preSelectedDistrict).then(() => populatePincodes(initialState, preSelectedDistrict, preSelectedPin)).then(updateLookup);
         }
 
         // --- REVIEW POPULATION ---
@@ -854,7 +934,14 @@
             }
         }
         
-        districtSelect.addEventListener('change', updateConstituencies);
+        districtSelect.addEventListener('change', async () => {
+            const stateSel = document.getElementById('state').value;
+            await populatePincodes(stateSel, districtSelect.value);
+            updateConstituencies();
+            updateLookup();
+        });
+        const pinInputEl = document.getElementById('pin_code');
+        if (pinInputEl) pinInputEl.addEventListener('input', updateLookup);
 
 
         // Photo Preview
@@ -1152,18 +1239,88 @@
         const verifiedBadge = document.getElementById('phone-verified-badge');
         let otpTimerInterval;
 
-        phoneInput.addEventListener('input', () => {
-            if (isPhoneVerified) {
-                isPhoneVerified = false;
-                verifiedBadge.classList.add('hidden');
-                btnSendOtp.classList.remove('hidden');
-                phoneFeedback.innerHTML = '<span class="text-yellow-500">Phone number changed. Please verify again.</span>';
+        // --- MOBILE NUMBER VALIDATION (Strict) ---
+        // Initial state
+        if (btnSendOtp) {
+            btnSendOtp.disabled = true;
+            btnSendOtp.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        phoneInput.addEventListener('input', function(e) {
+             // If phone was verified, reset it
+             if (isPhoneVerified) {
+                 isPhoneVerified = false;
+                 verifiedBadge.classList.add('hidden');
+                 btnSendOtp.classList.remove('hidden');
+                 phoneFeedback.innerHTML = '<span class="text-yellow-500">Phone number changed. Please verify again.</span>';
+             }
+
+             // Allow only numeric digits and format with space
+             let digits = this.value.replace(/\D/g, '');
+             
+             // Maximum 10 digits
+             if (digits.length > 10) {
+                 digits = digits.substring(0, 10);
+             }
+             
+             // Format: 12345 67890
+             let formatted = '';
+             if (digits.length > 5) {
+                 formatted = digits.substring(0, 5) + ' ' + digits.substring(5);
+             } else {
+                 formatted = digits;
+             }
+             
+             this.value = formatted;
+
+             // Enable "Verify OTP" button only when exactly 10 valid digits are entered
+             if (btnSendOtp) {
+                 if (digits.length === 10) {
+                     btnSendOtp.disabled = false;
+                     btnSendOtp.classList.remove('opacity-50', 'cursor-not-allowed');
+                     phoneFeedback.innerHTML = ''; // Clear feedback if valid
+                 } else {
+                     btnSendOtp.disabled = true;
+                     btnSendOtp.classList.add('opacity-50', 'cursor-not-allowed');
+                 }
+             }
+         });
+
+        // Prevent insertion of alphabets, special characters, spaces, or symbols via keydown
+        phoneInput.addEventListener('keydown', function(e) {
+            // Allow: backspace, delete, tab, escape, enter
+            if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                 // Allow: Ctrl+A, Command+A, Ctrl+V, Ctrl+C, Ctrl+X
+                ((e.keyCode === 65 || e.keyCode === 86 || e.keyCode === 67 || e.keyCode === 88) && (e.ctrlKey === true || e.metaKey === true)) || 
+                 // Allow: home, end, left, right, down, up
+                (e.keyCode >= 35 && e.keyCode <= 40)) {
+                     return;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                e.preventDefault();
+            }
+        });
+
+        // Disable paste if pasted content contains non-numeric characters
+        phoneInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+            // Check if pasted content is purely numeric and trim if needed
+            let numericValue = pasteData.replace(/\D/g, '').substring(0, 10);
+            if (numericValue) {
+                this.value = numericValue;
+                // Trigger input event to update button state and handle other logic
+                this.dispatchEvent(new Event('input'));
+            } else {
+                phoneFeedback.innerHTML = '<span class="text-red-400 text-xs">Only numeric digits are allowed.</span>';
+                setTimeout(() => { if(phoneFeedback.innerHTML.includes('Only numeric')) phoneFeedback.innerHTML = ''; }, 3000);
             }
         });
 
         btnSendOtp.addEventListener('click', async () => {
-            const phone = phoneInput.value;
-            // Basic length check (regex could be stricter)
+            const phone = phoneInput.value.replace(/\s/g, '');
+            // Basic length check
             if (!phone || phone.length < 10) {
                 phoneFeedback.innerHTML = '<span class="text-red-400">Please enter a valid mobile number.</span>';
                 return;
@@ -1200,7 +1357,7 @@
 
         btnVerifyOtp.addEventListener('click', async () => {
             const otp = otpInput.value;
-            const phone = phoneInput.value;
+            const phone = phoneInput.value.replace(/\s/g, '');
             
             if (!otp) {
                 phoneFeedback.innerHTML = '<span class="text-red-400">Please enter the OTP.</span>';
@@ -1481,6 +1638,90 @@
         // Initialize State & District (assigned to vars for cascading updates)
         var csState = initCustomSelect('state', 'Select State');
         var csDistrict = initCustomSelect('district', 'Select District');
+
+        // Dynamic Loading for States & Districts
+        async function loadStates() {
+            try {
+                const response = await fetch('/voter/api/states');
+                const states = await response.json();
+                const stateSelect = document.getElementById('state');
+                
+                // Keep the first empty option if it exists
+                const firstOption = stateSelect.options[0] && stateSelect.options[0].value === "" ? stateSelect.options[0] : null;
+                stateSelect.innerHTML = '';
+                if (firstOption) stateSelect.appendChild(firstOption);
+                
+                states.forEach(state => {
+                    const opt = document.createElement('option');
+                    opt.value = state;
+                    opt.textContent = state;
+                    stateSelect.appendChild(opt);
+                });
+                
+                if (csState && csState.updateOptions) csState.updateOptions();
+            } catch (error) {
+                console.error('Error loading states:', error);
+            }
+        }
+
+        async function loadDistricts(state) {
+            try {
+                const response = await fetch(`/voter/api/districts?state=${encodeURIComponent(state)}`);
+                const districts = await response.json();
+                const districtSelect = document.getElementById('district');
+                
+                districtSelect.innerHTML = '<option value="">Select District</option>';
+                districts.forEach(dist => {
+                    const opt = document.createElement('option');
+                    opt.value = dist;
+                    opt.textContent = dist;
+                    districtSelect.appendChild(opt);
+                });
+                
+                if (csDistrict && csDistrict.updateOptions) csDistrict.updateOptions();
+            } catch (error) {
+                console.error('Error loading districts:', error);
+            }
+        }
+
+        // Handle State Change to load Districts
+        document.getElementById('state').addEventListener('change', function() {
+            loadDistricts(this.value);
+        });
+
+        // Handle Pin Code Auto-lookup
+        const pinInput = document.getElementById('pin_code');
+        if (pinInput) {
+            pinInput.addEventListener('change', async function() {
+                const pin = this.value;
+                if (pin.length === 6) {
+                    try {
+                        const response = await fetch(`/voter/api/lookup?pin_code=${pin}`);
+                        const data = await response.json();
+                        if (data.state) {
+                            const stateSelect = document.getElementById('state');
+                            stateSelect.value = data.state;
+                            stateSelect.dispatchEvent(new Event('change'));
+                            
+                            // Small delay to let districts load
+                            setTimeout(() => {
+                                const distSelect = document.getElementById('district');
+                                distSelect.value = data.district;
+                                if (csDistrict && csDistrict.updateOptions) csDistrict.updateOptions();
+                                
+                                document.getElementById('assembly_constituency').value = data.assembly_constituency;
+                                document.getElementById('loksabha_constituency').value = data.loksabha_constituency;
+                            }, 500);
+                        }
+                    } catch (error) {
+                        console.error('Error in pin lookup:', error);
+                    }
+                }
+            });
+        }
+
+        // Initial Load
+        loadStates();
         
     });
 </script>

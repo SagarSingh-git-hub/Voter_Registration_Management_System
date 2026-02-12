@@ -20,6 +20,9 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from PIL import Image as PILImage, ImageOps
+from functools import lru_cache
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+CSV_FILE = os.path.join(BASE_DIR, "All_28_States_Districts_PinCodes_with_Constituency..csv")
 
 voter = Blueprint('voter', __name__)
 
@@ -230,6 +233,71 @@ def api_search_voter():
         })
         
     return jsonify(data)
+
+@lru_cache(maxsize=1)
+def _csv_rows():
+    rows = []
+    try:
+        with open(CSV_FILE, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for r in reader:
+                rows.append({
+                    'State': (r.get('State') or '').strip(),
+                    'District': (r.get('District') or '').strip(),
+                    'Pin Code': (r.get('Pin Code') or '').strip(),
+                    'Constituency': (r.get('Constituency') or '').strip()
+                })
+    except Exception:
+        pass
+    return tuple(rows)
+
+@voter.route('/api/states')
+@login_required
+@voter_required
+def get_states():
+    states = sorted({r['State'] for r in _csv_rows() if r['State']})
+    return jsonify(states)
+
+@voter.route('/api/districts')
+@login_required
+@voter_required
+def get_districts():
+    state = request.args.get('state', '').strip()
+    districts = sorted({r['District'] for r in _csv_rows() if (not state or r['State'] == state) and r['District']})
+    return jsonify(districts)
+
+@voter.route('/api/pincodes')
+@login_required
+@voter_required
+def get_pincodes():
+    state = request.args.get('state', '').strip()
+    district = request.args.get('district', '').strip()
+    pins = sorted({r['Pin Code'] for r in _csv_rows() if (not state or r['State'] == state) and (not district or r['District'] == district) and r['Pin Code']})
+    return jsonify(pins)
+
+@voter.route('/api/lookup')
+@login_required
+@voter_required
+def constituency_lookup():
+    state = request.args.get('state', '').strip()
+    district = request.args.get('district', '').strip()
+    pin_code = request.args.get('pin_code', '').strip()
+    for r in _csv_rows():
+        if (not state or r['State'] == state) and (not district or r['District'] == district) and (not pin_code or r['Pin Code'] == pin_code):
+            return jsonify({
+                'state': r['State'],
+                'district': r['District'],
+                'pin_code': r['Pin Code'],
+                'assembly_constituency': r['Constituency'],
+                'loksabha_constituency': r['Constituency']
+            })
+    return jsonify({
+        'state': state,
+        'district': district,
+        'pin_code': pin_code,
+        'assembly_constituency': '',
+        'loksabha_constituency': ''
+    })
 
 @voter.route('/photo/<path:filename>')
 @login_required
