@@ -147,7 +147,7 @@ def verify_otp():
         else:
             flash('Invalid OTP. Please try again.', 'danger')
             
-    return render_template('otp_verify.html', form=form)
+    return render_template('verify_otp.html', form=form)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
