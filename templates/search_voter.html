@@ -18,8 +18,8 @@
     </div>
 
     <!-- Search Box -->
-    <div class="max-w-4xl mx-auto mb-12">
-        <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all">
+    <div class="max-w-4xl mx-auto mb-12 relative z-50">
+        <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all overflow-visible">
             
             <!-- Search Type Toggle (Premium Glassmorphism) -->
             <div class="flex justify-center mb-10">
@@ -90,8 +90,9 @@
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">District</label>
-                    <input type="text" id="districtInput" placeholder="Enter District" 
-                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                    <select id="districtInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                        <option value="" class="bg-dark">Select District</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Assembly Constituency</label>
@@ -554,11 +555,65 @@
             onToggle: (isOpen) => {
                 const btn = document.getElementById('btnSearchDetails');
                 if (btn) {
-                    // Use visibility: hidden to preserve layout space, avoiding jumps
                     btn.style.visibility = isOpen ? 'hidden' : 'visible';
                 }
             }
         });
+
+        // Initialize District Select
+        const districtSelectContainer = initCustomSelect('districtInput', 'Select District', {
+            onToggle: (isOpen) => {
+                const btn = document.getElementById('btnSearchDetails');
+                if (btn) {
+                    btn.style.visibility = isOpen ? 'hidden' : 'visible';
+                }
+            }
+        });
+
+        // Dynamic District Loading
+        const stateInput = document.getElementById('stateInput');
+        const districtInput = document.getElementById('districtInput');
+
+        if (stateInput && districtInput) {
+            stateInput.addEventListener('change', async function() {
+                const state = this.value;
+                
+                // Clear current districts
+                districtInput.innerHTML = '<option value="" class="bg-dark">Select District</option>';
+                
+                // Reset Custom UI
+                if (districtSelectContainer) {
+                    districtSelectContainer.updateOptions();
+                    const trigger = districtSelectContainer.querySelector('.custom-select-trigger');
+                    if (trigger) {
+                        trigger.querySelector('span').textContent = 'Select District';
+                        trigger.classList.remove('has-value');
+                    }
+                }
+
+                if (state) {
+                    try {
+                        const response = await fetch(`/voter/api/districts?state=${encodeURIComponent(state)}`);
+                        const districts = await response.json();
+                        
+                        districts.forEach(d => {
+                            const option = document.createElement('option');
+                            option.value = d;
+                            option.textContent = d;
+                            option.className = "bg-dark";
+                            districtInput.appendChild(option);
+                        });
+
+                        // Update Custom UI with new options
+                        if (districtSelectContainer) {
+                            districtSelectContainer.updateOptions();
+                        }
+                    } catch (error) {
+                        console.error('Error loading districts:', error);
+                    }
+                }
+            });
+        }
     });
 </script>
 
@@ -578,7 +633,7 @@
     }
 
     .custom-select-container.is-active {
-        z-index: 50;
+        z-index: 1000;
     }
 
     .custom-select-trigger {
@@ -630,8 +685,8 @@
         background-color: #0F172A; /* Slate 900 - Solid Background */
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 0.75rem;
-        z-index: 100; /* High Z-Index */
-        max-height: 300px;
+        z-index: 1001; /* High Z-Index */
+        max-height: 400px; /* Increased height */
         overflow-y: auto;
         overscroll-behavior: contain; /* Prevent scroll chaining */
         opacity: 0;
