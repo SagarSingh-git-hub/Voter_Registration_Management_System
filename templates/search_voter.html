@@ -18,8 +18,8 @@
     </div>
 
     <!-- Search Box -->
-    <div class="max-w-4xl mx-auto mb-12 relative z-50">
-        <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all overflow-visible">
+    <div class="max-w-4xl mx-auto mb-12">
+        <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all">
             
             <!-- Search Type Toggle (Premium Glassmorphism) -->
             <div class="flex justify-center mb-10">
@@ -555,62 +555,63 @@
             onToggle: (isOpen) => {
                 const btn = document.getElementById('btnSearchDetails');
                 if (btn) {
+                    // Use visibility: hidden to preserve layout space, avoiding jumps
                     btn.style.visibility = isOpen ? 'hidden' : 'visible';
                 }
             }
         });
 
         // Initialize District Select
-        const districtSelectContainer = initCustomSelect('districtInput', 'Select District', {
-            onToggle: (isOpen) => {
-                const btn = document.getElementById('btnSearchDetails');
-                if (btn) {
-                    btn.style.visibility = isOpen ? 'hidden' : 'visible';
-                }
-            }
-        });
+        const districtSelect = initCustomSelect('districtInput', 'Select District');
 
-        // Dynamic District Loading
+        // State Change Listener for Dynamic Districts
         const stateInput = document.getElementById('stateInput');
-        const districtInput = document.getElementById('districtInput');
-
-        if (stateInput && districtInput) {
+        if (stateInput) {
             stateInput.addEventListener('change', async function() {
                 const state = this.value;
+                const districtNative = document.getElementById('districtInput');
                 
-                // Clear current districts
-                districtInput.innerHTML = '<option value="" class="bg-dark">Select District</option>';
+                // Clear existing options
+                districtNative.innerHTML = '<option value="" class="bg-dark">Select District</option>';
                 
-                // Reset Custom UI
-                if (districtSelectContainer) {
-                    districtSelectContainer.updateOptions();
-                    const trigger = districtSelectContainer.querySelector('.custom-select-trigger');
-                    if (trigger) {
-                        trigger.querySelector('span').textContent = 'Select District';
-                        trigger.classList.remove('has-value');
-                    }
-                }
-
                 if (state) {
                     try {
+                        // Add temporary loading option
+                        const loadingOpt = document.createElement('option');
+                        loadingOpt.text = "Loading...";
+                        loadingOpt.value = "";
+                        loadingOpt.disabled = true;
+                        districtNative.appendChild(loadingOpt);
+                        
+                        // Update UI to show loading
+                        if (districtSelect && districtSelect.updateOptions) districtSelect.updateOptions();
+
                         const response = await fetch(`/voter/api/districts?state=${encodeURIComponent(state)}`);
                         const districts = await response.json();
                         
-                        districts.forEach(d => {
-                            const option = document.createElement('option');
-                            option.value = d;
-                            option.textContent = d;
-                            option.className = "bg-dark";
-                            districtInput.appendChild(option);
-                        });
+                        // Clear loading and populate
+                        districtNative.innerHTML = '<option value="" class="bg-dark">Select District</option>';
 
-                        // Update Custom UI with new options
-                        if (districtSelectContainer) {
-                            districtSelectContainer.updateOptions();
+                        districts.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d;
+                            opt.text = d;
+                            opt.className = 'bg-dark';
+                            districtNative.appendChild(opt);
+                        });
+                        
+                        // Update custom select UI with new districts
+                        if (districtSelect && districtSelect.updateOptions) {
+                            districtSelect.updateOptions();
                         }
                     } catch (error) {
-                        console.error('Error loading districts:', error);
+                        console.error('Error fetching districts:', error);
+                        districtNative.innerHTML = '<option value="" class="bg-dark">Error loading districts</option>';
+                        if (districtSelect && districtSelect.updateOptions) districtSelect.updateOptions();
                     }
+                } else {
+                    // Reset if no state selected
+                    if (districtSelect && districtSelect.updateOptions) districtSelect.updateOptions();
                 }
             });
         }
@@ -633,7 +634,7 @@
     }
 
     .custom-select-container.is-active {
-        z-index: 1000;
+        z-index: 50;
     }
 
     .custom-select-trigger {
@@ -685,8 +686,8 @@
         background-color: #0F172A; /* Slate 900 - Solid Background */
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 0.75rem;
-        z-index: 1001; /* High Z-Index */
-        max-height: 400px; /* Increased height */
+        z-index: 100; /* High Z-Index */
+        max-height: 250px;
         overflow-y: auto;
         overscroll-behavior: contain; /* Prevent scroll chaining */
         opacity: 0;
