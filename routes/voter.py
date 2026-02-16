@@ -22,7 +22,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from PIL import Image as PILImage, ImageOps
 from functools import lru_cache
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-CSV_FILE = os.path.join(BASE_DIR, "All_28_States_Districts_PinCodes_with_Constituency..csv")
+CSV_FILE = os.path.join(BASE_DIR, "All_28_States_Districts_PinCodes_with_Constituency.csv")
 
 voter = Blueprint('voter', __name__)
 

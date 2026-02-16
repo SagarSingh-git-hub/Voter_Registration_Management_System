@@ -57,35 +57,6 @@
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">State</label>
                     <select id="stateInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                         <option value="" class="bg-dark">Select State</option>
-                        <option value="Andhra Pradesh" class="bg-dark">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh" class="bg-dark">Arunachal Pradesh</option>
-                        <option value="Assam" class="bg-dark">Assam</option>
-                        <option value="Bihar" class="bg-dark">Bihar</option>
-                        <option value="Chhattisgarh" class="bg-dark">Chhattisgarh</option>
-                        <option value="Delhi" class="bg-dark">Delhi</option>
-                        <option value="Goa" class="bg-dark">Goa</option>
-                        <option value="Gujarat" class="bg-dark">Gujarat</option>
-                        <option value="Haryana" class="bg-dark">Haryana</option>
-                        <option value="Himachal Pradesh" class="bg-dark">Himachal Pradesh</option>
-                        <option value="Jharkhand" class="bg-dark">Jharkhand</option>
-                        <option value="Karnataka" class="bg-dark">Karnataka</option>
-                        <option value="Kerala" class="bg-dark">Kerala</option>
-                        <option value="Madhya Pradesh" class="bg-dark">Madhya Pradesh</option>
-                        <option value="Maharashtra" class="bg-dark">Maharashtra</option>
-                        <option value="Manipur" class="bg-dark">Manipur</option>
-                        <option value="Meghalaya" class="bg-dark">Meghalaya</option>
-                        <option value="Mizoram" class="bg-dark">Mizoram</option>
-                        <option value="Nagaland" class="bg-dark">Nagaland</option>
-                        <option value="Odisha" class="bg-dark">Odisha</option>
-                        <option value="Punjab" class="bg-dark">Punjab</option>
-                        <option value="Rajasthan" class="bg-dark">Rajasthan</option>
-                        <option value="Sikkim" class="bg-dark">Sikkim</option>
-                        <option value="Tamil Nadu" class="bg-dark">Tamil Nadu</option>
-                        <option value="Telangana" class="bg-dark">Telangana</option>
-                        <option value="Tripura" class="bg-dark">Tripura</option>
-                        <option value="Uttar Pradesh" class="bg-dark">Uttar Pradesh</option>
-                        <option value="Uttarakhand" class="bg-dark">Uttarakhand</option>
-                        <option value="West Bengal" class="bg-dark">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -551,7 +522,7 @@
         }
 
         // Initialize UI wrappers
-        initCustomSelect('stateInput', 'Select State', {
+        const stateSelect = initCustomSelect('stateInput', 'Select State', {
             onToggle: (isOpen) => {
                 const btn = document.getElementById('btnSearchDetails');
                 if (btn) {
@@ -563,6 +534,35 @@
 
         // Initialize District Select
         const districtSelect = initCustomSelect('districtInput', 'Select District');
+
+        // Fetch States from API
+        (async function fetchStates() {
+            try {
+                const response = await fetch('/voter/api/states');
+                const states = await response.json();
+                
+                const stateInput = document.getElementById('stateInput');
+                if (!stateInput) return;
+
+                // Clear existing options except placeholder
+                stateInput.innerHTML = '<option value="" class="bg-dark">Select State</option>';
+
+                states.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.text = s;
+                    opt.className = 'bg-dark';
+                    stateInput.appendChild(opt);
+                });
+
+                // Update custom select UI with new states
+                if (stateSelect && stateSelect.updateOptions) {
+                    stateSelect.updateOptions();
+                }
+            } catch (error) {
+                console.error('Error fetching states:', error);
+            }
+        })();
 
         // State Change Listener for Dynamic Districts
         const stateInput = document.getElementById('stateInput');
