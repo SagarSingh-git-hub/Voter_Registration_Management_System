@@ -78,7 +78,7 @@
                     </div>
 
                     <!-- DOB & Age -->
-                    <div class="group relative z-[50]">
+                    <div class="group relative z-[45]">
                         {{ form.dob.label(class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-electric transition-colors") }}
                         {{ form.dob(class="w-full bg-white/5 border border-white/10 rounded-xl text-white px-5 py-4 focus:outline-none focus:border-electric focus:bg-white/10 focus:shadow-glow-sm transition-all text-gray-400", type="date") }}
                         <div id="age-calc" class="text-xs mt-2 font-mono text-gray-500"></div>
@@ -1740,6 +1740,18 @@
             // Expose update function to refresh options from native select
             container.updateOptions = function() {
                 optionsContainer.innerHTML = '';
+                
+                // Sync trigger text with native select value
+                if (nativeSelect.value === "") {
+                    trigger.querySelector('span').textContent = placeholder;
+                    trigger.classList.remove('has-value');
+                } else {
+                    const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex];
+                    if (selectedOpt) {
+                        trigger.querySelector('span').textContent = selectedOpt.text;
+                        trigger.classList.add('has-value');
+                    }
+                }
                 
                 Array.from(nativeSelect.options).forEach(opt => {
                     if (opt.disabled || opt.value === "") return;

@@ -43,34 +43,46 @@
 
             <!-- Search Form: Details -->
             <div id="searchByDetails" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="col-span-1 md:col-span-3 lg:col-span-1">
+                <div class="col-span-1 md:col-span-3 lg:col-span-1 relative z-10">
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
                     <input type="text" id="nameInput" placeholder="Enter Full Name" 
                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Age</label>
-                    <input type="number" id="ageInput" placeholder="Enter Age" 
-                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                <div class="relative z-10">
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Age</label>
+                <div class="relative">
+                    <input type="number" id="ageInput" placeholder="Enter Age" min="18" max="120"
+                           class="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
+                    
+                    <!-- Custom Glass Spin Buttons -->
+                    <div class="absolute right-0 top-0 bottom-0 w-8 flex flex-col border-l border-white/10">
+                        <button type="button" onclick="document.getElementById('ageInput').stepUp()" class="flex-1 text-gray-400 hover:text-white hover:bg-white/10 rounded-tr-xl transition-colors flex items-center justify-center focus:outline-none">
+                            <i class="fas fa-chevron-up text-[10px]"></i>
+                        </button>
+                        <button type="button" onclick="document.getElementById('ageInput').stepDown()" class="flex-1 text-gray-400 hover:text-white hover:bg-white/10 rounded-br-xl transition-colors flex items-center justify-center border-t border-white/10 focus:outline-none">
+                            <i class="fas fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
                 </div>
-                <div>
+            </div>
+                <div class="relative z-50">
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">State</label>
                     <select id="stateInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                         <option value="" class="bg-dark">Select State</option>
                     </select>
                 </div>
-                <div>
+                <div class="relative z-40">
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">District</label>
                     <select id="districtInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                         <option value="" class="bg-dark">Select District</option>
                     </select>
                 </div>
-                <div>
+                <div class="relative z-10">
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">Assembly Constituency</label>
                     <input type="text" id="assemblyInput" placeholder="Optional" 
                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                 </div>
-                 <div class="flex items-end">
+                 <div class="flex items-end relative z-10">
                     <button type="button" id="btnSearchDetails" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
                         <i class="fas fa-search"></i> Search Records
                     </button>
@@ -484,6 +496,22 @@
             // Expose update function to refresh options from native select
             container.updateOptions = function() {
                 optionsContainer.innerHTML = '';
+
+                // Sync trigger text with native select value
+                if (nativeSelect.value === "") {
+                    const trigger = container.querySelector('.custom-select-trigger');
+                    if (trigger) {
+                        trigger.querySelector('span').textContent = placeholder;
+                        trigger.classList.remove('has-value');
+                    }
+                } else {
+                    const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex];
+                    const trigger = container.querySelector('.custom-select-trigger');
+                    if (selectedOpt && trigger) {
+                        trigger.querySelector('span').textContent = selectedOpt.text;
+                        trigger.classList.add('has-value');
+                    }
+                }
                 
                 Array.from(nativeSelect.options).forEach(opt => {
                     if (opt.disabled || opt.value === "") return;
@@ -586,6 +614,15 @@
             stateInput.addEventListener('change', async function() {
                 const state = this.value;
                 const districtNative = document.getElementById('districtInput');
+                
+                // Reset Custom Dropdown UI immediately
+                if (districtSelect) {
+                    const trigger = districtSelect.querySelector('.custom-select-trigger');
+                    if (trigger) {
+                        trigger.querySelector('span').textContent = 'Select District';
+                        trigger.classList.remove('has-value');
+                    }
+                }
                 
                 // Clear existing options
                 districtNative.innerHTML = '<option value="" class="bg-dark">Select District</option>';

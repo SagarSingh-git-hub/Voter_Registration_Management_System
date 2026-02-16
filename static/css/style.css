@@ -116,11 +116,12 @@ input:-webkit-autofill:active{
 }
 
 .custom-select-container.is-active {
-    z-index: 999;
+    z-index: 9999;
 }
 
 .custom-select-trigger {
     width: 100%;
+    position: relative;
     background-color: rgba(255, 255, 255, 0.05); /* Match bg-white/5 */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.75rem; /* 12px */
@@ -238,4 +239,14 @@ select option {
     background-color: #0F172A; /* Slate 900 - Dark Background */
     color: #ffffff; /* White Text */
     padding: 10px;
+}
+
+/* Hide Default Spin Buttons */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
 }
