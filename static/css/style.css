@@ -169,8 +169,9 @@ input:-webkit-autofill:active{
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.75rem;
     z-index: 100; /* High Z-Index */
-    max-height: 300px;
+    max-height: 40vh; /* Responsive height for mobile */
     overflow-y: auto;
+    overscroll-behavior: contain; /* Prevent scroll chaining */
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
@@ -180,11 +181,29 @@ input:-webkit-autofill:active{
     pointer-events: none; /* Prevent clicks when hidden */
 }
 
+@media (min-width: 640px) {
+    .custom-options {
+        max-height: 300px; /* Fixed max-height on larger screens */
+    }
+}
+
+/* Auto-adjustment: Open Upwards */
+.custom-options.open-up {
+    top: auto;
+    bottom: calc(100% + 8px);
+    transform: translateY(10px);
+    box-shadow: 0 -10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
 .custom-options.is-open {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
     pointer-events: auto; /* Enable clicks when open */
+}
+
+.custom-options.open-up.is-open {
+    transform: translateY(0);
 }
 
 .custom-option {

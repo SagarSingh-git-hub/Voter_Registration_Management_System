@@ -51,29 +51,48 @@
             }
 
             .custom-options {
-                position: absolute;
-                top: calc(100% + 8px);
-                left: 0;
-                right: 0;
-                background-color: #0F172A; /* Slate 900 - Solid Background */
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 0.75rem;
-                z-index: 100; /* High Z-Index */
-                max-height: 300px;
-                overflow-y: auto;
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(-10px);
-                transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-                box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(12px); /* Ensure readability */
-            }
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background-color: #0F172A; /* Slate 900 - Solid Background */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        z-index: 100; /* High Z-Index */
+        max-height: 40vh; /* Responsive height for mobile */
+        overflow-y: auto;
+        overscroll-behavior: contain; /* Prevent scroll chaining */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(12px); /* Ensure readability */
+    }
 
-            .custom-options.is-open {
-                opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
-            }
+    @media (min-width: 640px) {
+        .custom-options {
+            max-height: 300px; /* Fixed max-height on larger screens */
+        }
+    }
+
+    /* Auto-adjustment: Open Upwards */
+    .custom-options.open-up {
+        top: auto;
+        bottom: calc(100% + 8px);
+        transform: translateY(10px);
+        box-shadow: 0 -10px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-options.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .custom-options.open-up.is-open {
+        transform: translateY(0);
+    }
 
             .custom-option {
                 padding: 12px 16px;
@@ -531,6 +550,19 @@
             // Helper to toggle state
             function setOpen(isOpen) {
                 if (isOpen) {
+                    // Auto-Adjustment: Check if dropdown fits below
+                    const rect = trigger.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const dropdownHeight = 300; // Estimated max height
+                    
+                    // Reset position class
+                    optionsContainer.classList.remove('open-up');
+
+                    // If space below is less than dropdown height, open upwards
+                    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                        optionsContainer.classList.add('open-up');
+                    }
+
                     container.classList.add('is-active');
                     optionsContainer.classList.add('is-open');
                     trigger.classList.add('is-open');
@@ -547,7 +579,10 @@
 
                 } else {
                     // Delay removing z-index to allow animation to finish
-                    setTimeout(() => container.classList.remove('is-active'), 200);
+                    setTimeout(() => {
+                        container.classList.remove('is-active');
+                        optionsContainer.classList.remove('open-up');
+                    }, 200);
                     optionsContainer.classList.remove('is-open');
                     trigger.classList.remove('is-open');
                     focusedIndex = -1;

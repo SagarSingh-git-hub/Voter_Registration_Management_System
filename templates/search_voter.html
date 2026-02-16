@@ -22,20 +22,20 @@
         <div class="glass-panel p-6 rounded-2xl border border-white/10 shadow-glow-sm bg-dark/80 backdrop-blur-md transition-all">
             
             <!-- Search Type Toggle (Premium Glassmorphism) -->
-            <div class="flex justify-center mb-10">
-                <div class="relative inline-flex bg-black/40 backdrop-blur-xl rounded-full p-1.5 border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] group hover:border-white/20 transition-all duration-300">
+            <div class="flex justify-center mb-10 px-4">
+                <div class="relative flex w-full max-w-lg bg-black/40 backdrop-blur-xl rounded-full p-1.5 border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] group hover:border-white/20 transition-all duration-300">
                     <!-- Sliding Glider -->
-                    <div id="toggleGlider" class="absolute top-1.5 left-1.5 bottom-1.5 w-64 bg-gradient-to-r from-electric to-blue-600 shadow-[0_0_20px_rgba(0,180,255,0.4)] rounded-full transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) border border-white/20 z-0">
+                    <div id="toggleGlider" class="absolute top-1.5 left-1.5 bottom-1.5 w-[calc(50%-0.375rem)] bg-gradient-to-r from-electric to-blue-600 shadow-[0_0_20px_rgba(0,180,255,0.4)] rounded-full transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) border border-white/20 z-0">
                         <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full opacity-50"></div>
                     </div>
 
                     <!-- Buttons -->
-                    <button onclick="toggleSearchType('details')" id="btnDetails" class="relative z-10 w-64 py-2.5 rounded-full text-sm font-display font-bold transition-colors duration-300 text-white tracking-wide flex items-center justify-center gap-2">
-                        <i class="fas fa-user-edit text-lg"></i>
+                    <button onclick="toggleSearchType('details')" id="btnDetails" class="relative z-10 flex-1 py-2.5 rounded-full text-xs sm:text-sm font-display font-bold transition-colors duration-300 text-white tracking-wide flex items-center justify-center gap-2">
+                        <i class="fas fa-user-edit text-base sm:text-lg"></i>
                         Search by Details
                     </button>
-                    <button onclick="toggleSearchType('epic')" id="btnEpic" class="relative z-10 w-64 py-2.5 rounded-full text-sm font-display font-bold transition-colors duration-300 text-gray-400 hover:text-white tracking-wide flex items-center justify-center gap-2">
-                        <i class="fas fa-id-card text-lg"></i>
+                    <button onclick="toggleSearchType('epic')" id="btnEpic" class="relative z-10 flex-1 py-2.5 rounded-full text-xs sm:text-sm font-display font-bold transition-colors duration-300 text-gray-400 hover:text-white tracking-wide flex items-center justify-center gap-2">
+                        <i class="fas fa-id-card text-base sm:text-lg"></i>
                         Search by EPIC No.
                     </button>
                 </div>
@@ -78,7 +78,7 @@
             </div>
 
             <!-- Search Form: EPIC -->
-            <div id="searchByEpic" class="hidden flex gap-4">
+            <div id="searchByEpic" class="hidden flex-col md:flex-row gap-4">
                  <div class="flex-1">
                     <label class="block text-xs text-gray-400 uppercase tracking-wider mb-2">EPIC Number</label>
                     <input type="text" id="epicInput" placeholder="Enter EPIC Number (e.g., ABC1234567)" 
@@ -360,6 +360,19 @@
             // Helper to toggle state
             function setOpen(isOpen) {
                 if (isOpen) {
+                    // Auto-Adjustment: Check if dropdown fits below
+                    const rect = trigger.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const dropdownHeight = 300; // Estimated max height
+                    
+                    // Reset position class
+                    optionsContainer.classList.remove('open-up');
+
+                    // If space below is less than dropdown height, open upwards
+                    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                        optionsContainer.classList.add('open-up');
+                    }
+
                     container.classList.add('is-active');
                     optionsContainer.classList.add('is-open');
                     trigger.classList.add('is-open');
@@ -376,7 +389,10 @@
 
                 } else {
                     // Delay removing z-index to allow animation to finish
-                    setTimeout(() => container.classList.remove('is-active'), 200);
+                    setTimeout(() => {
+                        container.classList.remove('is-active');
+                        optionsContainer.classList.remove('open-up');
+                    }, 200);
                     optionsContainer.classList.remove('is-open');
                     trigger.classList.remove('is-open');
                     focusedIndex = -1;
@@ -687,7 +703,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 0.75rem;
         z-index: 100; /* High Z-Index */
-        max-height: 250px;
+        max-height: 40vh; /* Responsive height for mobile */
         overflow-y: auto;
         overscroll-behavior: contain; /* Prevent scroll chaining */
         opacity: 0;
@@ -697,9 +713,27 @@
         box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
     }
 
+    @media (min-width: 640px) {
+        .custom-options {
+            max-height: 300px; /* Fixed max-height on larger screens */
+        }
+    }
+
+    /* Auto-adjustment: Open Upwards */
+    .custom-options.open-up {
+        top: auto;
+        bottom: calc(100% + 8px);
+        transform: translateY(10px);
+        box-shadow: 0 -10px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
     .custom-options.is-open {
         opacity: 1;
         visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .custom-options.open-up.is-open {
         transform: translateY(0);
     }
 
