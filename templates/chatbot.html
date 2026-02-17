@@ -114,6 +114,8 @@
         if (indicator) indicator.remove();
     }
 
+    let conversationHistory = [];
+
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const message = userInput.value.trim();
@@ -124,15 +126,19 @@
         const submitBtn = chatForm.querySelector('button');
         submitBtn.disabled = true;
 
-        // Add user message
+        // Add user message to UI
         addMessage(message, true);
         userInput.value = '';
+        
+        // Add to history
+        conversationHistory.push({ role: "user", content: message });
 
         // Add typing indicator
         addTypingIndicator();
 
         try {
-            const response = await fetch("{{ url_for('main.chatbot_message') }}", {
+            // Use the new AI Service Endpoint
+            const response = await fetch("{{ url_for('ai.chat') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -140,27 +146,29 @@
                 },
                 body: JSON.stringify({ 
                     message: message,
-                    user_id: "{{ current_user.id }}" 
+                    history: conversationHistory
                 })
             });
 
             const data = await response.json();
             removeTypingIndicator();
 
-            if (data.reply) {
-                addMessage(data.reply);
-            } else if (data.response) {
-                // Legacy fallback just in case
+            if (data.response) {
                 addMessage(data.response);
+                // Add AI response to history
+                conversationHistory.push({ role: "assistant", content: data.response });
+            } else if (data.error) {
+                addMessage("Error: " + data.error);
             } else {
-                 addMessage("⚠️ I received an empty response. Please check the system connection.");
+                addMessage("Something went wrong. Please try again.");
             }
 
         } catch (error) {
+            console.error('Error:', error);
             removeTypingIndicator();
-            addMessage("Sorry, I encountered an error connecting to the server.");
-            console.error(error);
+            addMessage("Network error. Please check your connection.");
         } finally {
+            // Re-enable input
             userInput.disabled = false;
             submitBtn.disabled = false;
             userInput.focus();
