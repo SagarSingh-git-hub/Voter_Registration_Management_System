@@ -63,65 +63,78 @@ def chatbot_message():
         }
 
         # Send to n8n
-        response = requests.post(webhook_url, json=payload, timeout=15)
-        
-        # Parse Response (Robust Handling)
         try:
-            n8n_data = response.json()
-        except ValueError:
-            n8n_data = response.text
+            response = requests.post(webhook_url, json=payload, timeout=5) # Reduced timeout for better UX
+            response.raise_for_status() # Raise exception for 4xx/5xx errors
+            
+            # Parse Response (Robust Handling)
+            try:
+                n8n_data = response.json()
+            except ValueError:
+                # If JSON parsing fails, check if text is valid (not HTML)
+                text_content = response.text.strip()
+                if text_content.startswith('<') or 'html' in text_content.lower():
+                    print(f"Warning: n8n returned HTML instead of JSON/Text. URL: {webhook_url}")
+                    n8n_data = None # Trigger fallback
+                else:
+                    n8n_data = text_content
+                    
+        except requests.RequestException as e:
+            print(f"n8n Connection Error: {e}")
+            n8n_data = None # Trigger fallback
 
         # Extract Reply Logic
         reply_text = None
         
-        # If list (n8n often returns list of items)
-        if isinstance(n8n_data, list):
-            if len(n8n_data) > 0:
-                item = n8n_data[0]
-                if isinstance(item, dict):
-                    # Try common keys
-                    reply_text = (
-                        item.get('reply') or 
-                        item.get('output_text') or 
-                        item.get('text') or 
-                        item.get('response') or 
-                        item.get('message') or 
-                        item.get('output') or
-                        item.get('content')
-                    )
-                    # Fallback: if dict has no known text key, dump the whole dict
-                    if not reply_text:
-                        import json
-                        reply_text = json.dumps(item)
+        if n8n_data:
+            # If list (n8n often returns list of items)
+            if isinstance(n8n_data, list):
+                if len(n8n_data) > 0:
+                    item = n8n_data[0]
+                    if isinstance(item, dict):
+                        # Try common keys
+                        reply_text = (
+                            item.get('reply') or 
+                            item.get('output_text') or 
+                            item.get('text') or 
+                            item.get('response') or 
+                            item.get('message') or 
+                            item.get('output') or
+                            item.get('content')
+                        )
+                        # Fallback: if dict has no known text key, dump the whole dict
+                        if not reply_text:
+                            import json
+                            reply_text = json.dumps(item)
+                    else:
+                        reply_text = str(item)
                 else:
-                    reply_text = str(item)
-            else:
-                reply_text = "Received empty list from AI Agent."
+                    reply_text = "Received empty list from AI Agent."
 
-        # If dict
-        elif isinstance(n8n_data, dict):
-            reply_text = (
-                n8n_data.get('reply') or 
-                n8n_data.get('output_text') or 
-                n8n_data.get('text') or 
-                n8n_data.get('response') or 
-                n8n_data.get('message') or 
-                n8n_data.get('output') or 
-                n8n_data.get('content')
-            )
-            # Fallback
-            if not reply_text:
-                import json
-                reply_text = json.dumps(n8n_data)
+            # If dict
+            elif isinstance(n8n_data, dict):
+                reply_text = (
+                    n8n_data.get('reply') or 
+                    n8n_data.get('output_text') or 
+                    n8n_data.get('text') or 
+                    n8n_data.get('response') or 
+                    n8n_data.get('message') or 
+                    n8n_data.get('output') or 
+                    n8n_data.get('content')
+                )
+                # Fallback
+                if not reply_text:
+                    import json
+                    reply_text = json.dumps(n8n_data)
 
-        # If string
-        elif isinstance(n8n_data, str):
-            reply_text = n8n_data
+            # If string
+            elif isinstance(n8n_data, str):
+                reply_text = n8n_data
 
         # Final Fallback with Local Logic
         if not reply_text:
              # If n8n fails/returns empty, use local fallback logic
-             print(f"DEBUG: n8n returned empty. Using local fallback.")
+             print(f"DEBUG: n8n returned empty or invalid. Using local fallback.")
              reply_text = local_chatbot_fallback(user_message)
 
         return jsonify({"reply": reply_text})
@@ -134,36 +147,9 @@ def chatbot_message():
 
 def local_chatbot_fallback(message):
     """
-    Simple rule-based fallback when n8n is offline or misconfigured.
+    Fallback when n8n is offline.
     """
-    msg = message.lower()
-    
-    if "hello" in msg or "hi" in msg:
-        return "Hello! I am Voter Mitra (Offline Mode). How can I help you?"
-    
-    elif "status" in msg or "track" in msg:
-        return "You can check your application status on your Dashboard."
-        
-    elif "apply" in msg or "register" in msg:
-        return "To apply for a new Voter ID, please fill out Form 6 available in the Forms section."
-        
-    elif "complaint" in msg:
-        return "You can register a complaint using the 'Register Complaint' button on the dashboard."
-        
-    elif "download" in msg or "form" in msg:
-        return "You can download necessary forms from the 'Download Forms' section."
-        
-    else:
-        # Generic Menu Fallback for unknown inputs during outage
-        return (
-            "I am currently operating in Limited Mode (AI Offline). "
-            "I can still assist you with:\n\n"
-            "• Tracking Application Status\n"
-            "• New Voter Registration\n"
-            "• Filing Complaints\n"
-            "• Downloading Forms\n\n"
-            "Please type one of the topics above."
-        )
+    return "I am currently experiencing technical difficulties connecting to my AI service. Please try again later."
 
 @main.route('/faq')
 def faq():

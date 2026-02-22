@@ -35,14 +35,12 @@ def create_app(config_class=Config):
     from routes.voter import voter as voter_blueprint
     from routes.admin import admin as admin_blueprint
     from routes.e_epic import e_epic as e_epic_blueprint
-    from routes.ai_routes import ai_bp as ai_blueprint
 
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
     app.register_blueprint(voter_blueprint, url_prefix='/voter')
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
     app.register_blueprint(e_epic_blueprint, url_prefix='/e-epic')
-    app.register_blueprint(ai_blueprint)
 
     return app
 
