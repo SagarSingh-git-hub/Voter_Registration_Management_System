@@ -29,7 +29,11 @@ voter = Blueprint('voter', __name__)
 def voter_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != 'voter':
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.login'))
+            
+        # Allow access if user is a voter OR an admin
+        if current_user.role not in ['voter', 'admin']:
             flash('Unauthorized Access', 'danger')
             return redirect(url_for('main.index'))
         return f(*args, **kwargs)
@@ -164,8 +168,45 @@ def service_form(service_type):
     service_name = service_names.get(service_type, 'Service Request')
     
     if request.method == 'POST':
-        # TODO: Implement actual logic for each service type
+        # Handle BLO Call
+        if service_type == 'blo_call':
+            preferred_time = request.form.get('preferred_time')
+            reason = request.form.get('reason')
+            
+            mongo.db.blo_calls.insert_one({
+                'user_id': str(current_user.id),
+                'user_role': current_user.role,
+                'preferred_time': preferred_time,
+                'reason': reason,
+                'status': 'Pending',
+                'created_at': datetime.utcnow()
+            })
+            
+        # Handle Appeal
+        elif service_type == 'appeal':
+            application_id = request.form.get('application_id')
+            reason = request.form.get('reason') # In case we add it later or it's hidden
+            
+            mongo.db.appeals.insert_one({
+                'user_id': str(current_user.id),
+                'user_role': current_user.role,
+                'application_id': application_id,
+                'reason': reason,
+                'status': 'Pending',
+                'created_at': datetime.utcnow()
+            })
+            
+        # Handle Search (Log it)
+        elif service_type == 'search':
+            query = request.form.get('query')
+            # Just log or do nothing as search is usually GET or immediate
+            pass
+
         flash(f'Your request for {service_name} has been submitted successfully.', 'success')
+        
+        # Redirect based on role
+        if current_user.role == 'admin':
+            return redirect(url_for('admin.dashboard'))
         return redirect(url_for('voter.profile'))
         
     return render_template('service_form.html', service_type=service_type, service_name=service_name)
