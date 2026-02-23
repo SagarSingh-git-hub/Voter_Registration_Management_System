@@ -170,13 +170,13 @@ def service_form(service_type):
     if request.method == 'POST':
         # Handle BLO Call
         if service_type == 'blo_call':
-            preferred_time = request.form.get('preferred_time')
+            preferred_date = request.form.get('preferred_date')
             reason = request.form.get('reason')
             
             mongo.db.blo_calls.insert_one({
                 'user_id': str(current_user.id),
                 'user_role': current_user.role,
-                'preferred_time': preferred_time,
+                'preferred_date': preferred_date,
                 'reason': reason,
                 'status': 'Pending',
                 'created_at': datetime.utcnow()
