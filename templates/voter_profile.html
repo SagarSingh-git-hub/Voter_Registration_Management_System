@@ -183,6 +183,70 @@
                     </div>
                 </div>
 
+                <!-- Service Requests Section -->
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.5s;">
+                    <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-history text-electric"></i> Service Requests
+                    </h3>
+                    
+                    {% if blo_calls %}
+                        <div class="space-y-4">
+                            {% for call in blo_calls %}
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="text-white font-medium">Book BLO Call</h4>
+                                        <p class="text-gray-400 text-xs mt-1">
+                                            {{ call.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </p>
+                                    </div>
+                                    {% if call.status == 'Completed' %}
+                                        <span class="text-emerald text-xs font-bold bg-emerald/10 px-2 py-1 rounded">Completed</span>
+                                    {% elif call.status == 'Scheduled' %}
+                                        <span class="text-electric text-xs font-bold bg-electric/10 px-2 py-1 rounded">Scheduled</span>
+                                    {% elif call.status == 'Assigned' %}
+                                        <span class="text-yellow-400 text-xs font-bold bg-yellow-400/10 px-2 py-1 rounded">Assigned</span>
+                                    {% elif call.status == 'Rejected' %}
+                                        <span class="text-red-400 text-xs font-bold bg-red-400/10 px-2 py-1 rounded">Rejected</span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs font-bold bg-gray-500/10 px-2 py-1 rounded">Pending</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-3 pt-3 border-t border-white/5">
+                                    <div>
+                                        <span class="text-gray-500 text-xs block mb-1">Reason</span>
+                                        <p class="text-gray-300">{{ call.reason }}</p>
+                                    </div>
+                                    {% if call.scheduled_time %}
+                                    <div>
+                                        <span class="text-electric text-xs block mb-1">Scheduled For</span>
+                                        <p class="text-white font-mono">{{ call.scheduled_time }}</p>
+                                    </div>
+                                    {% endif %}
+                                    {% if call.admin_notes %}
+                                    <div class="md:col-span-2">
+                                        <span class="text-gray-500 text-xs block mb-1">Admin Notes</span>
+                                        <p class="text-gray-300 italic">{{ call.admin_notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-inbox text-gray-500"></i>
+                            </div>
+                            <p class="text-gray-400 text-sm">No service requests found.</p>
+                            <a href="{{ url_for('voter.service_form', service_type='blo_call') }}" class="inline-block mt-4 text-electric text-sm hover:underline">
+                                Book a BLO Call
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>

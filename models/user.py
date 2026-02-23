@@ -19,6 +19,7 @@ class User(UserMixin):
         self.role = user_data.get('role', 'voter')
         self.full_name = user_data.get('full_name')
         self.email = user_data.get('email')
+        self.phone = user_data.get('phone')
         self.created_at = user_data.get('created_at')
         self.profile_pic = user_data.get('profile_pic')
         self.last_login = user_data.get('last_login') # Also add last_login since we used it in the template

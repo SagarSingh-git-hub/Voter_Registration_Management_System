@@ -487,64 +487,132 @@ def export_pdf():
         # Name(180), EPIC(120), Gender(80), DOB(100), State(120), Date(100)
         table = Table(data, colWidths=[180, 120, 80, 100, 120, 100])
         
-        # Professional Table Styling
-        style = TableStyle([
-            # Header Row
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')), # Dark Slate
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
+        # Styling
+        table.setStyle(TableStyle([
+            # Header
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f1f5f9')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#334155')),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             ('TOPPADDING', (0, 0), (-1, 0), 12),
-            ('LEFTPADDING', (0, 0), (-1, 0), 10),
             
-            # Content Rows
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#334155')),
-            ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+            # Body
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#475569')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
             ('TOPPADDING', (0, 1), (-1, -1), 8),
-            ('LEFTPADDING', (0, 1), (-1, -1), 10),
             
-            # Borders & Grid
+            # Borders
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            
-            # Zebra Striping
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
-        ])
+            ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor('#cbd5e1')),
+        ]))
         
-        table.setStyle(style)
         elements.append(table)
         
         # --- Footer ---
-        elements.append(Spacer(1, 40))
+        elements.append(Spacer(1, 30))
         footer_style = ParagraphStyle(
             'Footer', 
             parent=styles['Normal'], 
             alignment=TA_CENTER, 
             fontSize=8, 
-            textColor=colors.gray
+            textColor=colors.HexColor('#94a3b8')
         )
-        elements.append(Paragraph("This is a system-generated official document. Valid without signature.", footer_style))
-        elements.append(Paragraph("ELECTION COMMISSION OF INDIA • OFFICIAL RECORD", footer_style))
+        elements.append(Paragraph("This is a system-generated report. Valid without signature.", footer_style))
         
-        # Build PDF
         doc.build(elements)
         buffer.seek(0)
         
-        timestamp = datetime.now().strftime("%Y%m%d")
-        return send_file(
-            buffer, 
-            as_attachment=True, 
-            download_name=f'Official_Voter_Registry_{timestamp}.pdf', 
-            mimetype='application/pdf'
-        )
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename=Voter_Registry_{timestamp}.pdf'
+        
+        return response
         
     except Exception as e:
         print(f"Error generating PDF: {e}")
-        flash('Error generating PDF. Please contact support.', 'danger')
+        flash('Error generating PDF report. Please try again.', 'danger')
         return redirect(url_for('admin.dashboard'))
+
+@admin.route('/admin/blo-calls')
+@login_required
+@admin_required
+def blo_calls():
+    status_filter = request.args.get('status')
+    query = {}
+    if status_filter:
+        query['status'] = status_filter
+        
+    calls = list(mongo.db.blo_calls.find(query).sort('created_at', -1))
+    
+    # Stats
+    stats = {
+        'total': mongo.db.blo_calls.count_documents({}),
+        'pending': mongo.db.blo_calls.count_documents({'status': 'Pending'}),
+        'scheduled': mongo.db.blo_calls.count_documents({'status': 'Scheduled'}),
+        'completed': mongo.db.blo_calls.count_documents({'status': 'Completed'})
+    }
+    
+    return render_template('admin_blo_calls.html', calls=calls, stats=stats)
+
+@admin.route('/admin/blo-call/<call_id>/update', methods=['POST'])
+@login_required
+@admin_required
+def update_blo_call(call_id):
+    action = request.form.get('action')
+    update_data = {}
+    message = ""
+    status_type = "success"
+    
+    if action == 'assign':
+        blo_name = request.form.get('blo_name')
+        update_data = {
+            'blo_name': blo_name,
+            'status': 'Assigned',
+            'updated_at': datetime.utcnow()
+        }
+        message = f"BLO {blo_name} assigned successfully."
+        
+    elif action == 'schedule':
+        scheduled_time = request.form.get('scheduled_time')
+        update_data = {
+            'scheduled_time': scheduled_time,
+            'status': 'Scheduled',
+            'updated_at': datetime.utcnow()
+        }
+        message = f"Call scheduled for {scheduled_time}."
+        
+    elif action == 'complete':
+        update_data = {
+            'status': 'Completed',
+            'updated_at': datetime.utcnow()
+        }
+        message = "Request marked as completed."
+        
+    elif action == 'reject':
+        update_data = {
+            'status': 'Rejected',
+            'updated_at': datetime.utcnow()
+        }
+        message = "Request rejected."
+        status_type = "warning"
+
+    if update_data:
+        mongo.db.blo_calls.update_one(
+            {'_id': ObjectId(call_id)},
+            {'$set': update_data}
+        )
+        
+        # Notify User
+        call = mongo.db.blo_calls.find_one({'_id': ObjectId(call_id)})
+        if call:
+            create_notification(ObjectId(call['user_id']), f"Your BLO Call request status: {update_data.get('status', 'Updated')}", "info")
+            
+        flash(message, status_type)
+        
+    return redirect(url_for('admin.blo_calls'))

@@ -47,7 +47,13 @@ def profile():
         {'user_id': str(current_user.id)},
         sort=[('submitted_at', -1)]
     )
-    return render_template('voter_profile.html', application=application)
+    
+    # Fetch Service Requests
+    blo_calls = list(mongo.db.blo_calls.find(
+        {'user_id': str(current_user.id)}
+    ).sort('created_at', -1))
+    
+    return render_template('voter_profile.html', application=application, blo_calls=blo_calls)
 
 @voter.route('/profile/update', methods=['POST'])
 @login_required
@@ -173,12 +179,38 @@ def service_form(service_type):
             preferred_date = request.form.get('preferred_date')
             reason = request.form.get('reason')
             
+            # Fetch user details from latest application
+            user_app = mongo.db.applications.find_one(
+                {'user_id': str(current_user.id)},
+                sort=[('submitted_at', -1)]
+            )
+            
+            # Fallback to user profile if application data is missing
+            user_data = mongo.db.users.find_one({'_id': ObjectId(current_user.id)})
+            
+            phone = 'N/A'
+            if user_app and user_app.get('phone'):
+                phone = user_app.get('phone')
+            elif user_data and user_data.get('phone'):
+                phone = user_data.get('phone')
+                
+            constituency = user_app.get('assembly_constituency', 'N/A') if user_app else 'N/A'
+            district = user_app.get('district', 'N/A') if user_app else 'N/A'
+            
             mongo.db.blo_calls.insert_one({
                 'user_id': str(current_user.id),
+                'user_name': current_user.full_name,
+                'user_email': current_user.email,
+                'user_phone': phone,
                 'user_role': current_user.role,
+                'constituency': constituency,
+                'district': district,
                 'preferred_date': preferred_date,
                 'reason': reason,
                 'status': 'Pending',
+                'blo_id': None,
+                'scheduled_time': None,
+                'admin_notes': None,
                 'created_at': datetime.utcnow()
             })
             

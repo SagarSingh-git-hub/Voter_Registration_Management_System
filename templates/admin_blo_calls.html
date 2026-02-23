@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen pt-24 pb-12 px-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 slide-in-bottom">
+            <div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-2">BLO Call Requests</h2>
+                <div class="text-gray-400">Manage and schedule calls with Booth Level Officers</div>
+            </div>
+            <div class="flex gap-4 mt-4 md:mt-0">
+                <a href="{{ url_for('admin.dashboard') }}" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-in-bottom" style="animation-delay: 0.1s;">
+            <div class="glass-panel p-5 rounded-2xl border border-white/5">
+                <div class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-1">Total Requests</div>
+                <div class="text-3xl font-display font-bold text-white">{{ stats.total }}</div>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl border border-electric/20 bg-electric/5">
+                <div class="text-electric text-sm font-medium uppercase tracking-wider mb-1">Pending</div>
+                <div class="text-3xl font-display font-bold text-white">{{ stats.pending }}</div>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl border border-emerald/20 bg-emerald/5">
+                <div class="text-emerald text-sm font-medium uppercase tracking-wider mb-1">Scheduled</div>
+                <div class="text-3xl font-display font-bold text-white">{{ stats.scheduled }}</div>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl border border-white/5">
+                <div class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-1">Completed</div>
+                <div class="text-3xl font-display font-bold text-white">{{ stats.completed }}</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex gap-2 mb-8 overflow-x-auto pb-2 slide-in-bottom" style="animation-delay: 0.2s;">
+            <a href="{{ url_for('admin.blo_calls') }}" 
+               class="px-4 py-2 rounded-full border transition-all whitespace-nowrap
+               {% if not request.args.get('status') %} bg-electric text-dark border-electric font-bold {% else %} bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 {% endif %}">
+                All Requests
+            </a>
+            <a href="{{ url_for('admin.blo_calls', status='Pending') }}" 
+               class="px-4 py-2 rounded-full border transition-all whitespace-nowrap
+               {% if request.args.get('status') == 'Pending' %} bg-electric text-dark border-electric font-bold {% else %} bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 {% endif %}">
+                Pending
+            </a>
+            <a href="{{ url_for('admin.blo_calls', status='Assigned') }}" 
+               class="px-4 py-2 rounded-full border transition-all whitespace-nowrap
+               {% if request.args.get('status') == 'Assigned' %} bg-electric text-dark border-electric font-bold {% else %} bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 {% endif %}">
+                Assigned
+            </a>
+            <a href="{{ url_for('admin.blo_calls', status='Scheduled') }}" 
+               class="px-4 py-2 rounded-full border transition-all whitespace-nowrap
+               {% if request.args.get('status') == 'Scheduled' %} bg-electric text-dark border-electric font-bold {% else %} bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 {% endif %}">
+                Scheduled
+            </a>
+            <a href="{{ url_for('admin.blo_calls', status='Completed') }}" 
+               class="px-4 py-2 rounded-full border transition-all whitespace-nowrap
+               {% if request.args.get('status') == 'Completed' %} bg-electric text-dark border-electric font-bold {% else %} bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 {% endif %}">
+                Completed
+            </a>
+        </div>
+
+        <!-- Requests Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-in-bottom" style="animation-delay: 0.3s;">
+            {% for call in calls %}
+            <div class="glass-panel p-6 rounded-2xl border border-white/5 hover:border-electric/30 transition-all group relative overflow-hidden">
+                <!-- Status Badge -->
+                <div class="absolute top-4 right-4">
+                    {% if call.status == 'Pending' %}
+                    <span class="px-2 py-1 rounded-md bg-yellow-500/20 text-yellow-500 text-xs font-bold border border-yellow-500/30">Pending</span>
+                    {% elif call.status == 'Assigned' %}
+                    <span class="px-2 py-1 rounded-md bg-blue-500/20 text-blue-500 text-xs font-bold border border-blue-500/30">Assigned</span>
+                    {% elif call.status == 'Scheduled' %}
+                    <span class="px-2 py-1 rounded-md bg-purple-500/20 text-purple-500 text-xs font-bold border border-purple-500/30">Scheduled</span>
+                    {% elif call.status == 'Completed' %}
+                    <span class="px-2 py-1 rounded-md bg-emerald/20 text-emerald text-xs font-bold border border-emerald/30">Completed</span>
+                    {% else %}
+                    <span class="px-2 py-1 rounded-md bg-gray-500/20 text-gray-400 text-xs font-bold border border-gray-500/30">{{ call.status }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- User Details -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        {{ call.user_name }}
+                        <a href="{{ url_for('admin.dashboard', search=call.user_email) }}" class="text-gray-500 hover:text-electric text-sm" title="View Application"><i class="fas fa-external-link-alt"></i></a>
+                    </h3>
+                    <div class="text-sm text-gray-400 mt-1 space-y-1">
+                        <div class="flex items-center gap-2"><i class="fas fa-envelope w-4"></i> {{ call.user_email }}</div>
+                        <div class="flex items-center gap-2"><i class="fas fa-phone w-4"></i> {{ call.user_phone }}</div>
+                        <div class="flex items-center gap-2"><i class="fas fa-map-marker-alt w-4"></i> {{ call.constituency }}, {{ call.district }}</div>
+                    </div>
+                </div>
+
+                <!-- Request Details -->
+                <div class="bg-white/5 rounded-xl p-4 mb-4 border border-white/5">
+                    <div class="text-sm text-gray-300 mb-2"><span class="text-gray-500">Reason:</span> {{ call.reason }}</div>
+                    <div class="text-sm text-gray-300"><span class="text-gray-500">Preferred Date:</span> {{ call.preferred_date }}</div>
+                    <div class="text-xs text-gray-500 mt-2 text-right">Requested: {{ call.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+
+                <!-- BLO & Schedule Info -->
+                {% if call.blo_name or call.scheduled_time %}
+                <div class="bg-electric/5 rounded-xl p-4 mb-4 border border-electric/10">
+                    {% if call.blo_name %}
+                    <div class="text-sm text-electric mb-1"><span class="text-electric/60">Assigned BLO:</span> {{ call.blo_name }}</div>
+                    {% endif %}
+                    {% if call.scheduled_time %}
+                    <div class="text-sm text-electric"><span class="text-electric/60">Scheduled For:</span> {{ call.scheduled_time }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    
+                    <!-- Assign BLO -->
+                    {% if call.status in ['Pending'] %}
+                    <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex gap-2 mb-3">
+                        <input type="hidden" name="action" value="assign">
+                        <input type="text" name="blo_name" placeholder="Enter BLO Name" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required>
+                        <button type="submit" class="bg-electric/20 hover:bg-electric/30 text-electric px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-electric/30">Assign</button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Schedule Call -->
+                    {% if call.status in ['Pending', 'Assigned'] %}
+                    <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex gap-2 mb-3">
+                        <input type="hidden" name="action" value="schedule">
+                        <input type="datetime-local" name="scheduled_time" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required>
+                        <button type="submit" class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-purple-500/30">Schedule</button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Mark Complete -->
+                    {% if call.status in ['Scheduled'] %}
+                    <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex justify-between items-center">
+                        <div class="text-sm text-gray-400">Action:</div>
+                        <div class="flex gap-2">
+                            <button type="submit" name="action" value="complete" class="bg-emerald/20 hover:bg-emerald/30 text-emerald px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-emerald/30">
+                                <i class="fas fa-check mr-1"></i> Mark Completed
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                </div>
+
+            </div>
+            {% else %}
+            <div class="col-span-1 lg:col-span-2 text-center py-12">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
+                    <i class="fas fa-inbox text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">No Requests Found</h3>
+                <p class="text-gray-400">There are no BLO call requests matching your filter.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
