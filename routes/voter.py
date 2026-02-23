@@ -53,7 +53,12 @@ def profile():
         {'user_id': str(current_user.id)}
     ).sort('created_at', -1))
     
-    return render_template('voter_profile.html', application=application, blo_calls=blo_calls)
+    # Fetch Notifications
+    notifications = list(mongo.db.notifications.find(
+        {"user_id": str(current_user.id)}
+    ).sort("created_at", -1).limit(5))
+    
+    return render_template('voter_profile.html', application=application, blo_calls=blo_calls, notifications=notifications)
 
 @voter.route('/profile/update', methods=['POST'])
 @login_required

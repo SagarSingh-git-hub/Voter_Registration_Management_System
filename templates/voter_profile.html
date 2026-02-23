@@ -101,6 +101,31 @@
             <!-- Right Column: Details & Edit -->
             <div class="lg:col-span-2 space-y-6">
                 
+                <!-- Notifications -->
+                {% if notifications %}
+                <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.3s;">
+                    <h3 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-bell text-electric"></i> Notifications
+                    </h3>
+                    <div class="space-y-4">
+                        {% for notification in notifications %}
+                        <div class="glass-panel p-4 rounded-xl flex items-start gap-4 border-l-4 
+                            {% if notification.type == 'success' %} border-l-emerald {% elif notification.type == 'error' %} border-l-red-500 {% else %} border-l-electric {% endif %}">
+                            <div class="mt-1">
+                                 {% if notification.type == 'success' %} <i class="fas fa-check-circle text-emerald"></i>
+                                 {% elif notification.type == 'error' %} <i class="fas fa-times-circle text-red-500"></i>
+                                 {% else %} <i class="fas fa-info-circle text-electric"></i> {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-gray-300 text-sm">{{ notification.message }}</p>
+                                <p class="text-gray-500 text-xs mt-1">{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Personal Details -->
                 <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.3s;">
                     <div class="flex items-center justify-between mb-6">
@@ -214,6 +239,10 @@
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-3 pt-3 border-t border-white/5">
+                                    <div>
+                                        <span class="text-gray-500 text-xs block mb-1">Preferred Date</span>
+                                        <p class="text-white font-mono">{{ call.preferred_date or 'Not Specified' }}</p>
+                                    </div>
                                     <div>
                                         <span class="text-gray-500 text-xs block mb-1">Reason</span>
                                         <p class="text-gray-300">{{ call.reason }}</p>
