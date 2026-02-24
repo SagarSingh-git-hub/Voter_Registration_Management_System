@@ -569,23 +569,55 @@ def update_blo_call(call_id):
     message = ""
     status_type = "success"
     
+    # Preserve scroll position by using an anchor
+    redirect_url = url_for('admin.blo_calls', _anchor=f"call-{call_id}")
+
     if action == 'assign':
         blo_name = request.form.get('blo_name')
+        if not blo_name:
+            flash("BLO Name is required.", "danger")
+            return redirect(redirect_url)
+            
         update_data = {
             'blo_name': blo_name,
             'status': 'Assigned',
             'updated_at': datetime.utcnow()
         }
+        # No notification for assignment as per request
         message = f"BLO {blo_name} assigned successfully."
         
     elif action == 'schedule':
+        # Check if BLO is assigned first
+        call = mongo.db.blo_calls.find_one({'_id': ObjectId(call_id)})
+        if not call or not call.get('blo_name'):
+             flash("Please assign a BLO before scheduling.", "danger")
+             return redirect(redirect_url)
+
         scheduled_time = request.form.get('scheduled_time')
+        if not scheduled_time:
+            flash("Scheduled time is required.", "danger")
+            return redirect(redirect_url)
+
         update_data = {
             'scheduled_time': scheduled_time,
             'status': 'Scheduled',
             'updated_at': datetime.utcnow()
         }
-        message = f"Call scheduled for {scheduled_time}."
+        
+        # Format date for notification
+        try:
+            # Input comes as YYYY-MM-DDTHH:MM (datetime-local)
+            dt = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M')
+            formatted_time = dt.strftime('%d-%m-%Y %I:%M %p')
+        except:
+            formatted_time = scheduled_time
+
+        message = f"Call scheduled for {formatted_time}."
+        
+        # Notify User with Custom Message
+        # "BLO (blo_name) assigned successfully and Call scheduled for (dd-mm-yyyy with time)"
+        notification_msg = f"BLO {call.get('blo_name')} assigned successfully and Call scheduled for {formatted_time}"
+        create_notification(ObjectId(call['user_id']), notification_msg, "success")
         
     elif action == 'complete':
         update_data = {
@@ -593,6 +625,10 @@ def update_blo_call(call_id):
             'updated_at': datetime.utcnow()
         }
         message = "Request marked as completed."
+        # Optional: Notify completion
+        call = mongo.db.blo_calls.find_one({'_id': ObjectId(call_id)})
+        if call:
+             create_notification(ObjectId(call['user_id']), "Your BLO Call request has been marked as Completed.", "success")
         
     elif action == 'reject':
         update_data = {
@@ -601,6 +637,10 @@ def update_blo_call(call_id):
         }
         message = "Request rejected."
         status_type = "warning"
+        # Optional: Notify rejection
+        call = mongo.db.blo_calls.find_one({'_id': ObjectId(call_id)})
+        if call:
+             create_notification(ObjectId(call['user_id']), "Your BLO Call request was rejected.", "error")
 
     if update_data:
         mongo.db.blo_calls.update_one(
@@ -608,11 +648,11 @@ def update_blo_call(call_id):
             {'$set': update_data}
         )
         
-        # Notify User
-        call = mongo.db.blo_calls.find_one({'_id': ObjectId(call_id)})
-        if call:
-            create_notification(ObjectId(call['user_id']), f"Your BLO Call request status: {update_data.get('status', 'Updated')}", "info")
-            
+        # Only flash if it's not the "assign" action (user asked to suppress notification/scroll jump feeling, but flash is okay for admin feedback)
+        # Actually user said "assign ka Notifications na aaye" -> referring to User Notification? Or Admin Flash?
+        # "assign krte hi assign ka Notifications na aaye" -> Context was "Citizen / Voter dashboard Notifications".
+        # So I suppressed the create_notification for 'assign' above.
+        
         flash(message, status_type)
         
-    return redirect(url_for('admin.blo_calls'))
+    return redirect(redirect_url)

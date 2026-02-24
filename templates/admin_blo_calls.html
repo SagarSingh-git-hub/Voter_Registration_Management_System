@@ -70,7 +70,7 @@
         <!-- Requests Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-in-bottom" style="animation-delay: 0.3s;">
             {% for call in calls %}
-            <div class="glass-panel p-6 rounded-2xl border border-white/5 hover:border-electric/30 transition-all group relative overflow-hidden">
+            <div id="call-{{ call._id }}" class="glass-panel p-6 rounded-2xl border border-white/5 hover:border-electric/30 transition-all group relative overflow-hidden">
                 <!-- Status Badge -->
                 <div class="absolute top-4 right-4">
                     {% if call.status == 'Pending' %}
@@ -134,8 +134,10 @@
                     {% if call.status in ['Pending', 'Assigned'] %}
                     <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex gap-2 mb-3">
                         <input type="hidden" name="action" value="schedule">
-                        <input type="datetime-local" name="scheduled_time" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required>
-                        <button type="submit" class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-purple-500/30">Schedule</button>
+                        <input type="datetime-local" name="scheduled_time" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required
+                        {% if not call.blo_name %} disabled title="Assign BLO first" {% endif %}>
+                        <button type="submit" class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        {% if not call.blo_name %} disabled {% endif %}>Schedule</button>
                     </form>
                     {% endif %}
 

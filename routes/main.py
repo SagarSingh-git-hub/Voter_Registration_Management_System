@@ -32,7 +32,7 @@ def dashboard():
             sort=[('submitted_at', -1)]
         )
         # Get Notifications
-        notifications = list(mongo.db.notifications.find({"user_id": current_user.id}).sort("created_at", -1).limit(5))
+        notifications = list(mongo.db.notifications.find({"user_id": current_user.id}).sort("created_at", -1).limit(3))
         return render_template('dashboard.html', application=application, notifications=notifications)
 
 @main.route('/chatbot')

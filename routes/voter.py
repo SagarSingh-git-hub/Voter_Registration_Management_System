@@ -53,12 +53,29 @@ def profile():
         {'user_id': str(current_user.id)}
     ).sort('created_at', -1))
     
-    # Fetch Notifications
-    notifications = list(mongo.db.notifications.find(
-        {"user_id": str(current_user.id)}
-    ).sort("created_at", -1).limit(5))
+    # Format Dates for Display (DD-MM-YY)
+    for call in blo_calls:
+        if call.get('preferred_date'):
+            try:
+                d = datetime.strptime(call['preferred_date'], '%Y-%m-%d')
+                call['preferred_date'] = d.strftime('%d-%m-%y')
+            except:
+                pass
+        
+        if call.get('scheduled_time'):
+            try:
+                # Try datetime-local format first (most likely from HTML5 input)
+                d = datetime.strptime(call['scheduled_time'], '%Y-%m-%dT%H:%M')
+                call['scheduled_time'] = d.strftime('%d-%m-%y %I:%M %p')
+            except:
+                try:
+                     # Fallback to date only
+                     d = datetime.strptime(call['scheduled_time'], '%Y-%m-%d')
+                     call['scheduled_time'] = d.strftime('%d-%m-%y')
+                except:
+                    pass
     
-    return render_template('voter_profile.html', application=application, blo_calls=blo_calls, notifications=notifications)
+    return render_template('voter_profile.html', application=application, blo_calls=blo_calls)
 
 @voter.route('/profile/update', methods=['POST'])
 @login_required
