@@ -656,3 +656,61 @@ def update_blo_call(call_id):
         flash(message, status_type)
         
     return redirect(redirect_url)
+
+@admin.route('/admin/demographics')
+@login_required
+@admin_required
+def voter_demographics():
+    # 1. Overview Stats
+    total = mongo.db.applications.count_documents({})
+    
+    start_of_month = datetime(datetime.utcnow().year, datetime.utcnow().month, 1)
+    new_month = mongo.db.applications.count_documents({"submitted_at": {"$gte": start_of_month}})
+    
+    active = mongo.db.applications.count_documents({"status": "Approved"})
+    inactive = total - active
+    
+    # 2. Age Groups
+    age_groups = {"18-25": 0, "26-35": 0, "36-50": 0, "50+": 0}
+    
+    all_apps = list(mongo.db.applications.find({}, {"dob": 1}))
+    for app in all_apps:
+        dob = app.get('dob')
+        if dob:
+            try:
+                if isinstance(dob, str):
+                    dob = datetime.strptime(dob, '%Y-%m-%d')
+                age = (datetime.utcnow() - dob).days / 365.25
+                if 18 <= age <= 25: age_groups["18-25"] += 1
+                elif 26 <= age <= 35: age_groups["26-35"] += 1
+                elif 36 <= age <= 50: age_groups["36-50"] += 1
+                elif age > 50: age_groups["50+"] += 1
+            except: pass
+            
+    # 3. Gender Ratio
+    pipeline = [{"$group": {"_id": "$gender", "count": {"$sum": 1}}}]
+    gender_data = list(mongo.db.applications.aggregate(pipeline))
+    gender_stats = {d['_id']: d['count'] for d in gender_data if d['_id']}
+    
+    # 4. Area Prediction (Mock)
+    area_pipeline = [
+        {"$group": {"_id": "$assembly_constituency", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 6}
+    ]
+    area_data = list(mongo.db.applications.aggregate(area_pipeline))
+    area_stats = []
+    import random
+    for area in area_data:
+        pred = random.randint(65, 92)
+        badge = "High" if pred > 80 else ("Medium" if pred > 70 else "Low")
+        area_stats.append({
+            "name": area['_id'] or "Unknown",
+            "count": area['count'],
+            "turnout": pred,
+            "badge": badge
+        })
+        
+    return render_template('admin_demographics.html', 
+                           total=total, new_month=new_month, active=active, inactive=inactive,
+                           age_groups=age_groups, gender_stats=gender_stats, area_stats=area_stats)

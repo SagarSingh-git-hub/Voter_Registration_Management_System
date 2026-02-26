@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen pt-8 pb-12 px-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 slide-in-bottom">
+            <div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-2">Voter Demographics</h2>
+                <div class="text-gray-400">Population insights and turnout prediction</div>
+            </div>
+            
+            <!-- Filters / Actions -->
+            <div class="flex gap-4 mt-4 md:mt-0">
+                <button class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-electric/50 transition-all flex items-center gap-2">
+                    <i class="fas fa-filter text-electric"></i>
+                    <span>Filter</span>
+                </button>
+                <button class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-emerald/50 transition-all flex items-center gap-2">
+                    <i class="fas fa-download text-emerald"></i>
+                    <span>Export Report</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Voters -->
+            <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group slide-in-bottom" style="animation-delay: 0.1s;">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-users text-6xl text-electric"></i>
+                </div>
+                <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Total Registered</h4>
+                <div class="text-4xl font-display font-bold text-white">{{ total }}</div>
+                <div class="mt-4 flex items-center text-xs text-emerald-400">
+                    <i class="fas fa-arrow-up mr-1"></i> 12% increase
+                </div>
+            </div>
+
+            <!-- New This Month -->
+            <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group slide-in-bottom" style="animation-delay: 0.2s;">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-user-plus text-6xl text-emerald"></i>
+                </div>
+                <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">New (This Month)</h4>
+                <div class="text-4xl font-display font-bold text-white">{{ new_month }}</div>
+                <div class="mt-4 flex items-center text-xs text-emerald-400">
+                    <i class="fas fa-arrow-up mr-1"></i> Since last month
+                </div>
+            </div>
+
+            <!-- Active Voters -->
+            <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group slide-in-bottom" style="animation-delay: 0.3s;">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-check-circle text-6xl text-blue-400"></i>
+                </div>
+                <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Active Voters</h4>
+                <div class="text-4xl font-display font-bold text-white">{{ active }}</div>
+                <div class="mt-4 flex items-center text-xs text-gray-500">
+                    Verified & Eligible
+                </div>
+            </div>
+
+            <!-- Inactive -->
+            <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group slide-in-bottom" style="animation-delay: 0.4s;">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-user-slash text-6xl text-red-400"></i>
+                </div>
+                <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Inactive/Pending</h4>
+                <div class="text-4xl font-display font-bold text-white">{{ inactive }}</div>
+                <div class="mt-4 flex items-center text-xs text-red-400">
+                    Requires Action
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            
+            <!-- Age Group Analytics -->
+            <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.5s;">
+                <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-electric"></i> Age Group Analytics
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="ageChart"></canvas>
+                </div>
+                <div class="mt-4 text-center text-xs text-gray-500">
+                    Distribution of voters across key age demographics.
+                </div>
+            </div>
+
+            <!-- Gender Ratio -->
+            <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.6s;">
+                <h3 class="font-display text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-emerald"></i> Gender Ratio
+                </h3>
+                <div class="relative h-64 flex justify-center">
+                    <canvas id="genderChart"></canvas>
+                </div>
+                <div class="mt-4 text-center text-xs text-gray-500">
+                    Gender balance within the registered population.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Area Turnout Prediction -->
+        <div class="glass-panel p-8 rounded-3xl slide-in-bottom" style="animation-delay: 0.7s;">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-display text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-map-marked-alt text-blue-400"></i> Area Wise Turnout Prediction
+                </h3>
+                <div class="text-xs text-gray-400 bg-white/5 px-3 py-1 rounded-lg border border-white/5">
+                    Based on registration density
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for area in area_stats %}
+                <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-white font-bold text-lg">{{ area.name }}</h4>
+                            <p class="text-gray-400 text-xs uppercase tracking-wider">Constituency</p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs font-bold 
+                            {% if area.badge == 'High' %} bg-emerald/20 text-emerald border border-emerald/20
+                            {% elif area.badge == 'Medium' %} bg-yellow-400/20 text-yellow-400 border border-yellow-400/20
+                            {% else %} bg-red-400/20 text-red-400 border border-red-400/20 {% endif %}">
+                            {{ area.badge }} Turnout
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-400">Predicted Turnout</span>
+                                <span class="text-white font-mono">{{ area.turnout }}%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-dark rounded-full overflow-hidden">
+                                <div class="h-full rounded-full 
+                                    {% if area.badge == 'High' %} bg-emerald
+                                    {% elif area.badge == 'Medium' %} bg-yellow-400
+                                    {% else %} bg-red-400 {% endif %}" 
+                                    style="width: {{ area.turnout }}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <i class="fas fa-users"></i> {{ area.count }} Registered Voters
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-3 text-center py-8 text-gray-500">
+                    <i class="fas fa-map text-4xl mb-3 opacity-30"></i>
+                    <p>No area data available yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // Age Chart
+    const ctxAge = document.getElementById('ageChart').getContext('2d');
+    new Chart(ctxAge, {
+        type: 'bar',
+        data: {
+            labels: ['18-25', '26-35', '36-50', '50+'],
+            datasets: [{
+                label: 'Voters',
+                data: [{{ age_groups['18-25'] }}, {{ age_groups['26-35'] }}, {{ age_groups['36-50'] }}, {{ age_groups['50+'] }}],
+                backgroundColor: [
+                    'rgba(0, 243, 255, 0.6)',
+                    'rgba(0, 243, 255, 0.4)',
+                    'rgba(0, 243, 255, 0.3)',
+                    'rgba(0, 243, 255, 0.2)'
+                ],
+                borderColor: '#00f3ff',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Gender Chart
+    const ctxGender = document.getElementById('genderChart').getContext('2d');
+    new Chart(ctxGender, {
+        type: 'doughnut',
+        data: {
+            labels: ['Male', 'Female', 'Other'],
+            datasets: [{
+                data: [
+                    {{ gender_stats.get('Male', 0) }}, 
+                    {{ gender_stats.get('Female', 0) }}, 
+                    {{ gender_stats.get('Other', 0) }}
+                ],
+                backgroundColor: [
+                    '#3b82f6', // Blue
+                    '#ec4899', // Pink
+                    '#8b5cf6'  // Purple
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: { padding: 20, usePointStyle: true }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -9,7 +9,8 @@ from flask import current_app
 from models import mongo # Removed mail import
 from datetime import datetime
 from flask import request
-from email_templates import get_approval_email_html, get_rejection_email_html, get_approval_email_text, get_rejection_email_text
+from .risk_engine import detect_duplicate_voter, assess_fraud_risk
+
 try:
     from PIL import Image
     import pytesseract
@@ -110,11 +111,8 @@ def send_status_email(to_email, name, app_id, status, comment=None):
     subject = f'Update on your Voter Application - {status}'
     
     if status == 'Approved':
-        text_body = get_approval_email_text(name, app_id)
-        # We can try to pass HTML if the template supports it, but usually text/params is safer for generic templates
         message = f"Dear {name},\n\nYour application (ID: {app_id}) has been APPROVED.\n\nYou can now log in to your dashboard to download your digital Voter ID card."
     else:
-        text_body = get_rejection_email_text(name, app_id, comment)
         message = f"Dear {name},\n\nYour application (ID: {app_id}) has been REJECTED.\n\nReason: {comment}\n\nPlease log in to correct your application."
 
     template_params = {
@@ -139,64 +137,6 @@ def send_status_email(to_email, name, app_id, status, comment=None):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
-
-def check_smart_duplicate(new_data):
-    """
-    Advanced AI-Like Duplicate Detection.
-    Returns: (is_duplicate, score, reason)
-    """
-    if not fuzz:
-        return False, 0, None
-
-    potential_duplicates = list(mongo.db.applications.find({
-        "status": {"$ne": "Rejected"}
-    })) + list(mongo.db.final_voters.find())
-
-    new_dob = str(new_data.get('dob'))
-    new_address = new_data.get('address', '').lower()
-    new_id_type = new_data.get('id_proof_type')
-    new_id_num = new_data.get('id_proof_number')
-
-    highest_score = 0
-    reason = None
-    is_duplicate = False
-
-    for record in potential_duplicates:
-        score = 0
-        current_reason = []
-
-        # 1. Exact ID Proof Match (Non-Aadhaar, as Aadhaar is blocked)
-        if record.get('id_proof_type') == new_id_type and \
-           record.get('id_proof_number') == new_id_num:
-            score += 100
-            current_reason.append(f"Same {new_id_type} Number")
-
-        # 2. DOB Match + Name Similarity
-        rec_dob = str(record.get('dob'))
-        if rec_dob.startswith(new_dob) or new_dob.startswith(rec_dob): # Handle datetime vs date string
-            # Check Name Similarity
-            name_ratio = fuzz.token_sort_ratio(record.get('full_name', ''), new_data.get('full_name', ''))
-            if name_ratio > 85:
-                score += 60
-                current_reason.append("Same DOB & Similar Name")
-            
-            # Check Address Similarity
-            addr_ratio = fuzz.token_set_ratio(record.get('address', '').lower(), new_address)
-            if addr_ratio > 80:
-                score += 50
-                current_reason.append("Same DOB & Similar Address")
-
-        if score > highest_score:
-            highest_score = score
-            reason = ", ".join(current_reason)
-
-    # Determine Duplicate Status based on Score
-    if highest_score >= 80:
-        return True, 'High', reason
-    elif highest_score >= 50:
-        return True, 'Medium', reason
-    
-    return False, 'Low', None
 
 def perform_ocr_scan(image_path):
     if not pytesseract or not Image:

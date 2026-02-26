@@ -8,7 +8,7 @@ import csv
 import uuid
 import io
 from datetime import datetime
-from utils import perform_ocr_scan, check_smart_duplicate, allowed_file, generate_otp, send_otp_email
+from utils import perform_ocr_scan, allowed_file, generate_otp, send_otp_email, detect_duplicate_voter, assess_fraud_risk
 from functools import wraps
 from bson.objectid import ObjectId
 from reportlab.lib.pagesizes import A4
@@ -172,6 +172,28 @@ def voter_application():
             'status': 'Pending',
             'submitted_at': datetime.utcnow()
         }
+        
+        # --- DUPLICATE & FRAUD DETECTION ---
+        # 1. Duplicate Check
+        duplicate_check = detect_duplicate_voter(application_data, mongo)
+        if duplicate_check['action'] == 'Block':
+            flash(f"Registration Blocked: {duplicate_check['reason']}", 'danger')
+            return redirect(url_for('voter.profile'))
+        
+        # 2. Fraud Risk Assessment
+        fraud_check = assess_fraud_risk(application_data, mongo)
+        if fraud_check['action'] == 'Block':
+             flash(f"Registration Blocked: High Fraud Risk Detected ({', '.join(fraud_check['indicators'])})", 'danger')
+             return redirect(url_for('voter.profile'))
+             
+        # Add risk details to application data
+        application_data['duplicate_risk'] = duplicate_check
+        application_data['fraud_risk'] = fraud_check
+        
+        # If Review is needed, set status to 'Flagged' or add a flag
+        if duplicate_check['action'] == 'Review' or fraud_check['action'] == 'Review':
+            application_data['risk_flag'] = True
+            application_data['risk_notes'] = f"Duplicate Risk: {duplicate_check['duplicate_type']} | Fraud Risk: {fraud_check['risk_level']}"
         
         mongo.db.applications.insert_one(application_data)
         flash('Application submitted successfully!', 'success')
