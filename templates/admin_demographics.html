@@ -13,11 +13,15 @@
             
             <!-- Filters / Actions -->
             <div class="flex gap-4 mt-4 md:mt-0">
+                <a href="{{ url_for('admin.dashboard') }}" class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
                 <button class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-electric/50 transition-all flex items-center gap-2">
                     <i class="fas fa-filter text-electric"></i>
                     <span>Filter</span>
                 </button>
-                <button class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-emerald/50 transition-all flex items-center gap-2">
+                <button onclick="showExportModal()" class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-emerald/50 transition-all flex items-center gap-2">
                     <i class="fas fa-download text-emerald"></i>
                     <span>Export Report</span>
                 </button>
@@ -235,5 +239,111 @@
             }
         }
     });
+</script>
+
+<!-- Export Format Selection Modal -->
+<div id="exportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="modalContent">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-display font-bold text-white">Choose Export Format</h3>
+            <button onclick="hideExportModal()" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <p class="text-gray-400 mb-8">Select the format you'd like to export the voter demographics report:</p>
+        
+        <div class="space-y-4">
+            <!-- Excel Option -->
+            <button onclick="exportReport('excel')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                    <i class="fas fa-file-excel text-green-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">Microsoft Excel</h4>
+                    <p class="text-gray-400 text-sm">Best for data analysis and calculations</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-electric transition-colors"></i>
+            </button>
+            
+            <!-- PDF Option -->
+            <button onclick="exportReport('pdf')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                    <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">PDF Document</h4>
+                    <p class="text-gray-400 text-sm">Perfect for printing and sharing</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-electric transition-colors"></i>
+            </button>
+            
+            <!-- CSV Option -->
+            <button onclick="exportReport('csv')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                    <i class="fas fa-file-csv text-blue-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">CSV File</h4>
+                    <p class="text-gray-400 text-sm">Universal format for data import</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-electric transition-colors"></i>
+            </button>
+        </div>
+        
+        <div class="mt-8 flex gap-4">
+            <button onclick="hideExportModal()" class="flex-1 px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showExportModal() {
+    const modal = document.getElementById('exportModal');
+    const content = document.getElementById('modalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function hideExportModal() {
+    const modal = document.getElementById('exportModal');
+    const content = document.getElementById('modalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+function exportReport(format) {
+    hideExportModal();
+    
+    // Show loading indicator
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+    button.disabled = true;
+    
+    // Redirect to appropriate export endpoint
+    window.location.href = `/admin/export-demographics?format=${format}`;
+    
+    // Restore button after a delay
+    setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+    }, 2000);
+}
+
+// Close modal when clicking outside
+document.getElementById('exportModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideExportModal();
+    }
+});
 </script>
 {% endblock %}

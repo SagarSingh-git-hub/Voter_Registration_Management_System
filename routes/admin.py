@@ -714,3 +714,280 @@ def voter_demographics():
     return render_template('admin_demographics.html', 
                            total=total, new_month=new_month, active=active, inactive=inactive,
                            age_groups=age_groups, gender_stats=gender_stats, area_stats=area_stats)
+
+@admin.route('/admin/export-demographics')
+@login_required
+@admin_required
+def export_demographics():
+    # Get format from query parameter (default: csv)
+    export_format = request.args.get('format', 'csv').lower()
+    
+    # Get current date for report title
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    # Collect demographics data
+    total = mongo.db.applications.count_documents({})
+    
+    # Age groups
+    age_groups = []
+    for group in ["18-25", "26-35", "36-45", "46-60", "60+"]:
+        if group == "18-25":
+            count = mongo.db.applications.count_documents({"age": {"$gte": 18, "$lte": 25}})
+        elif group == "26-35":
+            count = mongo.db.applications.count_documents({"age": {"$gte": 26, "$lte": 35}})
+        elif group == "36-45":
+            count = mongo.db.applications.count_documents({"age": {"$gte": 36, "$lte": 45}})
+        elif group == "46-60":
+            count = mongo.db.applications.count_documents({"age": {"$gte": 46, "$lte": 60}})
+        else:  # 60+
+            count = mongo.db.applications.count_documents({"age": {"$gte": 60}})
+        age_groups.append({"group": group, "count": count})
+    
+    # Gender stats
+    male_count = mongo.db.applications.count_documents({"gender": "Male"})
+    female_count = mongo.db.applications.count_documents({"gender": "Female"})
+    other_count = mongo.db.applications.count_documents({"gender": {"$nin": ["Male", "Female"]}})
+    
+    # Area stats
+    urban_count = mongo.db.applications.count_documents({"area_type": "Urban"})
+    rural_count = mongo.db.applications.count_documents({"area_type": "Rural"})
+    
+    if export_format == 'excel':
+        return export_demographics_excel(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count)
+    elif export_format == 'pdf':
+        return export_demographics_pdf(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count)
+    else:  # csv
+        return export_demographics_csv(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count)
+
+def export_demographics_csv(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count):
+    # Create CSV content
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['Voter Demographics Report'])
+    writer.writerow(['Generated on:', current_date])
+    writer.writerow([])
+    
+    # Overview stats
+    writer.writerow(['Overview Statistics'])
+    writer.writerow(['Total Voters', total])
+    writer.writerow([])
+    
+    # Age distribution
+    writer.writerow(['Age Distribution'])
+    writer.writerow(['Age Group', 'Count', 'Percentage'])
+    for age_group in age_groups:
+        percentage = (age_group['count'] / total * 100) if total > 0 else 0
+        writer.writerow([age_group['group'], age_group['count'], f"{percentage:.1f}%"])
+    writer.writerow([])
+    
+    # Gender distribution
+    writer.writerow(['Gender Distribution'])
+    writer.writerow(['Gender', 'Count', 'Percentage'])
+    writer.writerow(['Male', male_count, f"{(male_count/total*100):.1f}%" if total > 0 else "0%"])
+    writer.writerow(['Female', female_count, f"{(female_count/total*100):.1f}%" if total > 0 else "0%"])
+    writer.writerow(['Other', other_count, f"{(other_count/total*100):.1f}%" if total > 0 else "0%"])
+    writer.writerow([])
+    
+    # Area distribution
+    writer.writerow(['Area Distribution'])
+    writer.writerow(['Area Type', 'Count', 'Percentage'])
+    writer.writerow(['Urban', urban_count, f"{(urban_count/total*100):.1f}%" if total > 0 else "0%"])
+    writer.writerow(['Rural', rural_count, f"{(rural_count/total*100):.1f}%" if total > 0 else "0%"])
+    
+    # Create response
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = f'attachment; filename=voter_demographics_{current_date}.csv'
+    response.headers['Content-type'] = 'text/csv'
+    
+    # Log the export action
+    log_admin_action("Export Demographics Report (CSV)", f"Generated demographics CSV report with {total} total voters")
+    
+    return response
+
+def export_demographics_excel(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count):
+    try:
+        import pandas as pd
+        import io
+        
+        # Create data for Excel
+        data = []
+        
+        # Header
+        data.append(['Voter Demographics Report'])
+        data.append(['Generated on:', current_date])
+        data.append([])
+        
+        # Overview stats
+        data.append(['Overview Statistics'])
+        data.append(['Total Voters', total])
+        data.append([])
+        
+        # Age distribution
+        data.append(['Age Distribution'])
+        data.append(['Age Group', 'Count', 'Percentage'])
+        for age_group in age_groups:
+            percentage = (age_group['count'] / total * 100) if total > 0 else 0
+            data.append([age_group['group'], age_group['count'], f"{percentage:.1f}%"])
+        data.append([])
+        
+        # Gender distribution
+        data.append(['Gender Distribution'])
+        data.append(['Gender', 'Count', 'Percentage'])
+        data.append(['Male', male_count, f"{(male_count/total*100):.1f}%" if total > 0 else "0%"])
+        data.append(['Female', female_count, f"{(female_count/total*100):.1f}%" if total > 0 else "0%"])
+        data.append(['Other', other_count, f"{(other_count/total*100):.1f}%" if total > 0 else "0%"])
+        data.append([])
+        
+        # Area distribution
+        data.append(['Area Distribution'])
+        data.append(['Area Type', 'Count', 'Percentage'])
+        data.append(['Urban', urban_count, f"{(urban_count/total*100):.1f}%" if total > 0 else "0%"])
+        data.append(['Rural', rural_count, f"{(rural_count/total*100):.1f}%" if total > 0 else "0%"])
+        
+        # Create DataFrame and save to Excel
+        df = pd.DataFrame(data)
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, header=False, sheet_name='Demographics Report')
+        
+        output.seek(0)
+        response = make_response(output.getvalue())
+        response.headers['Content-Disposition'] = f'attachment; filename=voter_demographics_{current_date}.xlsx'
+        response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        
+        # Log the export action
+        log_admin_action("Export Demographics Report (Excel)", f"Generated demographics Excel report with {total} total voters")
+        
+        return response
+        
+    except ImportError:
+        # Fallback to CSV if pandas is not available
+        flash('Excel export requires pandas library. Falling back to CSV format.', 'warning')
+        return export_demographics_csv(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count)
+
+def export_demographics_pdf(current_date, total, age_groups, male_count, female_count, other_count, urban_count, rural_count):
+    # Create PDF content
+    output = BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=landscape(letter))
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.white
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        textColor=colors.white
+    )
+    
+    content = []
+    
+    # Title
+    content.append(Paragraph("Voter Demographics Report", title_style))
+    content.append(Paragraph(f"Generated on: {current_date}", styles['Normal']))
+    content.append(Spacer(1, 20))
+    
+    # Overview stats
+    content.append(Paragraph("Overview Statistics", heading_style))
+    overview_data = [['Total Voters', str(total)]]
+    overview_table = Table(overview_data)
+    overview_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    content.append(overview_table)
+    content.append(Spacer(1, 20))
+    
+    # Age distribution
+    content.append(Paragraph("Age Distribution", heading_style))
+    age_data = [['Age Group', 'Count', 'Percentage']]
+    for age_group in age_groups:
+        percentage = (age_group['count'] / total * 100) if total > 0 else 0
+        age_data.append([age_group['group'], str(age_group['count']), f"{percentage:.1f}%"])
+    
+    age_table = Table(age_data)
+    age_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    content.append(age_table)
+    content.append(Spacer(1, 20))
+    
+    # Gender distribution
+    content.append(Paragraph("Gender Distribution", heading_style))
+    gender_data = [['Gender', 'Count', 'Percentage']]
+    gender_data.extend([
+        ['Male', str(male_count), f"{(male_count/total*100):.1f}%" if total > 0 else "0%"],
+        ['Female', str(female_count), f"{(female_count/total*100):.1f}%" if total > 0 else "0%"],
+        ['Other', str(other_count), f"{(other_count/total*100):.1f}%" if total > 0 else "0%"]
+    ])
+    
+    gender_table = Table(gender_data)
+    gender_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    content.append(gender_table)
+    content.append(Spacer(1, 20))
+    
+    # Area distribution
+    content.append(Paragraph("Area Distribution", heading_style))
+    area_data = [['Area Type', 'Count', 'Percentage']]
+    area_data.extend([
+        ['Urban', str(urban_count), f"{(urban_count/total*100):.1f}%" if total > 0 else "0%"],
+        ['Rural', str(rural_count), f"{(rural_count/total*100):.1f}%" if total > 0 else "0%"]
+    ])
+    
+    area_table = Table(area_data)
+    area_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    content.append(area_table)
+    
+    # Build PDF
+    doc.build(content)
+    
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = f'attachment; filename=voter_demographics_{current_date}.pdf'
+    response.headers['Content-type'] = 'application/pdf'
+    
+    # Log the export action
+    log_admin_action("Export Demographics Report (PDF)", f"Generated demographics PDF report with {total} total voters")
+    
+    return response
