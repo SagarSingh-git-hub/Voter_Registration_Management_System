@@ -715,6 +715,80 @@ def voter_demographics():
                            total=total, new_month=new_month, active=active, inactive=inactive,
                            age_groups=age_groups, gender_stats=gender_stats, area_stats=area_stats)
 
+@admin.route('/admin/verifier-dashboard')
+@login_required
+def verifier_dashboard():
+    # Check if user has permission to access verifier dashboard
+    if not current_user.is_verifier and not current_user.is_admin:
+        flash('Unauthorized access to Verifier Dashboard', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get verification statistics
+    pending_count = mongo.db.applications.count_documents({"status": "pending"})
+    verified_today = mongo.db.applications.count_documents({
+        "status": "verified",
+        "verified_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+    })
+    rejected_today = mongo.db.applications.count_documents({
+        "status": "rejected",
+        "rejected_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+    })
+    duplicate_alerts = mongo.db.duplicate_alerts.count_documents({"status": "active"})
+    
+    return render_template('verifier_dashboard.html',
+                         pending_count=pending_count,
+                         verified_today=verified_today,
+                         rejected_today=rejected_today,
+                         duplicate_alerts=duplicate_alerts)
+
+@admin.route('/admin/booth-officer-dashboard')
+@login_required
+def booth_officer_dashboard():
+    # Check if user has permission to access booth officer dashboard
+    if not current_user.is_booth_officer and not current_user.is_admin:
+        flash('Unauthorized access to Booth Officer Dashboard', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get booth-specific statistics
+    booth_filter = {"assigned_booth": current_user.assigned_booth} if current_user.assigned_booth else {}
+    
+    total_voters = mongo.db.voters.count_documents(booth_filter)
+    new_registrations = mongo.db.applications.count_documents({
+        **booth_filter,
+        "created_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+    })
+    blo_calls = mongo.db.blo_requests.count_documents({
+        **booth_filter,
+        "status": {"$in": ["pending", "urgent"]}
+    })
+    today_visits = mongo.db.visit_logs.count_documents({
+        **booth_filter,
+        "visit_date": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    })
+    
+    return render_template('booth_officer_dashboard.html',
+                         total_voters=total_voters,
+                         new_registrations=new_registrations,
+                         blo_calls=blo_calls,
+                         today_visits=today_visits)
+
+@admin.route('/admin/officer-profile')
+@login_required
+def officer_profile():
+    """Officer profile page for both verifier and booth officer roles"""
+    if not current_user.is_officer:
+        flash('Unauthorized access to Officer Profile', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get officer activity history
+    activity_logs = list(mongo.db.audit_logs.find(
+        {"admin_id": current_user.id},
+        sort=[("timestamp", -1)]
+    ).limit(10))
+    
+    return render_template('officer_profile.html',
+                         activity_logs=activity_logs)
+
 @admin.route('/admin/export-demographics')
 @login_required
 @admin_required

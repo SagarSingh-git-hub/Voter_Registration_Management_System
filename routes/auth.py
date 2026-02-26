@@ -164,9 +164,20 @@ def login():
                  flash('Account not verified. Please complete registration.', 'warning')
                  return redirect(url_for('auth.register'))
             
+            # Update last login
+            user.update_last_login()
+            
             login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.dashboard'))
+            
+            # Role-based redirect logic
+            if user.is_admin:
+                return redirect(url_for('admin.dashboard'))
+            elif user.is_verifier:
+                return redirect(url_for('admin.verifier_dashboard'))
+            elif user.is_booth_officer:
+                return redirect(url_for('admin.booth_officer_dashboard'))
+            else:
+                return redirect(url_for('main.dashboard'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
             

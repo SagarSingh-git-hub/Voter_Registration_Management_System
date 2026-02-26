@@ -90,14 +90,40 @@
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-6">
                 {% if current_user.is_authenticated %}
-                  <a href="{{ url_for('main.dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
-                    DASHBOARD
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full"></span>
-                  </a>
-                  {% if current_user.role == 'admin' %}
+                  
+                  <!-- Dashboard Link -->
+                  {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      DASHBOARD
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald transition-all group-hover:w-full"></span>
+                    </a>
+                  {% elif current_user.is_verifier %}
+                    <a href="{{ url_for('admin.verifier_dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      DASHBOARD
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue transition-all group-hover:w-full"></span>
+                    </a>
+                  {% elif current_user.is_booth_officer %}
+                    <a href="{{ url_for('admin.booth_officer_dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      DASHBOARD
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-green transition-all group-hover:w-full"></span>
+                    </a>
+                  {% else %}
+                    <a href="{{ url_for('main.dashboard') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      DASHBOARD
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full"></span>
+                    </a>
+                  {% endif %}
+                  
+                  <!-- Profile Link -->
+                  {% if current_user.is_admin %}
                     <a href="{{ url_for('admin.profile') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
-                      ADMIN
-                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald transition-all group-hover:w-full {% if request.endpoint == 'admin.profile' %} w-full {% endif %}"></span>
+                      PROFILE
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full {% if request.endpoint == 'admin.profile' %} w-full {% endif %}"></span>
+                    </a>
+                  {% elif current_user.is_officer %}
+                    <a href="{{ url_for('admin.officer_profile') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                      PROFILE
+                      <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full {% if request.endpoint == 'admin.officer_profile' %} w-full {% endif %}"></span>
                     </a>
                   {% elif current_user.role == 'voter' %}
                     <a href="{{ url_for('voter.profile') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
@@ -105,6 +131,7 @@
                       <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric transition-all group-hover:w-full {% if request.endpoint == 'voter.profile' %} w-full {% endif %}"></span>
                     </a>
                   {% endif %}
+                  
                   <div class="h-6 w-px bg-white/10"></div>
                   <a href="{{ url_for('auth.logout') }}" class="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400 transition-all duration-300">
                     LOGOUT
@@ -126,18 +153,40 @@
         <!-- Mobile Menu Dropdown -->
         <div id="mobile-menu" class="hidden md:hidden mt-2 backdrop-blur-xl bg-dark/90 border border-glass-border rounded-2xl p-4 flex flex-col gap-4 shadow-xl origin-top transform transition-all duration-300">
             {% if current_user.is_authenticated %}
-              <a href="{{ url_for('main.dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
-                <i class="fas fa-tachometer-alt text-electric w-6 text-center"></i> DASHBOARD
-              </a>
-              {% if current_user.role == 'admin' %}
+              <!-- Dashboard Links -->
+              {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-tachometer-alt text-emerald w-6 text-center"></i> DASHBOARD
+                </a>
+              {% elif current_user.is_verifier %}
+                <a href="{{ url_for('admin.verifier_dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-clipboard-check text-blue w-6 text-center"></i> DASHBOARD
+                </a>
+              {% elif current_user.is_booth_officer %}
+                <a href="{{ url_for('admin.booth_officer_dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-users text-green w-6 text-center"></i> DASHBOARD
+                </a>
+              {% else %}
+                <a href="{{ url_for('main.dashboard') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-tachometer-alt text-electric w-6 text-center"></i> DASHBOARD
+                </a>
+              {% endif %}
+              
+              <!-- Profile Link -->
+              {% if current_user.is_admin %}
                 <a href="{{ url_for('admin.profile') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
-                  <i class="fas fa-user-shield text-emerald w-6 text-center"></i> ADMIN
+                  <i class="fas fa-user text-electric w-6 text-center"></i> PROFILE
+                </a>
+              {% elif current_user.is_officer %}
+                <a href="{{ url_for('admin.officer_profile') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
+                  <i class="fas fa-user text-electric w-6 text-center"></i> PROFILE
                 </a>
               {% elif current_user.role == 'voter' %}
                 <a href="{{ url_for('voter.profile') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
                   <i class="fas fa-user text-electric w-6 text-center"></i> PROFILE
                 </a>
               {% endif %}
+              
               <a href="{{ url_for('e_epic.index') }}" class="p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors flex items-center gap-3">
                 <i class="fas fa-id-card text-electric w-6 text-center"></i> E-EPIC DOWNLOAD
               </a>
