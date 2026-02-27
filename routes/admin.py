@@ -762,12 +762,12 @@ def verifier_dashboard():
     # Get verification statistics
     pending_count = mongo.db.applications.count_documents({"status": "Pending"})
     verified_today = mongo.db.applications.count_documents({
-        "status": "Verified",
-        "verified_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+        "status": "Approved",
+        "approved_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
     })
     rejected_today = mongo.db.applications.count_documents({
         "status": "Rejected",
-        "rejected_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+        "rejected_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
     })
     duplicate_alerts = mongo.db.duplicate_alerts.count_documents({"status": "active"})
     
@@ -784,6 +784,140 @@ def verifier_dashboard():
                          duplicate_alerts=duplicate_alerts,
                          duplicate_alerts_data=duplicate_alerts_data,
                          pending_applications=pending_applications)
+
+@admin.route('/api/verification-stats')
+@login_required
+def get_verification_stats():
+    try:
+        # Check permissions
+        if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        # Get verification statistics
+        pending_count = mongo.db.applications.count_documents({"status": "Pending"})
+        verified_today = mongo.db.applications.count_documents({
+            "status": "Approved",
+            "approved_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+        })
+        rejected_today = mongo.db.applications.count_documents({
+            "status": "Rejected",
+            "rejected_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+        })
+        duplicate_alerts = mongo.db.duplicate_alerts.count_documents({"status": "active"})
+        
+        return jsonify({
+            'pending_count': pending_count,
+            'verified_today': verified_today,
+            'rejected_today': rejected_today,
+            'duplicate_alerts': duplicate_alerts
+        })
+    except Exception as e:
+        print(f"Error fetching verification stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@admin.route('/api/demographics-stats')
+@login_required
+def get_demographics_stats():
+    try:
+        # Check permission
+        if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        # 1. Overview Stats
+        total = mongo.db.applications.count_documents({})
+        
+        start_of_month = datetime(datetime.utcnow().year, datetime.utcnow().month, 1)
+        new_month = mongo.db.applications.count_documents({"submitted_at": {"$gte": start_of_month}})
+        
+        active = mongo.db.applications.count_documents({"status": "Approved"})
+        inactive = total - active
+        
+        return jsonify({
+            'total': total,
+            'new_month': new_month,
+            'active': active,
+            'inactive': inactive
+        })
+    except Exception as e:
+        print(f"Error fetching demographics stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@admin.route('/api/batch-process', methods=['POST'])
+@login_required
+def batch_process_applications():
+    # Check permissions
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    action = data.get('action')
+    app_ids = data.get('application_ids', [])
+    
+    if not action or not app_ids:
+        return jsonify({'success': False, 'message': 'Invalid request parameters'}), 400
+        
+    processed_count = 0
+    errors = []
+    
+    for app_id in app_ids:
+        try:
+            # Check if app exists and is pending
+            application = mongo.db.applications.find_one({"_id": ObjectId(app_id), "status": "Pending"})
+            if not application:
+                continue
+            
+            if action == 'approve':
+                # Generate EPIC Number
+                epic_number = generate_unique_epic_number()
+                
+                mongo.db.applications.update_one(
+                    {"_id": ObjectId(app_id)}, 
+                    {"$set": {
+                        "status": "Approved", 
+                        "epic_number": epic_number,
+                        "approved_at": datetime.utcnow()
+                    }}
+                )
+                
+                # Add to Final Voter List
+                if not mongo.db.final_voters.find_one({"user_id": application['user_id']}):
+                    mongo.db.final_voters.insert_one({
+                        "user_id": application['user_id'],
+                        "full_name": application['full_name'],
+                        "voter_id_number": application['id_proof_number'],
+                        "epic_number": epic_number,
+                        "approved_at": datetime.utcnow()
+                    })
+                
+                log_admin_action(current_user.id, "Batch Approve", str(app_id), f"Batch Approved. Generated EPIC: {epic_number}")
+                
+                # Notification
+                create_notification(ObjectId(application['user_id']), "Your voter application has been approved!", "success")
+                
+            elif action == 'reject':
+                mongo.db.applications.update_one(
+                    {"_id": ObjectId(app_id)}, 
+                    {"$set": {
+                        "status": "Rejected", 
+                        "rejection_reason": "Batch Rejection: Document Verification Failed",
+                        "rejected_at": datetime.utcnow()
+                    }}
+                )
+                
+                log_admin_action(current_user.id, "Batch Reject", str(app_id), "Batch Rejected")
+                create_notification(ObjectId(application['user_id']), "Your voter application was rejected.", "error")
+                
+            processed_count += 1
+            
+        except Exception as e:
+            print(f"Error processing app {app_id}: {e}")
+            errors.append(str(e))
+            
+    return jsonify({
+        'success': True, 
+        'processed_count': processed_count,
+        'message': 'Batch processing completed'
+    })
 
 @admin.route('/dismiss-alert/<alert_id>', methods=['POST'])
 @login_required
@@ -968,11 +1102,110 @@ def booth_officer_dashboard():
         "visit_date": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     })
     
+    # Get recent BLO calls
+    blo_calls_list = list(mongo.db.blo_requests.find(
+        {**booth_filter, "status": {"$in": ["pending", "urgent"]}}
+    ).sort("created_at", -1).limit(5))
+    
     return render_template('booth_officer_dashboard.html',
                          total_voters=total_voters,
                          new_registrations=new_registrations,
                          blo_calls=blo_calls,
-                         today_visits=today_visits)
+                         today_visits=today_visits,
+                         blo_calls_list=blo_calls_list)
+
+@admin.route('/api/booth/quick-register', methods=['POST'])
+@login_required
+def quick_register_voter():
+    if not getattr(current_user, 'is_booth_officer', False) and not getattr(current_user, 'is_admin', False):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+    data = request.get_json()
+    voter_id = data.get('voter_id')
+    full_name = data.get('full_name')
+    phone = data.get('phone')
+    
+    if not full_name or not phone:
+        return jsonify({'success': False, 'message': 'Name and Phone are required'}), 400
+        
+    try:
+        mongo.db.voter_drafts.insert_one({
+            'voter_id': voter_id,
+            'full_name': full_name,
+            'phone': phone,
+            'booth_id': current_user.assigned_booth,
+            'created_by': current_user.id,
+            'created_at': datetime.utcnow(),
+            'status': 'Draft'
+        })
+        return jsonify({'success': True, 'message': 'Draft saved successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@admin.route('/api/booth/create-call', methods=['POST'])
+@login_required
+def create_blo_call_request():
+    if not getattr(current_user, 'is_booth_officer', False) and not getattr(current_user, 'is_admin', False):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+    data = request.get_json()
+    voter_name = data.get('voter_name')
+    phone = data.get('phone')
+    reason = data.get('reason')
+    priority = data.get('priority', 'normal')
+    
+    if not voter_name or not reason:
+        return jsonify({'success': False, 'message': 'Voter Name and Reason are required'}), 400
+        
+    try:
+        mongo.db.blo_requests.insert_one({
+            'voter_name': voter_name,
+            'phone': phone,
+            'reason': reason,
+            'priority': priority,
+            'booth_id': current_user.assigned_booth,
+            'created_by': current_user.id,
+            'created_at': datetime.utcnow(),
+            'status': 'pending'
+        })
+        return jsonify({'success': True, 'message': 'Call request created'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@admin.route('/api/booth-stats')
+@login_required
+def get_booth_stats():
+    # Check permissions
+    if not getattr(current_user, 'is_booth_officer', False) and not getattr(current_user, 'is_admin', False):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    try:
+        # Get booth-specific statistics
+        booth_filter = {"assigned_booth": current_user.assigned_booth} if current_user.assigned_booth else {}
+        
+        total_voters = mongo.db.voters.count_documents(booth_filter)
+        new_registrations = mongo.db.applications.count_documents({
+            **booth_filter,
+            "created_at": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
+        })
+        blo_calls = mongo.db.blo_requests.count_documents({
+            **booth_filter,
+            "status": {"$in": ["pending", "urgent"]}
+        })
+        today_visits = mongo.db.visit_logs.count_documents({
+            **booth_filter,
+            "visit_date": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        })
+        
+        return jsonify({
+            'total_voters': total_voters,
+            'new_registrations': new_registrations,
+            'blo_calls': blo_calls,
+            'today_visits': today_visits
+        })
+    except Exception as e:
+        print(f"Error fetching booth stats: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @admin.route('/officer-profile')
 @login_required
@@ -1184,8 +1417,8 @@ def export_demographics_pdf(current_date, total, age_groups, male_count, female_
     overview_data = [['Total Voters', str(total)]]
     overview_table = Table(overview_data)
     overview_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.darkblue),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.whitesmoke),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1e3a8a')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#f5f5f5')),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 14),
@@ -1203,8 +1436,8 @@ def export_demographics_pdf(current_date, total, age_groups, male_count, female_
     
     age_table = Table(age_data)
     age_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e3a8a')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f3f4f6')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -1226,8 +1459,8 @@ def export_demographics_pdf(current_date, total, age_groups, male_count, female_
     
     gender_table = Table(gender_data)
     gender_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e3a8a')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f3f4f6')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -1248,8 +1481,8 @@ def export_demographics_pdf(current_date, total, age_groups, male_count, female_
     
     area_table = Table(area_data)
     area_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e3a8a')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f3f4f6')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),

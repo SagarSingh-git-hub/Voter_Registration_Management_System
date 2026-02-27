@@ -32,7 +32,7 @@
                     <i class="fas fa-users text-6xl text-electric"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Total Registered</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ total }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="total-registered">{{ total }}</div>
                 <div class="mt-4 flex items-center text-xs text-emerald-400">
                     <i class="fas fa-arrow-up mr-1"></i> 12% increase
                 </div>
@@ -44,7 +44,7 @@
                     <i class="fas fa-user-plus text-6xl text-emerald"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">New (This Month)</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ new_month }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="new-this-month">{{ new_month }}</div>
                 <div class="mt-4 flex items-center text-xs text-emerald-400">
                     <i class="fas fa-arrow-up mr-1"></i> Since last month
                 </div>
@@ -56,7 +56,7 @@
                     <i class="fas fa-check-circle text-6xl text-blue-400"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Active Voters</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ active }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="active-voters">{{ active }}</div>
                 <div class="mt-4 flex items-center text-xs text-gray-500">
                     Verified & Eligible
                 </div>
@@ -68,7 +68,7 @@
                     <i class="fas fa-user-slash text-6xl text-red-400"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Inactive/Pending</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ inactive }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="inactive-pending">{{ inactive }}</div>
                 <div class="mt-4 flex items-center text-xs text-red-400">
                     Requires Action
                 </div>
@@ -210,9 +210,9 @@
             datasets: [{
                 data: genderData,
                 backgroundColor: [
-                    '#3b82f6', // Blue
-                    '#ec4899', // Pink
-                    '#8b5cf6'  // Purple
+                    '#0000f7', // Blue
+                    '#f71cc8', // Pink
+                    '#a909f5'  // Purple
                 ],
                 borderWidth: 0,
                 hoverOffset: 10
@@ -336,5 +336,26 @@ document.getElementById('exportModal').addEventListener('click', function(e) {
         hideExportModal();
     }
 });
+    // Poll for demographics stats every 5 seconds
+    setInterval(function() {
+        fetch("{{ url_for('admin.get_demographics_stats') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+                
+                const totalEl = document.getElementById('total-registered');
+                if (totalEl) totalEl.textContent = data.total;
+                
+                const newEl = document.getElementById('new-this-month');
+                if (newEl) newEl.textContent = data.new_month;
+                
+                const activeEl = document.getElementById('active-voters');
+                if (activeEl) activeEl.textContent = data.active;
+                
+                const inactiveEl = document.getElementById('inactive-pending');
+                if (inactiveEl) inactiveEl.textContent = data.inactive;
+            })
+            .catch(error => console.error('Error fetching demographics stats:', error));
+    }, 5000);
 </script>
 {% endblock %}

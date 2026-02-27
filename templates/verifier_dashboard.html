@@ -28,7 +28,7 @@
                     <i class="fas fa-clock text-6xl text-yellow-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Pending Verification</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ pending_count or 47 }}</div>
+                <div class="text-4xl font-display font-bold text-white">{{ pending_count }}</div>
                 <div class="mt-4 flex items-center text-xs text-yellow-400">
                     <i class="fas fa-arrow-up mr-1"></i> 12 new today
                 </div>
@@ -40,7 +40,7 @@
                     <i class="fas fa-check-circle text-6xl text-emerald-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Verified Today</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ verified_today or 23 }}</div>
+                <div class="text-4xl font-display font-bold text-white">{{ verified_today }}</div>
                 <div class="mt-4 flex items-center text-xs text-emerald-400">
                     <i class="fas fa-arrow-up mr-1"></i> 8% increase
                 </div>
@@ -52,7 +52,7 @@
                     <i class="fas fa-exclamation-triangle text-6xl text-red-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Duplicate Alerts</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ duplicate_alerts or 5 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="duplicate-count">{{ duplicate_alerts or 5 }}</div>
                 <div class="mt-4 flex items-center text-xs text-red-400">
                     <i class="fas fa-arrow-down mr-1"></i> 3 resolved
                 </div>
@@ -64,7 +64,7 @@
                     <i class="fas fa-times-circle text-6xl text-rose-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Rejected Today</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ rejected_today or 8 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="rejected-count">{{ rejected_today or 8 }}</div>
                 <div class="mt-4 flex items-center text-xs text-rose-400">
                     <i class="fas fa-minus mr-1"></i> Same as yesterday
                 </div>
@@ -78,7 +78,17 @@
                     <i class="fas fa-clipboard-list text-electric"></i>
                     Pending Verification Queue
                 </h3>
-                <div class="flex gap-3">
+                <div class="flex gap-3 items-center">
+                    <div id="batch-actions" class="hidden flex gap-2">
+                        <button onclick="submitBatch('approve')" class="px-4 py-2 rounded-lg bg-emerald text-white hover:bg-emerald/90 transition-colors text-sm">
+                            Approve Selected
+                        </button>
+                        <button onclick="submitBatch('reject')" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors text-sm">
+                            Reject Selected
+                        </button>
+                        <span class="text-white text-sm my-auto ml-2"><span id="selected-count">0</span> selected</span>
+                    </div>
+                    <div id="queue-status" class="px-4 py-2 rounded-lg text-sm font-medium opacity-0 transition-opacity duration-300"></div>
                     <button id="filterBtn" onclick="toggleFilter()" class="px-4 py-2 rounded-lg bg-electric/20 text-electric hover:bg-electric/30 transition-colors text-sm flex items-center gap-2">
                         <i class="fas fa-filter"></i>
                         <span id="filterLabel">Filter: All</span>
@@ -86,7 +96,6 @@
                     <button onclick="sortQueue('date')" class="px-4 py-2 rounded-lg bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm flex items-center gap-2">
                         <i class="fas fa-sort"></i>Sort
                     </button>
-                    <div id="queue-status" class="px-4 py-2 rounded-lg text-sm font-medium opacity-0 transition-opacity duration-300"></div>
                 </div>
             </div>
             
@@ -94,6 +103,9 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-glass-border">
+                            <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white batch-checkbox hidden">
+                                <input type="checkbox" onchange="toggleAllCheckboxes(this)" class="rounded border-gray-600 bg-gray-700 text-emerald focus:ring-emerald">
+                            </th>
                             <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white" onclick="sortQueue('id')">Application ID</th>
                             <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white" onclick="sortQueue('name')">Name</th>
                             <th class="text-left py-3 px-4 text-gray-400 font-medium">Documents</th>
@@ -105,6 +117,9 @@
                     <tbody id="verificationQueueBody">
                         {% for app in pending_applications %}
                         <tr class="border-b border-glass-border/50 hover:bg-white/5 transition-colors" data-id="{{ app._id }}">
+                            <td class="py-3 px-4 batch-checkbox hidden">
+                                <input type="checkbox" value="{{ app._id }}" onchange="updateSelectedCount()" class="app-checkbox rounded border-gray-600 bg-gray-700 text-emerald focus:ring-emerald">
+                            </td>
                             <td class="py-3 px-4 text-white font-mono text-sm">#{{ app._id|string|truncate(10, True, '') }}</td>
                             <td class="py-3 px-4 text-white">{{ app.full_name }}</td>
                             <td class="py-3 px-4">
@@ -234,7 +249,7 @@
                 <p class="text-gray-400 text-sm">Search voter applications by ID, name, or details</p>
             </a>
 
-            <button class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left">
+            <button onclick="toggleBatchMode()" id="batchModeBtn" class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left">
                 <div class="flex items-center gap-4 mb-3">
                     <div class="w-12 h-12 rounded-xl bg-emerald/20 flex items-center justify-center group-hover:bg-emerald/30 transition-colors">
                         <i class="fas fa-file-alt text-emerald text-xl"></i>
@@ -286,7 +301,132 @@
 </div>
 
 <script>
-let currentRejectAppId = null;
+    let isBatchMode = false;
+
+    function toggleBatchMode() {
+        const batchActions = document.getElementById('batch-actions');
+        const checkboxes = document.querySelectorAll('.batch-checkbox');
+        const btn = document.getElementById('batchModeBtn');
+        const queueSection = document.querySelector('.glass-panel.rounded-3xl.p-6.mb-8');
+        
+        if (batchActions.classList.contains('hidden')) {
+            // Enable Batch Mode
+            batchActions.classList.remove('hidden');
+            checkboxes.forEach(el => el.classList.remove('hidden'));
+            btn.classList.add('bg-white/10', 'border', 'border-emerald/50');
+            
+            // Scroll to queue
+            if (queueSection) {
+                queueSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Show toast message
+            showFlashMessage('Batch Mode Enabled. Select applications from the list.', 'info');
+            
+        } else {
+            // Disable Batch Mode
+            batchActions.classList.add('hidden');
+            checkboxes.forEach(el => el.classList.add('hidden'));
+            btn.classList.remove('bg-white/10', 'border', 'border-emerald/50');
+            
+            // Reset selection
+            const allCheckboxes = document.querySelectorAll('.app-checkbox');
+            allCheckboxes.forEach(cb => cb.checked = false);
+            const headerCheckbox = document.querySelector('th.batch-checkbox input');
+            if(headerCheckbox) headerCheckbox.checked = false;
+            
+            updateSelectedCount();
+            showFlashMessage('Batch Mode Disabled.', 'info');
+        }
+    }
+
+    // Helper to show flash messages dynamically (reusing existing styles if possible)
+    function showFlashMessage(message, type) {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'fixed top-24 right-4 z-50 flex flex-col gap-3 pointer-events-none';
+            document.body.appendChild(container);
+        }
+
+        const flashDiv = document.createElement('div');
+        const bgColor = type === 'error' ? 'bg-red-500/20' : 'bg-emerald/20';
+        const borderColor = type === 'error' ? 'border-red-500/50' : 'border-emerald/50';
+        const textColor = type === 'error' ? 'text-red-400' : 'text-emerald';
+        const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+
+        flashDiv.className = `px-6 py-3 rounded-xl ${bgColor} border ${borderColor} ${textColor} shadow-lg pointer-events-auto transition-all duration-300 transform translate-x-full backdrop-blur-md`;
+        flashDiv.innerHTML = `<i class="fas ${icon} mr-2"></i>${message}`;
+        
+        container.appendChild(flashDiv);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            flashDiv.classList.remove('translate-x-full');
+        });
+        
+        setTimeout(() => {
+            flashDiv.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => flashDiv.remove(), 300);
+        }, 3000);
+    }
+
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.app-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.app-checkbox:checked').length;
+        document.getElementById('selected-count').innerText = count;
+    }
+
+    function submitBatch(action) {
+        const selected = Array.from(document.querySelectorAll('.app-checkbox:checked')).map(cb => cb.value);
+        
+        if (selected.length === 0) {
+            alert('Please select at least one application.');
+            return;
+        }
+        
+        if (!confirm(`Are you sure you want to ${action} ${selected.length} applications?`)) {
+            return;
+        }
+        
+        // Send batch request
+        fetch("{{ url_for('admin.batch_process_applications') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                application_ids: selected
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message and reload
+                const statusEl = document.getElementById('queue-status');
+                statusEl.innerText = `${data.processed_count} applications processed successfully.`;
+                statusEl.className = "px-4 py-2 rounded-lg text-sm font-medium transition-opacity duration-300 bg-emerald/20 text-emerald opacity-100";
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                alert('Error processing batch: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during batch processing.');
+        });
+    }
+
 
 // Reject Modal Logic
 function openRejectModal(appId) {
@@ -372,23 +512,17 @@ function handleActionSuccess(appId, action) {
         setTimeout(() => row.remove(), 300);
     }
     
-    // 2. Update Stats (Client-side approximation)
-    const statCards = document.querySelectorAll('.text-4xl.font-display.font-bold.text-white');
-    
-    // Decrease Pending (Index 0)
-    if (statCards[0]) {
-        let val = parseInt(statCards[0].innerText);
-        if (!isNaN(val)) statCards[0].innerText = Math.max(0, val - 1);
-    }
-
-    // Increase Verified (Index 1) or Rejected (Index 3)
-    if (action === 'Approved' && statCards[1]) {
-        let val = parseInt(statCards[1].innerText);
-        if (!isNaN(val)) statCards[1].innerText = val + 1;
-    } else if (action === 'Rejected' && statCards[3]) {
-        let val = parseInt(statCards[3].innerText);
-        if (!isNaN(val)) statCards[3].innerText = val + 1;
-    }
+    // 2. Update Stats (Real-time from server)
+    fetch('{{ url_for("admin.get_verification_stats") }}')
+        .then(response => response.json())
+        .then(data => {
+            const statCards = document.querySelectorAll('.text-4xl.font-display.font-bold.text-white');
+            if (statCards[0]) statCards[0].innerText = data.pending_count;
+            if (statCards[1]) statCards[1].innerText = data.verified_today;
+            if (statCards[2]) statCards[2].innerText = data.duplicate_alerts;
+            if (statCards[3]) statCards[3].innerText = data.rejected_today;
+        })
+        .catch(err => console.error("Failed to update stats:", err));
     
     // 3. Show notification in the dedicated area
     const statusArea = document.getElementById('queue-status');
@@ -740,5 +874,29 @@ setTimeout(() => {
         </div>
     </div>
 </div>
+
+<script>
+    // Poll for verification stats every 5 seconds
+    setInterval(function() {
+        fetch("{{ url_for('admin.get_verification_stats') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+                
+                const pendingEl = document.getElementById('pending-count');
+                if (pendingEl) pendingEl.textContent = data.pending_count;
+                
+                const verifiedEl = document.getElementById('verified-count');
+                if (verifiedEl) verifiedEl.textContent = data.verified_today;
+                
+                const duplicateEl = document.getElementById('duplicate-count');
+                if (duplicateEl) duplicateEl.textContent = data.duplicate_alerts;
+                
+                const rejectedEl = document.getElementById('rejected-count');
+                if (rejectedEl) rejectedEl.textContent = data.rejected_today;
+            })
+            .catch(error => console.error('Error fetching stats:', error));
+    }, 5000);
+</script>
 
 {% endblock %}

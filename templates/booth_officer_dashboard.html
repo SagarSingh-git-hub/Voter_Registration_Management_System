@@ -28,7 +28,7 @@
                     <i class="fas fa-users text-6xl text-blue-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Total Voters</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ total_voters or 1247 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="total-voters">{{ total_voters or 1247 }}</div>
                 <div class="mt-4 flex items-center text-xs text-blue-400">
                     <i class="fas fa-map-marker-alt mr-1"></i> Booth {{ current_user.assigned_booth or '42' }}
                 </div>
@@ -40,7 +40,7 @@
                     <i class="fas fa-user-plus text-6xl text-emerald-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">New Registrations</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ new_registrations or 23 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="new-registrations">{{ new_registrations or 23 }}</div>
                 <div class="mt-4 flex items-center text-xs text-emerald-400">
                     <i class="fas fa-arrow-up mr-1"></i> 5 this week
                 </div>
@@ -52,7 +52,7 @@
                     <i class="fas fa-phone text-6xl text-yellow-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">BLO Calls</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ blo_calls or 8 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="blo-calls">{{ blo_calls or 8 }}</div>
                 <div class="mt-4 flex items-center text-xs text-yellow-400">
                     <i class="fas fa-clock mr-1"></i> 3 urgent
                 </div>
@@ -64,7 +64,7 @@
                     <i class="fas fa-clipboard-check text-6xl text-purple-500"></i>
                 </div>
                 <h4 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Today's Visits</h4>
-                <div class="text-4xl font-display font-bold text-white">{{ today_visits or 15 }}</div>
+                <div class="text-4xl font-display font-bold text-white" id="today-visits">{{ today_visits or 15 }}</div>
                 <div class="mt-4 flex items-center text-xs text-purple-400">
                     <i class="fas fa-check mr-1"></i> 12 completed
                 </div>
@@ -78,19 +78,19 @@
                     <i class="fas fa-user-plus text-emerald"></i>
                     Quick Voter Registration
                 </h3>
-                <button class="px-4 py-2 rounded-lg bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
-                    <i class="fas fa-plus mr-2"></i>Full Registration Form
-                </button>
+                <a href="{{ url_for('voter.voter_application') }}" class="px-4 py-2 rounded-lg bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm flex items-center gap-2">
+                    <i class="fas fa-plus"></i>Full Registration Form
+                </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <input type="text" placeholder="Voter ID" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
-                <input type="text" placeholder="Full Name" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
-                <input type="text" placeholder="Phone Number" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
-                <button class="px-4 py-3 rounded-xl bg-electric text-white hover:bg-electric/80 transition-colors font-medium">
-                    <i class="fas fa-save mr-2"></i>Save Draft
+            <form id="quick-register-form" onsubmit="saveQuickDraft(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <input type="text" name="voter_id" placeholder="Voter ID (ABC1234567)" pattern="[A-Z]{3}[0-9]{7}" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if(this.value.length > 3 && !/^[A-Z]{3}/.test(this.value)) this.value=this.value.slice(0,3); if(this.value.length > 3) this.value = this.value.slice(0,3) + this.value.slice(3).replace(/[^0-9]/g, '');" maxlength="10" title="Format: 3 Letters + 7 Digits (e.g., ABC1234567)" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
+                <input type="text" name="full_name" placeholder="Full Name" required maxlength="30" pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" title="Only letters and spaces allowed (Max 30 chars)" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
+                <input type="tel" name="phone" placeholder="Phone Number" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Only 10 digit numbers allowed" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
+                <button type="submit" class="px-4 py-3 rounded-xl bg-electric text-white hover:bg-electric/80 transition-colors font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i>Save Draft
                 </button>
-            </div>
+            </form>
         </div>
 
         <!-- 3. Booth Wise Voter List -->
@@ -173,53 +173,40 @@
                     <i class="fas fa-phone text-yellow"></i>
                     BLO Call Requests
                 </h3>
-                <button class="px-4 py-2 rounded-lg bg-yellow/20 text-yellow hover:bg-yellow/30 transition-colors text-sm">
-                    <i class="fas fa-plus mr-2"></i>New Call Request
+                <button onclick="openNewCallModal()" class="px-4 py-2 rounded-lg bg-yellow/20 text-yellow hover:bg-yellow/30 transition-colors text-sm flex items-center gap-2">
+                    <i class="fas fa-plus"></i>New Call Request
                 </button>
             </div>
             
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 rounded-xl bg-red/10 border border-red/30">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-red/20 flex items-center justify-center">
-                            <i class="fas fa-exclamation text-red-500"></i>
+            <div class="space-y-4" id="blo-requests-container">
+                {% if blo_calls_list %}
+                    {% for call in blo_calls_list %}
+                    <div class="flex items-center justify-between p-4 rounded-xl {% if call.priority == 'urgent' %}bg-red/10 border border-red/30{% else %}bg-yellow/10 border border-yellow/30{% endif %}">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full {% if call.priority == 'urgent' %}bg-red/20{% else %}bg-yellow/20{% endif %} flex items-center justify-center">
+                                <i class="fas {% if call.priority == 'urgent' %}fa-exclamation text-red-500{% else %}fa-clock text-yellow-500{% endif %}"></i>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">{{ call.reason }}</div>
+                                <div class="text-gray-400 text-sm">Voter: {{ call.voter_name }} - Phone: {{ call.phone }}</div>
+                                <div class="text-gray-500 text-xs mt-1">Requested {{ call.created_at.strftime('%H:%M') }}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-white font-medium">Urgent: Document Verification</div>
-                            <div class="text-gray-400 text-sm">Voter: Amit Kumar - Phone: 98765-12345</div>
-                            <div class="text-gray-500 text-xs mt-1">Requested 30 minutes ago</div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
-                            <i class="fas fa-phone mr-1"></i>Call
-                        </button>
-                        <button class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm">
-                            <i class="fas fa-eye mr-1"></i>View
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 rounded-xl bg-yellow/10 border border-yellow/30">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-yellow/20 flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-500"></i>
-                        </div>
-                        <div>
-                            <div class="text-white font-medium">Address Update Request</div>
-                            <div class="text-gray-400 text-sm">Voter: Priya Singh - Phone: 98765-67890</div>
-                            <div class="text-gray-500 text-xs mt-1">Requested 2 hours ago</div>
+                        <div class="flex gap-2">
+                            <a href="tel:{{ call.phone }}" class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm flex items-center gap-1">
+                                <i class="fas fa-phone"></i>Call
+                            </a>
+                            <button onclick="viewCallDetails('{{ call._id }}', '{{ call.voter_name }}', '{{ call.phone }}', '{{ call.reason }}')" class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm flex items-center gap-1">
+                                <i class="fas fa-eye"></i>View
+                            </button>
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
-                            <i class="fas fa-phone mr-1"></i>Call
-                        </button>
-                        <button class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm">
-                            <i class="fas fa-eye mr-1"></i>View
-                        </button>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <p>No pending call requests.</p>
                     </div>
-                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -295,4 +282,346 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Poll for booth stats and BLO requests every 5 seconds
+    setInterval(function() {
+        fetch("{{ url_for('admin.get_booth_stats') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+                
+                // Update stats
+                const totalVotersEl = document.getElementById('total-voters');
+                if (totalVotersEl) totalVotersEl.textContent = data.total_voters;
+                
+                const newRegistrationsEl = document.getElementById('new-registrations');
+                if (newRegistrationsEl) newRegistrationsEl.textContent = data.new_registrations;
+                
+                const bloCallsEl = document.getElementById('blo-calls');
+                if (bloCallsEl) bloCallsEl.textContent = data.blo_calls;
+                
+                const todayVisitsEl = document.getElementById('today-visits');
+                if (todayVisitsEl) todayVisitsEl.textContent = data.today_visits;
+                
+                // Update BLO Requests List
+                if (data.blo_calls_list) {
+                    const container = document.getElementById('blo-requests-container');
+                    if (container) {
+                        if (data.blo_calls_list.length === 0) {
+                            container.innerHTML = `<div class="text-center py-8 text-gray-500"><p>No pending call requests.</p></div>`;
+                        } else {
+                            container.innerHTML = data.blo_calls_list.map(call => `
+                                <div class="flex items-center justify-between p-4 rounded-xl ${call.priority === 'urgent' ? 'bg-red/10 border border-red/30' : 'bg-yellow/10 border border-yellow/30'}">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-full ${call.priority === 'urgent' ? 'bg-red/20' : 'bg-yellow/20'} flex items-center justify-center">
+                                            <i class="fas ${call.priority === 'urgent' ? 'fa-exclamation text-red-500' : 'fa-clock text-yellow-500'}"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-white font-medium">${call.reason}</div>
+                                            <div class="text-gray-400 text-sm">Voter: ${call.voter_name} - Phone: ${call.phone}</div>
+                                            <div class="text-gray-500 text-xs mt-1">Requested ${new Date(call.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="tel:${call.phone}" class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm flex items-center gap-1">
+                                            <i class="fas fa-phone"></i>Call
+                                        </a>
+                                        <button onclick="viewCallDetails('${call._id}', '${call.voter_name}', '${call.phone}', '${call.reason}')" class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm flex items-center gap-1">
+                                            <i class="fas fa-eye"></i>View
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching booth stats:', error));
+    }, 5000);
+
+    // --- Quick Registration Logic ---
+    function saveQuickDraft(e) {
+        e.preventDefault();
+        const form = document.getElementById('quick-register-form');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const btn = form.querySelector('button');
+        
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+        
+        fetch("{{ url_for('admin.quick_register_voter') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                // Show success feedback
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'fixed top-24 right-4 z-50 px-6 py-3 rounded-xl bg-emerald/20 border border-emerald/50 text-emerald shadow-lg animate-slide-in';
+                statusDiv.innerHTML = '<i class="fas fa-check mr-2"></i>Draft Saved!';
+                document.body.appendChild(statusDiv);
+                setTimeout(() => statusDiv.remove(), 3000);
+                form.reset();
+            } else {
+                alert(res.message);
+            }
+        })
+        .catch(err => console.error(err))
+        .finally(() => {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        });
+    }
+
+    // --- BLO Call Modal Logic ---
+    function openNewCallModal() {
+        const modal = document.getElementById('newCallModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
+            modal.querySelector('div').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeCallModal() {
+        const modal = document.getElementById('newCallModal');
+        const content = modal.querySelector('div');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function createCallRequest(e) {
+        e.preventDefault();
+        const form = document.getElementById('new-call-form');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const btn = form.querySelector('button[type="submit"]');
+        
+        // Show loading state
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        btn.disabled = true;
+        
+        fetch("{{ url_for('admin.create_blo_call_request') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                // Show success feedback
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'fixed top-24 right-4 z-50 px-6 py-3 rounded-xl bg-emerald/20 border border-emerald/50 text-emerald shadow-lg animate-slide-in';
+                statusDiv.innerHTML = '<i class="fas fa-check mr-2"></i>Request Created!';
+                document.body.appendChild(statusDiv);
+                
+                setTimeout(() => {
+                    statusDiv.remove();
+                    closeCallModal();
+                    location.reload(); 
+                }, 1500);
+            } else {
+                alert(res.message);
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('An error occurred. Please try again.');
+        })
+        .finally(() => {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        });
+    }
+    
+    function viewCallDetails(id, name, phone, reason) {
+        alert(`Call Details:\n\nVoter: ${name}\nPhone: ${phone}\nReason: ${reason}\n\nCall this voter directly using the 'Call' button.`);
+    }
+
+    // --- Custom Dropdown Logic ---
+    function toggleCustomDropdown(id) {
+        const dropdown = document.getElementById(id);
+        const menu = dropdown.querySelector('.dropdown-menu');
+        
+        // Close other dropdowns
+        document.querySelectorAll('.custom-select-container').forEach(el => {
+            if (el.id !== id) {
+                const otherMenu = el.querySelector('.dropdown-menu');
+                otherMenu.classList.add('hidden', 'opacity-0', 'scale-95');
+                otherMenu.classList.remove('opacity-100', 'scale-100');
+            }
+        });
+
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            setTimeout(() => {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+            menu.classList.add('opacity-0', 'scale-95');
+            menu.classList.remove('opacity-100', 'scale-100');
+            setTimeout(() => {
+                menu.classList.add('hidden');
+            }, 200);
+        }
+    }
+
+    function selectCustomOption(dropdownId, value) {
+        const dropdown = document.getElementById(dropdownId);
+        const input = dropdown.querySelector('input[type="hidden"]');
+        const selectedText = dropdown.querySelector('.selected-text');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        
+        // Update value
+        input.value = value;
+        
+        // Update display text
+        if (dropdownId === 'priority-dropdown') {
+            const label = value.charAt(0).toUpperCase() + value.slice(1);
+            selectedText.textContent = label;
+        } else {
+            selectedText.textContent = value;
+        }
+        
+        // Highlight selected option visually
+        const options = dropdown.querySelectorAll('.dropdown-menu > div > div');
+        options.forEach(opt => {
+            const checkIcon = opt.querySelector('.fa-check');
+            const text = opt.querySelector('span').textContent.trim();
+            
+            if (text === value || (dropdownId === 'priority-dropdown' && text.toLowerCase() === value)) {
+                checkIcon.classList.remove('opacity-0');
+            } else {
+                checkIcon.classList.add('opacity-0');
+            }
+        });
+
+        // Close dropdown
+        menu.classList.add('opacity-0', 'scale-95');
+        menu.classList.remove('opacity-100', 'scale-100');
+        setTimeout(() => {
+            menu.classList.add('hidden');
+        }, 200);
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.custom-select-container')) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('opacity-0', 'scale-95');
+                    menu.classList.remove('opacity-100', 'scale-100');
+                    setTimeout(() => {
+                        menu.classList.add('hidden');
+                    }, 200);
+                }
+            });
+        }
+    });
+</script>
+
+<!-- New Call Modal -->
+<div id="newCallModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-display font-bold text-white">New Call Request</h3>
+            <button onclick="closeCallModal()" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="new-call-form" onsubmit="createCallRequest(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-2">Voter Name</label>
+                    <input type="text" name="voter_name" required maxlength="36" pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" title="Only letters and spaces allowed (Max 36 chars)" class="w-full px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white focus:border-electric/50 focus:outline-none placeholder-gray-600 transition-all">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-2">Phone Number</label>
+                    <input type="tel" name="phone" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Only 10 digit numbers allowed" class="w-full px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white focus:border-electric/50 focus:outline-none placeholder-gray-600 transition-all">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-2">Reason</label>
+                    <div class="relative custom-select-container" id="reason-dropdown">
+                        <input type="hidden" name="reason" value="Document Verification">
+                        <button type="button" onclick="toggleCustomDropdown('reason-dropdown')" class="w-full px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white text-left flex justify-between items-center focus:border-electric/50 focus:outline-none transition-all hover:bg-white/5 group">
+                            <span class="selected-text">Document Verification</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-300 group-focus-within:rotate-180"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-full left-0 right-0 mt-2 bg-[#0f172a]/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 hidden opacity-0 scale-95 transition-all duration-200 origin-top dropdown-menu">
+                            <div class="p-1 space-y-1">
+                                <div onclick="selectCustomOption('reason-dropdown', 'Document Verification')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <span>Document Verification</span>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                                <div onclick="selectCustomOption('reason-dropdown', 'Address Verification')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <span>Address Verification</span>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                                <div onclick="selectCustomOption('reason-dropdown', 'Correction Inquiry')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <span>Correction Inquiry</span>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                                <div onclick="selectCustomOption('reason-dropdown', 'Other')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <span>Other</span>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-2">Priority</label>
+                    <div class="relative custom-select-container" id="priority-dropdown">
+                        <input type="hidden" name="priority" value="normal">
+                        <button type="button" onclick="toggleCustomDropdown('priority-dropdown')" class="w-full px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white text-left flex justify-between items-center focus:border-electric/50 focus:outline-none transition-all hover:bg-white/5 group">
+                            <span class="selected-text capitalize">Normal</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-300 group-focus-within:rotate-180"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-full left-0 right-0 mt-2 bg-[#0f172a]/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 hidden opacity-0 scale-95 transition-all duration-200 origin-top dropdown-menu">
+                            <div class="p-1 space-y-1">
+                                <div onclick="selectCustomOption('priority-dropdown', 'normal')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                        <span>Normal</span>
+                                    </div>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                                <div onclick="selectCustomOption('priority-dropdown', 'urgent')" class="px-4 py-2.5 hover:bg-white/10 cursor-pointer rounded-lg text-gray-300 hover:text-white transition-colors flex items-center justify-between group">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                        <span>Urgent</span>
+                                    </div>
+                                    <i class="fas fa-check text-emerald opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 justify-end mt-6">
+                <button type="button" onclick="closeCallModal()" class="px-5 py-2.5 rounded-xl border border-glass-border text-gray-300 hover:text-white hover:bg-white/5 transition-all">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-yellow/20 text-yellow border border-yellow/30 hover:bg-yellow/30 transition-all font-medium">
+                    Create Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
