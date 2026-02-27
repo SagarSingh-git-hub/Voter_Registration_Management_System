@@ -231,11 +231,12 @@ def dashboard():
 
 @admin.route('/application/<app_id>')
 @login_required
-@admin_required
 def view_application(app_id):
-    application = mongo.db.applications.find_one({"_id": ObjectId(app_id)})
-    if not application:
-        abort(404)
+    # Check permissions
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        abort(403)
+        
+    application = mongo.db.applications.find_one_or_404({"_id": ObjectId(app_id)})
         
     user = mongo.db.users.find_one({"_id": ObjectId(application['user_id'])})
     return render_template('view_application.html', application=application, user=user)
@@ -252,8 +253,11 @@ def view_document(filename):
 
 @admin.route('/approve/<app_id>', methods=['POST'])
 @login_required
-@admin_required
 def approve_application(app_id):
+    # Check permissions
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        abort(403)
+        
     application = mongo.db.applications.find_one({"_id": ObjectId(app_id)})
     if not application:
         abort(404)
@@ -305,12 +309,18 @@ def approve_application(app_id):
              email_status = f" (Email simulation logged for {target_email})"
         
     flash(f'Application Approved.{email_status}', 'success')
+    
+    if getattr(current_user, 'is_verifier', False):
+        return redirect(url_for('admin.verifier_dashboard'))
     return redirect(url_for('admin.dashboard'))
 
 @admin.route('/reject/<app_id>', methods=['POST'])
 @login_required
-@admin_required
 def reject_application(app_id):
+    # Check permissions
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        abort(403)
+
     reason = request.form.get('reason')
     mongo.db.applications.update_one(
         {"_id": ObjectId(app_id)}, 
@@ -338,6 +348,9 @@ def reject_application(app_id):
              email_status = f" (Email simulation logged for {target_email})"
         
     flash(f'Application Rejected.{email_status}', 'danger')
+    
+    if getattr(current_user, 'is_verifier', False):
+        return redirect(url_for('admin.verifier_dashboard'))
     return redirect(url_for('admin.dashboard'))
 
 @admin.route('/export/csv')
@@ -747,13 +760,13 @@ def verifier_dashboard():
         return redirect(url_for('main.dashboard'))
     
     # Get verification statistics
-    pending_count = mongo.db.applications.count_documents({"status": "pending"})
+    pending_count = mongo.db.applications.count_documents({"status": "Pending"})
     verified_today = mongo.db.applications.count_documents({
-        "status": "verified",
+        "status": "Verified",
         "verified_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
     })
     rejected_today = mongo.db.applications.count_documents({
-        "status": "rejected",
+        "status": "Rejected",
         "rejected_date": {"$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)}
     })
     duplicate_alerts = mongo.db.duplicate_alerts.count_documents({"status": "active"})
@@ -761,12 +774,16 @@ def verifier_dashboard():
     # Get duplicate alerts data
     duplicate_alerts_data = list(mongo.db.duplicate_alerts.find({"status": "active"}).sort("created_at", -1))
     
+    # Get pending applications
+    pending_applications = list(mongo.db.applications.find({"status": "Pending"}).sort("submitted_at", -1).limit(10))
+    
     return render_template('verifier_dashboard.html',
                          pending_count=pending_count,
                          verified_today=verified_today,
                          rejected_today=rejected_today,
                          duplicate_alerts=duplicate_alerts,
-                         duplicate_alerts_data=duplicate_alerts_data)
+                         duplicate_alerts_data=duplicate_alerts_data,
+                         pending_applications=pending_applications)
 
 @admin.route('/dismiss-alert/<alert_id>', methods=['POST'])
 @login_required
@@ -807,10 +824,7 @@ def export_verification_report():
     # Get verification data (limit to 100 latest for performance)
     pipeline = [
         {"$match": {
-            "$or": [
-                {"status": {"$in": ["verified", "rejected"]}},
-                {"status": "pending"}
-            ]
+            "status": {"$in": ["Verified", "Rejected", "Pending", "verified", "rejected", "pending"]}
         }},
         {"$sort": {"submitted_at": -1}},
         {"$limit": 100}
@@ -822,7 +836,8 @@ def export_verification_report():
     data_rows = []
     for app in applications:
         status = app.get('status', 'Unknown')
-        status_date = app.get('verified_date') if status == 'verified' else app.get('rejected_date')
+        status_lower = status.lower()
+        status_date = app.get('verified_date') if status_lower == 'verified' else app.get('rejected_date')
         if not status_date:
             status_date = app.get('submitted_at')
             
@@ -836,8 +851,7 @@ def export_verification_report():
             'epic': app.get('epic_number', 'N/A')
         })
     
-    if format_type in ['csv', 'excel']:
-        # For Excel, we use CSV format
+    if format_type == 'csv':
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(['Application ID', 'Name', 'Status', 'Date', 'EPIC Number'])
@@ -853,6 +867,38 @@ def export_verification_report():
         response.headers['Content-Disposition'] = f'attachment; filename={filename}'
         response.headers['Content-type'] = 'text/csv'
         return response
+
+    elif format_type == 'excel':
+        try:
+            import pandas as pd
+            import io
+            
+            # Create DataFrame
+            df = pd.DataFrame(data_rows)
+            # Rename columns for display
+            df.rename(columns={
+                'id': 'Application ID',
+                'name': 'Name',
+                'status': 'Status',
+                'date': 'Date',
+                'epic': 'EPIC Number'
+            }, inplace=True)
+            
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Verification Report')
+            
+            output.seek(0)
+            response = make_response(output.getvalue())
+            filename = f'verification_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+            
+            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+            response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            return response
+            
+        except ImportError:
+            flash('Excel export requires pandas library. Falling back to CSV format.', 'warning')
+            return redirect(url_for('admin.export_verification_report', format='csv'))
         
     elif format_type == 'pdf':
         buffer = BytesIO()
@@ -1037,7 +1083,7 @@ def export_demographics_csv(current_date, total, age_groups, male_count, female_
     response.headers['Content-type'] = 'text/csv'
     
     # Log the export action
-    log_admin_action("Export Demographics Report (CSV)", f"Generated demographics CSV report with {total} total voters")
+    log_admin_action(current_user.id, "Export Demographics Report (CSV)", None, f"Generated demographics CSV report with {total} total voters")
     
     return response
 
@@ -1050,33 +1096,33 @@ def export_demographics_excel(current_date, total, age_groups, male_count, femal
         data = []
         
         # Header
-        data.append(['Voter Demographics Report'])
-        data.append(['Generated on:', current_date])
-        data.append([])
+        data.append(['Voter Demographics Report', '', ''])
+        data.append(['Generated on:', current_date, ''])
+        data.append(['', '', ''])
         
         # Overview stats
-        data.append(['Overview Statistics'])
-        data.append(['Total Voters', total])
-        data.append([])
+        data.append(['Overview Statistics', '', ''])
+        data.append(['Total Voters', total, ''])
+        data.append(['', '', ''])
         
         # Age distribution
-        data.append(['Age Distribution'])
+        data.append(['Age Distribution', '', ''])
         data.append(['Age Group', 'Count', 'Percentage'])
         for age_group in age_groups:
             percentage = (age_group['count'] / total * 100) if total > 0 else 0
             data.append([age_group['group'], age_group['count'], f"{percentage:.1f}%"])
-        data.append([])
+        data.append(['', '', ''])
         
         # Gender distribution
-        data.append(['Gender Distribution'])
+        data.append(['Gender Distribution', '', ''])
         data.append(['Gender', 'Count', 'Percentage'])
         data.append(['Male', male_count, f"{(male_count/total*100):.1f}%" if total > 0 else "0%"])
         data.append(['Female', female_count, f"{(female_count/total*100):.1f}%" if total > 0 else "0%"])
         data.append(['Other', other_count, f"{(other_count/total*100):.1f}%" if total > 0 else "0%"])
-        data.append([])
+        data.append(['', '', ''])
         
         # Area distribution
-        data.append(['Area Distribution'])
+        data.append(['Area Distribution', '', ''])
         data.append(['Area Type', 'Count', 'Percentage'])
         data.append(['Urban', urban_count, f"{(urban_count/total*100):.1f}%" if total > 0 else "0%"])
         data.append(['Rural', rural_count, f"{(rural_count/total*100):.1f}%" if total > 0 else "0%"])
@@ -1093,7 +1139,7 @@ def export_demographics_excel(current_date, total, age_groups, male_count, femal
         response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         
         # Log the export action
-        log_admin_action("Export Demographics Report (Excel)", f"Generated demographics Excel report with {total} total voters")
+        log_admin_action(current_user.id, "Export Demographics Report (Excel)", None, f"Generated demographics Excel report with {total} total voters")
         
         return response
         
@@ -1222,6 +1268,6 @@ def export_demographics_pdf(current_date, total, age_groups, male_count, female_
     response.headers['Content-type'] = 'application/pdf'
     
     # Log the export action
-    log_admin_action("Export Demographics Report (PDF)", f"Generated demographics PDF report with {total} total voters")
+    log_admin_action(current_user.id, "Export Demographics Report (PDF)", None, f"Generated demographics PDF report with {total} total voters")
     
     return response

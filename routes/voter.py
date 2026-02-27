@@ -39,6 +39,17 @@ def voter_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@voter.route('/api/application-status')
+@login_required
+@voter_required
+def application_status():
+    application = mongo.db.applications.find_one(
+        {'user_id': str(current_user.id)},
+        sort=[('submitted_at', -1)]
+    )
+    status = application['status'] if application else 'None'
+    return jsonify({'status': status})
+
 @voter.route('/profile')
 @login_required
 @voter_required

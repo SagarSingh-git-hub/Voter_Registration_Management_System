@@ -13,3 +13,5 @@ qrcode
 redis
 Flask-Limiter
 firebase-admin
+pandas
+openpyxl

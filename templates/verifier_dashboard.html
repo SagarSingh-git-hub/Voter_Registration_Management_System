@@ -79,12 +79,14 @@
                     Pending Verification Queue
                 </h3>
                 <div class="flex gap-3">
-                    <button class="px-4 py-2 rounded-lg bg-electric/20 text-electric hover:bg-electric/30 transition-colors text-sm">
-                        <i class="fas fa-filter mr-2"></i>Filter
+                    <button id="filterBtn" onclick="toggleFilter()" class="px-4 py-2 rounded-lg bg-electric/20 text-electric hover:bg-electric/30 transition-colors text-sm flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        <span id="filterLabel">Filter: All</span>
                     </button>
-                    <button class="px-4 py-2 rounded-lg bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
-                        <i class="fas fa-sort mr-2"></i>Sort
+                    <button onclick="sortQueue('date')" class="px-4 py-2 rounded-lg bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm flex items-center gap-2">
+                        <i class="fas fa-sort"></i>Sort
                     </button>
+                    <div id="queue-status" class="px-4 py-2 rounded-lg text-sm font-medium opacity-0 transition-opacity duration-300"></div>
                 </div>
             </div>
             
@@ -92,69 +94,58 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-glass-border">
-                            <th class="text-left py-3 px-4 text-gray-400 font-medium">Application ID</th>
-                            <th class="text-left py-3 px-4 text-gray-400 font-medium">Name</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white" onclick="sortQueue('id')">Application ID</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white" onclick="sortQueue('name')">Name</th>
                             <th class="text-left py-3 px-4 text-gray-400 font-medium">Documents</th>
-                            <th class="text-left py-3 px-4 text-gray-400 font-medium">Submitted</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-medium cursor-pointer hover:text-white" onclick="sortQueue('date')">Submitted</th>
                             <th class="text-left py-3 px-4 text-gray-400 font-medium">Priority</th>
                             <th class="text-center py-3 px-4 text-gray-400 font-medium">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr class="border-b border-glass-border/50 hover:bg-white/5 transition-colors">
-                            <td class="py-3 px-4 text-white font-mono text-sm">#VR2024-0847</td>
-                            <td class="py-3 px-4 text-white">Amit Kumar Sharma</td>
+                    <tbody id="verificationQueueBody">
+                        {% for app in pending_applications %}
+                        <tr class="border-b border-glass-border/50 hover:bg-white/5 transition-colors" data-id="{{ app._id }}">
+                            <td class="py-3 px-4 text-white font-mono text-sm">#{{ app._id|string|truncate(10, True, '') }}</td>
+                            <td class="py-3 px-4 text-white">{{ app.full_name }}</td>
                             <td class="py-3 px-4">
                                 <div class="flex gap-2">
-                                    <span class="px-2 py-1 rounded bg-emerald/20 text-emerald text-xs">ID Complete</span>
-                                    <span class="px-2 py-1 rounded bg-yellow/20 text-yellow text-xs">Address Pending</span>
+                                    {% if app.id_proof_path %}
+                                    <span class="px-2 py-1 rounded bg-emerald/20 text-emerald text-xs">ID Uploaded</span>
+                                    {% else %}
+                                    <span class="px-2 py-1 rounded bg-red/20 text-red text-xs">ID Missing</span>
+                                    {% endif %}
+                                    {% if app.address_proof_path %}
+                                    <span class="px-2 py-1 rounded bg-emerald/20 text-emerald text-xs">Addr Uploaded</span>
+                                    {% else %}
+                                    <span class="px-2 py-1 rounded bg-yellow/20 text-yellow text-xs">Addr Pending</span>
+                                    {% endif %}
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-gray-300">2 hours ago</td>
+                            <td class="py-3 px-4 text-gray-300" data-timestamp="{{ app.submitted_at.timestamp() if app.submitted_at else 0 }}">
+                                {{ app.submitted_at.strftime('%Y-%m-%d %H:%M') if app.submitted_at else 'N/A' }}
+                            </td>
                             <td class="py-3 px-4">
-                                <span class="px-2 py-1 rounded bg-red/20 text-red text-xs">High</span>
+                                <span class="px-2 py-1 rounded bg-yellow/20 text-yellow text-xs">Normal</span>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex justify-center gap-2">
-                                    <button class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
+                                    <a href="{{ url_for('admin.view_application', app_id=app._id) }}" class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm" title="View">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm">
+                                    </a>
+                                    <button onclick="approveApplication('{{ app._id }}')" class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm" title="Approve">
                                         <i class="fas fa-check"></i>
                                     </button>
-                                    <button class="px-3 py-1 rounded bg-red/20 text-red hover:bg-red/30 transition-colors text-sm">
+                                    <button onclick="openRejectModal('{{ app._id }}')" class="px-3 py-1 rounded bg-red/20 text-red hover:bg-red/30 transition-colors text-sm" title="Reject">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        <tr class="border-b border-glass-border/50 hover:bg-white/5 transition-colors">
-                            <td class="py-3 px-4 text-white font-mono text-sm">#VR2024-0846</td>
-                            <td class="py-3 px-4 text-white">Priya Singh</td>
-                            <td class="py-3 px-4">
-                                <div class="flex gap-2">
-                                    <span class="px-2 py-1 rounded bg-emerald/20 text-emerald text-xs">ID Complete</span>
-                                    <span class="px-2 py-1 rounded bg-emerald/20 text-emerald text-xs">Photo Verified</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-4 text-gray-300">5 hours ago</td>
-                            <td class="py-3 px-4">
-                                <span class="px-2 py-1 rounded bg-yellow/20 text-yellow text-xs">Medium</span>
-                            </td>
-                            <td class="py-3 px-4 text-center">
-                                <div class="flex justify-center gap-2">
-                                    <button class="px-3 py-1 rounded bg-emerald/20 text-emerald hover:bg-emerald/30 transition-colors text-sm">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="px-3 py-1 rounded bg-blue/20 text-blue hover:bg-blue/30 transition-colors text-sm">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button class="px-3 py-1 rounded bg-red/20 text-red hover:bg-red/30 transition-colors text-sm">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-gray-500">No pending applications found.</td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -210,7 +201,7 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="reviewAlert('{{ alert._id }}')" class="px-3 py-1 rounded {% if alert.priority == 'high' %}bg-red/20 text-red hover:bg-red/30{% elif alert.priority == 'medium' %}bg-yellow/20 text-yellow hover:bg-yellow/30{% else %}bg-blue/20 text-blue hover:bg-blue/30{% endif %} transition-colors text-sm">
+                            <button onclick="reviewAlert('{{ alert.application_id or alert.application_ids[0] }}')" class="px-3 py-1 rounded {% if alert.priority == 'high' %}bg-red/20 text-red hover:bg-red/30{% elif alert.priority == 'medium' %}bg-yellow/20 text-yellow hover:bg-yellow/30{% else %}bg-blue/20 text-blue hover:bg-blue/30{% endif %} transition-colors text-sm">
                                 Review
                             </button>
                             <button onclick="dismissAlert('{{ alert._id }}')" class="px-3 py-1 rounded bg-gray/20 text-gray hover:bg-gray/30 transition-colors text-sm">
@@ -266,10 +257,176 @@
     </div>
 </div>
 
+<!-- Reject Reason Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="rejectModalContent">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-display font-bold text-white">Reject Application</h3>
+            <button onclick="closeRejectModal()" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="rejectForm" onsubmit="submitRejectForm(event)">
+            <div class="mb-6">
+                <label for="rejectionReason" class="block text-gray-400 text-sm font-medium mb-2">Reason for Rejection</label>
+                <textarea id="rejectionReason" name="reason" rows="4" class="w-full bg-dark/50 border border-glass-border rounded-xl p-3 text-white focus:outline-none focus:border-red-500/50 transition-colors" placeholder="Please explain why this application is being rejected..." required></textarea>
+            </div>
+            
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeRejectModal()" class="px-5 py-2.5 rounded-xl border border-glass-border text-gray-300 hover:text-white hover:bg-white/5 transition-all">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all font-medium">
+                    Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+let currentRejectAppId = null;
+
+// Reject Modal Logic
+function openRejectModal(appId) {
+    const modal = document.getElementById('rejectModal');
+    const content = document.getElementById('rejectModalContent');
+    const form = document.getElementById('rejectForm');
+    
+    currentRejectAppId = appId;
+    
+    // Clear previous input
+    document.getElementById('rejectionReason').value = '';
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function submitRejectForm(event) {
+    event.preventDefault();
+    if (!currentRejectAppId) return;
+    
+    const reason = document.getElementById('rejectionReason').value;
+    const formData = new FormData();
+    formData.append('reason', reason);
+    
+    // Show processing state if needed
+    
+    fetch(`/admin/reject/${currentRejectAppId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+             // If backend redirects (which it does), assume success for now
+             // Or better, update backend to return JSON.
+             // For now, since backend redirects, we can just handle the UI update manually
+             // and ignore the redirect content, OR follow it. 
+             // BUT user asked to NOT refresh page.
+             // So we must handle the UI update here.
+             
+             handleActionSuccess(currentRejectAppId, 'Rejected');
+             closeRejectModal();
+        } else {
+             // Handle explicit success/fail if backend returns JSON
+             handleActionSuccess(currentRejectAppId, 'Rejected');
+             closeRejectModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showFlashMessage('Error rejecting application', 'error');
+        closeRejectModal();
+    });
+}
+
+function approveApplication(appId) {
+    fetch(`/admin/approve/${appId}`, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (response.ok || response.redirected) {
+            handleActionSuccess(appId, 'Approved');
+        } else {
+            showFlashMessage('Error approving application', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showFlashMessage('Error approving application', 'error');
+    });
+}
+
+function handleActionSuccess(appId, action) {
+    // 1. Remove row from table
+    const row = document.querySelector(`tr[data-id="${appId}"]`);
+    if (row) {
+        row.style.transition = 'all 0.3s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(20px)';
+        setTimeout(() => row.remove(), 300);
+    }
+    
+    // 2. Update Stats (Client-side approximation)
+    const statCards = document.querySelectorAll('.text-4xl.font-display.font-bold.text-white');
+    
+    // Decrease Pending (Index 0)
+    if (statCards[0]) {
+        let val = parseInt(statCards[0].innerText);
+        if (!isNaN(val)) statCards[0].innerText = Math.max(0, val - 1);
+    }
+
+    // Increase Verified (Index 1) or Rejected (Index 3)
+    if (action === 'Approved' && statCards[1]) {
+        let val = parseInt(statCards[1].innerText);
+        if (!isNaN(val)) statCards[1].innerText = val + 1;
+    } else if (action === 'Rejected' && statCards[3]) {
+        let val = parseInt(statCards[3].innerText);
+        if (!isNaN(val)) statCards[3].innerText = val + 1;
+    }
+    
+    // 3. Show notification in the dedicated area
+    const statusArea = document.getElementById('queue-status');
+    if (statusArea) {
+        statusArea.innerText = `Application ${action}.`;
+        statusArea.className = `px-4 py-2 rounded-lg text-sm font-medium transition-opacity duration-300 ${
+            action === 'Approved' ? 'bg-emerald/20 text-emerald' : 'bg-red/20 text-red'
+        } opacity-100`;
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            statusArea.classList.remove('opacity-100');
+            statusArea.classList.add('opacity-0');
+        }, 3000);
+    }
+}
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    const content = document.getElementById('rejectModalContent');
+    
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Close reject modal when clicking outside
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('rejectModal');
+    if (e.target === modal) {
+        closeRejectModal();
+    }
+});
+
 function refreshAlerts(event) {
-    const container = document.getElementById('duplicate-alerts-container');
-    // If called via interval, event will be undefined. Find button manually.
     const refreshBtn = event ? event.target : document.querySelector('[onclick="refreshAlerts()"]');
     
     if (!refreshBtn) return;
@@ -285,26 +442,32 @@ function refreshAlerts(event) {
     }, 1000);
 }
 
-function reviewAlert(alertId) {
-    // Show review modal or navigate to review page
-    alert(`Reviewing alert: ${alertId}\n\nThis would open a detailed review interface where you can:\n• Compare applications side-by-side\n• View matched fields\n• Make verification decisions`);
+function reviewAlert(applicationId) {
+    // Check if it's a valid ObjectId (24 hex chars) or just a sample ID
+    if (/^[0-9a-fA-F]{24}$/.test(applicationId)) {
+        window.location.href = "{{ url_for('admin.view_application', app_id='') }}/" + applicationId;
+    } else {
+        // It's likely a sample/mock ID
+        showFlashMessage('Demo Alert: This is a sample entry linked to mock data.', 'info');
+    }
 }
 
 function dismissAlert(alertId) {
-    if (confirm('Are you sure you want to dismiss this alert?')) {
-        // Send dismiss request to server
-        fetch(`/admin/dismiss-alert/${alertId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrf_token') // Add CSRF token if needed
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Remove the alert from DOM
-                const alertElement = document.querySelector(`[onclick="dismissAlert('${alertId}')"]`).closest('.flex.items-center.justify-between');
+    // Send dismiss request to server immediately
+    fetch(`{{ url_for('admin.dismiss_alert', alert_id='') }}/${alertId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrf_token') // Add CSRF token if needed
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the alert from DOM
+            const alertBtn = document.querySelector(`[onclick="dismissAlert('${alertId}')"]`);
+            if (alertBtn) {
+                const alertElement = alertBtn.closest('.flex.items-center.justify-between');
                 alertElement.style.transition = 'all 0.3s ease';
                 alertElement.style.opacity = '0';
                 alertElement.style.transform = 'translateX(100%)';
@@ -314,37 +477,51 @@ function dismissAlert(alertId) {
                     
                     // Update the alert count
                     const alertCount = document.querySelector('.text-4xl.font-display.font-bold.text-white');
-                    const currentCount = parseInt(alertCount.textContent);
-                    alertCount.textContent = Math.max(0, currentCount - 1);
+                    if (alertCount) {
+                        const currentCount = parseInt(alertCount.textContent);
+                        alertCount.textContent = Math.max(0, currentCount - 1);
+                    }
                     
                     // Show success message
                     showFlashMessage('Alert dismissed successfully', 'success');
                 }, 300);
-            } else {
-                showFlashMessage('Failed to dismiss alert', 'error');
             }
-        })
-        .catch(error => {
-            console.error('Error dismissing alert:', error);
-            showFlashMessage('Error dismissing alert', 'error');
-        });
-    }
+        } else {
+            showFlashMessage('Failed to dismiss alert', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error dismissing alert:', error);
+        showFlashMessage('Error dismissing alert', 'error');
+    });
 }
 
 function showFlashMessage(message, type) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-24 right-4 z-50 flex flex-col gap-3 pointer-events-none';
+        document.body.appendChild(container);
+    }
+
     const flashDiv = document.createElement('div');
-    flashDiv.className = `fixed top-4 right-4 px-6 py-3 rounded-xl z-50 ${
+    flashDiv.className = `px-6 py-3 rounded-xl shadow-lg pointer-events-auto transition-all duration-300 transform translate-x-full ${
         type === 'success' ? 'bg-emerald/20 border border-emerald/50 text-emerald' : 
         type === 'error' ? 'bg-red/20 border border-red/50 text-red' : 
         'bg-blue/20 border border-blue/50 text-blue'
     }`;
     flashDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'} mr-2"></i>${message}`;
-    document.body.appendChild(flashDiv);
+    
+    container.appendChild(flashDiv);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        flashDiv.classList.remove('translate-x-full');
+    });
     
     setTimeout(() => {
-        flashDiv.style.transition = 'all 0.3s ease';
-        flashDiv.style.opacity = '0';
-        flashDiv.style.transform = 'translateX(100%)';
+        flashDiv.classList.add('translate-x-full', 'opacity-0');
         setTimeout(() => flashDiv.remove(), 300);
     }, 3000);
 }
@@ -369,6 +546,94 @@ setInterval(() => {
     // Pass null or undefined as event
     refreshAlerts();
 }, 30000);
+
+// Queue Filtering Logic
+let currentFilter = 'all';
+
+function toggleFilter() {
+    const filters = ['all', 'high', 'id_missing', 'addr_pending'];
+    const labels = {
+        'all': 'Filter: All',
+        'high': 'Filter: High Priority',
+        'id_missing': 'Filter: ID Missing',
+        'addr_pending': 'Filter: Address Pending'
+    };
+    
+    // Cycle to next filter
+    const currentIndex = filters.indexOf(currentFilter);
+    currentFilter = filters[(currentIndex + 1) % filters.length];
+    
+    // Update button label
+    document.getElementById('filterLabel').textContent = labels[currentFilter];
+    
+    // Apply filter
+    const tbody = document.getElementById('verificationQueueBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    rows.forEach(row => {
+        let show = true;
+        
+        // Skip the "No applications found" row
+        if (row.cells.length < 2) return;
+        
+        switch(currentFilter) {
+            case 'high':
+                // Check priority column (5th column)
+                // Note: The priority text is inside a span inside the TD
+                const priorityText = row.querySelector('td:nth-child(5)').innerText.toLowerCase();
+                if (!priorityText.includes('high')) show = false;
+                break;
+            case 'id_missing':
+                // Check documents column (3rd column) for "ID Missing"
+                if (!row.querySelector('td:nth-child(3)').innerText.includes('ID Missing')) show = false;
+                break;
+            case 'addr_pending':
+                // Check documents column for "Address Pending" or "Addr Pending"
+                if (!row.querySelector('td:nth-child(3)').innerText.includes('Addr Pending')) show = false;
+                break;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+// Queue Sorting Logic
+let sortDirection = { id: 1, name: 1, date: 1 };
+
+function sortQueue(key) {
+    const tbody = document.getElementById('verificationQueueBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Toggle direction
+    sortDirection[key] *= -1;
+    const dir = sortDirection[key];
+    
+    rows.sort((a, b) => {
+        let valA, valB;
+        
+        switch(key) {
+            case 'id':
+                valA = a.querySelector('td:nth-child(1)').innerText.trim();
+                valB = b.querySelector('td:nth-child(1)').innerText.trim();
+                break;
+            case 'name':
+                valA = a.querySelector('td:nth-child(2)').innerText.trim().toLowerCase();
+                valB = b.querySelector('td:nth-child(2)').innerText.trim().toLowerCase();
+                break;
+            case 'date':
+                valA = parseFloat(a.querySelector('td:nth-child(4)').dataset.timestamp || 0);
+                valB = parseFloat(b.querySelector('td:nth-child(4)').dataset.timestamp || 0);
+                break;
+        }
+        
+        if (valA < valB) return -1 * dir;
+        if (valA > valB) return 1 * dir;
+        return 0;
+    });
+    
+    // Re-append sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+}
 
 function showExportModal() {
     const modal = document.getElementById('exportModal');

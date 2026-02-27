@@ -23,11 +23,15 @@ def create_duplicate_alerts():
         # Clear existing alerts
         mongo.db.duplicate_alerts.delete_many({})
         
+        # Try to find a real application ID
+        sample_app = mongo.db.applications.find_one()
+        sample_app_id = str(sample_app['_id']) if sample_app else "VR2024-0842"
+        
         # Sample duplicate alerts
         alerts = [
             {
                 "type": "potential_duplicate",
-                "application_id": "VR2024-0842",
+                "application_id": sample_app_id,
                 "existing_voter_id": "VOT2023-0147",
                 "description": "Application matches existing voter ID",
                 "similarity_score": 0.95,
@@ -93,6 +97,76 @@ def create_duplicate_alerts():
                 "details": {
                     "email": "user@example.com",
                     "existing_name": "Anita Sharma"
+                }
+            },
+            {
+                "type": "potential_duplicate",
+                "application_id": "VR2024-0820",
+                "existing_voter_id": "VOT2022-0999",
+                "description": "Application matches existing voter ID (Partial)",
+                "similarity_score": 0.88,
+                "status": "active",
+                "created_at": datetime.now() - timedelta(hours=12),
+                "priority": "medium",
+                "details": {
+                    "matched_fields": ["name", "dob"],
+                    "application_name": "Suresh Kumar",
+                    "existing_name": "Suresh K."
+                }
+            },
+            {
+                "type": "similar_name",
+                "application_ids": ["VR2024-0815", "VR2024-0816"],
+                "description": "Similar names in same constituency",
+                "similarity_score": 0.85,
+                "status": "active",
+                "created_at": datetime.now() - timedelta(hours=14),
+                "priority": "medium",
+                "details": {
+                    "names": ["Ravi Verma", "Ravi Varma"],
+                    "matched_fields": ["first_name", "last_name"]
+                }
+            },
+            {
+                "type": "address_duplicate",
+                "application_id": "VR2024-0810",
+                "existing_applications": ["VR2024-0805", "VR2024-0806"],
+                "description": "Multiple applications from same household",
+                "similarity_score": 0.90,
+                "status": "active",
+                "created_at": datetime.now() - timedelta(hours=16),
+                "priority": "low",
+                "details": {
+                    "address": "456 Park Avenue, Mumbai",
+                    "application_count": 3
+                }
+            },
+            {
+                "type": "phone_duplicate",
+                "application_id": "VR2024-0808",
+                "existing_application_id": "VR2024-0801",
+                "description": "Phone number reused",
+                "similarity_score": 1.0,
+                "status": "active",
+                "created_at": datetime.now() - timedelta(hours=18),
+                "priority": "high",
+                "details": {
+                    "phone": "9988776655",
+                    "existing_name": "Vikram Singh"
+                }
+            },
+            {
+                "type": "email_duplicate",
+                "application_id": "VR2024-0805",
+                "existing_application_id": "VR2024-0799",
+                "description": "Email address already linked",
+                "similarity_score": 1.0,
+                "status": "active",
+                "created_at": datetime.now() - timedelta(hours=20),
+                "priority": "low",
+                "details": {
+                    "email": "vikram@example.com",
+                    "existing_name": "Vikram S."
                 }
             }
         ]
