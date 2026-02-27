@@ -369,15 +369,11 @@ def _csv_rows():
     return tuple(rows)
 
 @voter.route('/api/states')
-@login_required
-@voter_required
 def get_states():
     states = sorted({r['State'] for r in _csv_rows() if r['State']})
     return jsonify(states)
 
 @voter.route('/api/districts')
-@login_required
-@voter_required
 def get_districts():
     state = request.args.get('state', '').strip()
     districts = sorted({r['District'] for r in _csv_rows() if (not state or r['State'] == state) and r['District']})

@@ -1,7 +1,7 @@
 import os
 import csv
 from io import BytesIO, StringIO
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, send_file, current_app, make_response
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, send_file, current_app, make_response, jsonify
 from flask_login import login_required, current_user
 from models import mongo
 from bson.objectid import ObjectId
@@ -27,7 +27,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@admin.route('/admin/profile')
+@admin.route('/profile')
 @login_required
 @admin_required
 def profile():
@@ -60,7 +60,7 @@ def profile():
     
     return render_template('admin_profile.html', stats=stats)
 
-@admin.route('/admin/profile/upload-pic', methods=['POST'])
+@admin.route('/profile/upload-pic', methods=['POST'])
 @login_required
 @admin_required
 def upload_profile_pic():
@@ -98,7 +98,7 @@ def upload_profile_pic():
         
     return redirect(url_for('admin.profile'))
 
-@admin.route('/admin/profile/update', methods=['POST'])
+@admin.route('/profile/update', methods=['POST'])
 @login_required
 @admin_required
 def update_profile():
@@ -131,7 +131,7 @@ def update_profile():
     flash('Profile updated successfully.', 'success')
     return redirect(url_for('admin.profile'))
 
-@admin.route('/admin/profile/remove-pic', methods=['POST'])
+@admin.route('/profile/remove-pic', methods=['POST'])
 @login_required
 @admin_required
 def remove_profile_pic():
@@ -160,7 +160,7 @@ def remove_profile_pic():
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-@admin.route('/admin/profile/change-password', methods=['POST'])
+@admin.route('/profile/change-password', methods=['POST'])
 @login_required
 @admin_required
 def change_password():
@@ -184,7 +184,7 @@ def change_password():
     flash('Password changed successfully.', 'success')
     return redirect(url_for('admin.profile'))
 
-@admin.route('/admin/dashboard')
+@admin.route('/dashboard')
 @login_required
 @admin_required
 def dashboard():
@@ -229,7 +229,7 @@ def dashboard():
                            rejection_stats=rejection_stats,
                            audit_logs=audit_logs)
 
-@admin.route('/admin/application/<app_id>')
+@admin.route('/application/<app_id>')
 @login_required
 @admin_required
 def view_application(app_id):
@@ -240,7 +240,7 @@ def view_application(app_id):
     user = mongo.db.users.find_one({"_id": ObjectId(application['user_id'])})
     return render_template('view_application.html', application=application, user=user)
 
-@admin.route('/admin/document/<path:filename>')
+@admin.route('/document/<path:filename>')
 @login_required
 @admin_required
 def view_document(filename):
@@ -250,7 +250,7 @@ def view_document(filename):
         abort(404)
     return send_file(file_path)
 
-@admin.route('/admin/approve/<app_id>', methods=['POST'])
+@admin.route('/approve/<app_id>', methods=['POST'])
 @login_required
 @admin_required
 def approve_application(app_id):
@@ -307,7 +307,7 @@ def approve_application(app_id):
     flash(f'Application Approved.{email_status}', 'success')
     return redirect(url_for('admin.dashboard'))
 
-@admin.route('/admin/reject/<app_id>', methods=['POST'])
+@admin.route('/reject/<app_id>', methods=['POST'])
 @login_required
 @admin_required
 def reject_application(app_id):
@@ -340,7 +340,7 @@ def reject_application(app_id):
     flash(f'Application Rejected.{email_status}', 'danger')
     return redirect(url_for('admin.dashboard'))
 
-@admin.route('/admin/export/csv')
+@admin.route('/export/csv')
 @login_required
 @admin_required
 def export_csv():
@@ -405,7 +405,7 @@ def export_csv():
     output.headers["Content-type"] = "text/csv; charset=utf-8"
     return output
 
-@admin.route('/admin/export/pdf')
+@admin.route('/export/pdf')
 @login_required
 @admin_required
 def export_pdf():
@@ -539,7 +539,7 @@ def export_pdf():
         flash('Error generating PDF report. Please try again.', 'danger')
         return redirect(url_for('admin.dashboard'))
 
-@admin.route('/admin/blo-calls')
+@admin.route('/blo-calls')
 @login_required
 @admin_required
 def blo_calls():
@@ -560,7 +560,7 @@ def blo_calls():
     
     return render_template('admin_blo_calls.html', calls=calls, stats=stats)
 
-@admin.route('/admin/blo-call/<call_id>/update', methods=['POST'])
+@admin.route('/blo-call/<call_id>/update', methods=['POST'])
 @login_required
 @admin_required
 def update_blo_call(call_id):
@@ -657,10 +657,14 @@ def update_blo_call(call_id):
         
     return redirect(redirect_url)
 
-@admin.route('/admin/demographics')
+@admin.route('/demographics')
 @login_required
-@admin_required
 def voter_demographics():
+    # Check permission
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('main.dashboard'))
+
     # 1. Overview Stats
     total = mongo.db.applications.count_documents({})
     
@@ -704,18 +708,37 @@ def voter_demographics():
     for area in area_data:
         pred = random.randint(65, 92)
         badge = "High" if pred > 80 else ("Medium" if pred > 70 else "Low")
+        
+        if badge == "High":
+             badge_class = "bg-emerald/20 text-emerald border border-emerald/20"
+             progress_color = "bg-emerald"
+        elif badge == "Medium":
+             badge_class = "bg-yellow-400/20 text-yellow-400 border border-yellow-400/20"
+             progress_color = "bg-yellow-400"
+        else:
+             badge_class = "bg-red-400/20 text-red-400 border border-red-400/20"
+             progress_color = "bg-red-400"
+             
         area_stats.append({
             "name": area['_id'] or "Unknown",
             "count": area['count'],
             "turnout": pred,
-            "badge": badge
+            "badge": badge,
+            "badge_class": badge_class,
+            "progress_color": progress_color,
+            "progress_style": f"width: {pred}%"
         })
+        
+    # Prepare chart data for safer template rendering
+    age_chart_data = [age_groups["18-25"], age_groups["26-35"], age_groups["36-50"], age_groups["50+"]]
+    gender_chart_data = [gender_stats.get('Male', 0), gender_stats.get('Female', 0), gender_stats.get('Other', 0)]
         
     return render_template('admin_demographics.html', 
                            total=total, new_month=new_month, active=active, inactive=inactive,
-                           age_groups=age_groups, gender_stats=gender_stats, area_stats=area_stats)
+                           age_groups=age_groups, gender_stats=gender_stats, area_stats=area_stats,
+                           age_chart_data=age_chart_data, gender_chart_data=gender_chart_data)
 
-@admin.route('/admin/verifier-dashboard')
+@admin.route('/verifier-dashboard')
 @login_required
 def verifier_dashboard():
     # Check if user has permission to access verifier dashboard
@@ -735,13 +758,146 @@ def verifier_dashboard():
     })
     duplicate_alerts = mongo.db.duplicate_alerts.count_documents({"status": "active"})
     
+    # Get duplicate alerts data
+    duplicate_alerts_data = list(mongo.db.duplicate_alerts.find({"status": "active"}).sort("created_at", -1))
+    
     return render_template('verifier_dashboard.html',
                          pending_count=pending_count,
                          verified_today=verified_today,
                          rejected_today=rejected_today,
-                         duplicate_alerts=duplicate_alerts)
+                         duplicate_alerts=duplicate_alerts,
+                         duplicate_alerts_data=duplicate_alerts_data)
 
-@admin.route('/admin/booth-officer-dashboard')
+@admin.route('/dismiss-alert/<alert_id>', methods=['POST'])
+@login_required
+def dismiss_alert(alert_id):
+    # Check if user has permission to dismiss alerts
+    if not current_user.is_verifier and not current_user.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    try:
+        # Update alert status to dismissed
+        result = mongo.db.duplicate_alerts.update_one(
+            {'_id': ObjectId(alert_id)},
+            {'$set': {
+                'status': 'dismissed',
+                'dismissed_at': datetime.utcnow(),
+                'dismissed_by': current_user.id
+            }}
+        )
+        
+        if result.modified_count > 0:
+            return jsonify({'success': True, 'message': 'Alert dismissed successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Alert not found'}), 404
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@admin.route('/export-verification-report')
+@login_required
+def export_verification_report():
+    # Check permission
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('main.dashboard'))
+        
+    format_type = request.args.get('format', 'csv')
+    
+    # Get verification data (limit to 100 latest for performance)
+    pipeline = [
+        {"$match": {
+            "$or": [
+                {"status": {"$in": ["verified", "rejected"]}},
+                {"status": "pending"}
+            ]
+        }},
+        {"$sort": {"submitted_at": -1}},
+        {"$limit": 100}
+    ]
+    
+    applications = list(mongo.db.applications.aggregate(pipeline))
+    
+    # Prepare data rows
+    data_rows = []
+    for app in applications:
+        status = app.get('status', 'Unknown')
+        status_date = app.get('verified_date') if status == 'verified' else app.get('rejected_date')
+        if not status_date:
+            status_date = app.get('submitted_at')
+            
+        date_str = status_date.strftime('%Y-%m-%d %H:%M') if status_date else 'N/A'
+        
+        data_rows.append({
+            'id': str(app.get('_id')),
+            'name': app.get('full_name', 'N/A'),
+            'status': status.title(),
+            'date': date_str,
+            'epic': app.get('epic_number', 'N/A')
+        })
+    
+    if format_type in ['csv', 'excel']:
+        # For Excel, we use CSV format
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['Application ID', 'Name', 'Status', 'Date', 'EPIC Number'])
+        
+        for row in data_rows:
+            writer.writerow([row['id'], row['name'], row['status'], row['date'], row['epic']])
+            
+        output.seek(0)
+        response = make_response(output.getvalue())
+        
+        filename = f'verification_report_{datetime.now().strftime("%Y%m%d")}.csv'
+        
+        response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+        response.headers['Content-type'] = 'text/csv'
+        return response
+        
+    elif format_type == 'pdf':
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph(f"Verification Report", styles['Title']))
+        elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+        elements.append(Spacer(1, 20))
+        
+        # Table Data
+        table_data = [['Application ID', 'Name', 'Status', 'Date', 'EPIC No.']]
+        for row in data_rows:
+            table_data.append([
+                row['id'][-8:], # Short ID for PDF to fit
+                row['name'][:20], # Truncate long names
+                row['status'],
+                row['date'],
+                row['epic']
+            ])
+            
+        t = Table(table_data, colWidths=[100, 150, 80, 120, 100])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(t)
+        
+        doc.build(elements)
+        buffer.seek(0)
+        
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Disposition'] = f'attachment; filename=verification_report_{datetime.now().strftime("%Y%m%d")}.pdf'
+        response.headers['Content-type'] = 'application/pdf'
+        return response
+        
+    return redirect(url_for('admin.verifier_dashboard'))
+
+@admin.route('/booth-officer-dashboard')
 @login_required
 def booth_officer_dashboard():
     # Check if user has permission to access booth officer dashboard
@@ -772,7 +928,7 @@ def booth_officer_dashboard():
                          blo_calls=blo_calls,
                          today_visits=today_visits)
 
-@admin.route('/admin/officer-profile')
+@admin.route('/officer-profile')
 @login_required
 def officer_profile():
     """Officer profile page for both verifier and booth officer roles"""
@@ -789,10 +945,14 @@ def officer_profile():
     return render_template('officer_profile.html',
                          activity_logs=activity_logs)
 
-@admin.route('/admin/export-demographics')
+@admin.route('/export-demographics')
 @login_required
-@admin_required
 def export_demographics():
+    # Check permission
+    if not getattr(current_user, 'is_verifier', False) and not getattr(current_user, 'is_admin', False):
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('main.dashboard'))
+
     # Get format from query parameter (default: csv)
     export_format = request.args.get('format', 'csv').lower()
     

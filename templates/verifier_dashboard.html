@@ -13,10 +13,6 @@
             
             <!-- Actions -->
             <div class="flex gap-4 mt-4 md:mt-0">
-                <a href="{{ url_for('admin.officer_profile') }}" class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2">
-                    <i class="fas fa-user"></i>
-                    <span>My Profile</span>
-                </a>
                 <button onclick="showExportModal()" class="px-5 py-2.5 rounded-xl bg-dark/50 border border-glass-border text-gray-300 hover:text-white hover:border-emerald/50 transition-all flex items-center gap-2">
                     <i class="fas fa-download text-emerald"></i>
                     <span>Export Report</span>
@@ -171,57 +167,73 @@
                     <i class="fas fa-exclamation-triangle text-red-500"></i>
                     Duplicate Detection Alerts
                 </h3>
-                <button class="px-4 py-2 rounded-lg bg-red/20 text-red hover:bg-red/30 transition-colors text-sm">
+                <button onclick="refreshAlerts(event)" class="px-4 py-2 rounded-lg bg-red/20 text-red hover:bg-red/30 transition-colors text-sm">
                     <i class="fas fa-sync mr-2"></i>Refresh
                 </button>
             </div>
             
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 rounded-xl bg-red/10 border border-red/30">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-red/20 flex items-center justify-center">
-                            <i class="fas fa-copy text-red-500"></i>
+            <div id="duplicate-alerts-container">
+                {% if duplicate_alerts_data %}
+                    {% for alert in duplicate_alerts_data %}
+                    <div class="flex items-center justify-between p-4 rounded-xl {% if alert.priority == 'high' %}bg-red/10 border border-red/30{% elif alert.priority == 'medium' %}bg-yellow/10 border border-yellow/30{% else %}bg-blue/10 border border-blue/30{% endif %} mb-3">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full {% if alert.priority == 'high' %}bg-red/20{% elif alert.priority == 'medium' %}bg-yellow/20{% else %}bg-blue/20{% endif %} flex items-center justify-center">
+                                {% if alert.type == 'potential_duplicate' %}
+                                    <i class="fas fa-copy text-{{ 'red' if alert.priority == 'high' else 'yellow' if alert.priority == 'medium' else 'blue' }}-500"></i>
+                                {% elif alert.type == 'similar_name' %}
+                                    <i class="fas fa-user-check text-{{ 'red' if alert.priority == 'high' else 'yellow' if alert.priority == 'medium' else 'blue' }}-500"></i>
+                                {% elif alert.type == 'address_duplicate' %}
+                                    <i class="fas fa-home text-{{ 'red' if alert.priority == 'high' else 'yellow' if alert.priority == 'medium' else 'blue' }}-500"></i>
+                                {% elif alert.type == 'phone_duplicate' %}
+                                    <i class="fas fa-phone text-{{ 'red' if alert.priority == 'high' else 'yellow' if alert.priority == 'medium' else 'blue' }}-500"></i>
+                                {% else %}
+                                    <i class="fas fa-envelope text-{{ 'red' if alert.priority == 'high' else 'yellow' if alert.priority == 'medium' else 'blue' }}-500"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">{{ alert.description }}</div>
+                                <div class="text-gray-400 text-sm">
+                                    {% if alert.application_id %}
+                                        Application #{{ alert.application_id }}
+                                    {% elif alert.application_ids %}
+                                        {% for app_id in alert.application_ids %}
+                                            #{{ app_id }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    • {{ alert.created_at.strftime('%H:%M') }}
+                                </div>
+                                {% if alert.details %}
+                                <div class="text-xs text-gray-500 mt-1">
+                                    Similarity: {{ (alert.similarity_score * 100)|round }}% • Priority: {{ alert.priority.title() }}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-white font-medium">Potential Duplicate Found</div>
-                            <div class="text-gray-400 text-sm">Application #VR2024-0842 matches existing voter ID</div>
+                        <div class="flex gap-2">
+                            <button onclick="reviewAlert('{{ alert._id }}')" class="px-3 py-1 rounded {% if alert.priority == 'high' %}bg-red/20 text-red hover:bg-red/30{% elif alert.priority == 'medium' %}bg-yellow/20 text-yellow hover:bg-yellow/30{% else %}bg-blue/20 text-blue hover:bg-blue/30{% endif %} transition-colors text-sm">
+                                Review
+                            </button>
+                            <button onclick="dismissAlert('{{ alert._id }}')" class="px-3 py-1 rounded bg-gray/20 text-gray hover:bg-gray/30 transition-colors text-sm">
+                                Dismiss
+                            </button>
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-1 rounded bg-red/20 text-red hover:bg-red/30 transition-colors text-sm">
-                            Review
-                        </button>
-                        <button class="px-3 py-1 rounded bg-gray/20 text-gray hover:bg-gray/30 transition-colors text-sm">
-                            Dismiss
-                        </button>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 rounded-full bg-gray/20 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-gray text-2xl"></i>
                     </div>
+                    <p class="text-gray-400">No duplicate alerts found</p>
+                    <p class="text-gray-500 text-sm mt-2">All applications are clear of duplicates</p>
                 </div>
-                
-                <div class="flex items-center justify-between p-4 rounded-xl bg-yellow/10 border border-yellow/30">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-yellow/20 flex items-center justify-center">
-                            <i class="fas fa-user-check text-yellow-500"></i>
-                        </div>
-                        <div>
-                            <div class="text-white font-medium">Similar Name Detected</div>
-                            <div class="text-gray-400 text-sm">2 applications with similar names found</div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-1 rounded bg-yellow/20 text-yellow hover:bg-yellow/30 transition-colors text-sm">
-                            Investigate
-                        </button>
-                        <button class="px-3 py-1 rounded bg-gray/20 text-gray hover:bg-gray/30 transition-colors text-sm">
-                            Ignore
-                        </button>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
 
         <!-- 4. Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 slide-in-bottom" style="animation-delay: 0.7s;">
-            <button class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left">
+            <a href="{{ url_for('voter.search_voter_page') }}" class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left block">
                 <div class="flex items-center gap-4 mb-3">
                     <div class="w-12 h-12 rounded-xl bg-electric/20 flex items-center justify-center group-hover:bg-electric/30 transition-colors">
                         <i class="fas fa-search text-electric text-xl"></i>
@@ -229,7 +241,7 @@
                     <h4 class="text-white font-semibold">Search Applications</h4>
                 </div>
                 <p class="text-gray-400 text-sm">Search voter applications by ID, name, or details</p>
-            </button>
+            </a>
 
             <button class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left">
                 <div class="flex items-center gap-4 mb-3">
@@ -241,7 +253,7 @@
                 <p class="text-gray-400 text-sm">Process multiple applications in batch mode</p>
             </button>
 
-            <button class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left">
+            <a href="{{ url_for('admin.voter_demographics') }}" class="glass-panel p-6 rounded-3xl hover:bg-white/10 transition-all group text-left block">
                 <div class="flex items-center gap-4 mb-3">
                     <div class="w-12 h-12 rounded-xl bg-blue/20 flex items-center justify-center group-hover:bg-blue/30 transition-colors">
                         <i class="fas fa-chart-line text-blue text-xl"></i>
@@ -249,8 +261,219 @@
                     <h4 class="text-white font-semibold">Verification Analytics</h4>
                 </div>
                 <p class="text-gray-400 text-sm">View detailed verification statistics and trends</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshAlerts(event) {
+    const container = document.getElementById('duplicate-alerts-container');
+    // If called via interval, event will be undefined. Find button manually.
+    const refreshBtn = event ? event.target : document.querySelector('[onclick="refreshAlerts()"]');
+    
+    if (!refreshBtn) return;
+    
+    // Show loading state
+    const originalContent = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Simulate refresh
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+function reviewAlert(alertId) {
+    // Show review modal or navigate to review page
+    alert(`Reviewing alert: ${alertId}\n\nThis would open a detailed review interface where you can:\n• Compare applications side-by-side\n• View matched fields\n• Make verification decisions`);
+}
+
+function dismissAlert(alertId) {
+    if (confirm('Are you sure you want to dismiss this alert?')) {
+        // Send dismiss request to server
+        fetch(`/admin/dismiss-alert/${alertId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrf_token') // Add CSRF token if needed
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the alert from DOM
+                const alertElement = document.querySelector(`[onclick="dismissAlert('${alertId}')"]`).closest('.flex.items-center.justify-between');
+                alertElement.style.transition = 'all 0.3s ease';
+                alertElement.style.opacity = '0';
+                alertElement.style.transform = 'translateX(100%)';
+                
+                setTimeout(() => {
+                    alertElement.remove();
+                    
+                    // Update the alert count
+                    const alertCount = document.querySelector('.text-4xl.font-display.font-bold.text-white');
+                    const currentCount = parseInt(alertCount.textContent);
+                    alertCount.textContent = Math.max(0, currentCount - 1);
+                    
+                    // Show success message
+                    showFlashMessage('Alert dismissed successfully', 'success');
+                }, 300);
+            } else {
+                showFlashMessage('Failed to dismiss alert', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error dismissing alert:', error);
+            showFlashMessage('Error dismissing alert', 'error');
+        });
+    }
+}
+
+function showFlashMessage(message, type) {
+    const flashDiv = document.createElement('div');
+    flashDiv.className = `fixed top-4 right-4 px-6 py-3 rounded-xl z-50 ${
+        type === 'success' ? 'bg-emerald/20 border border-emerald/50 text-emerald' : 
+        type === 'error' ? 'bg-red/20 border border-red/50 text-red' : 
+        'bg-blue/20 border border-blue/50 text-blue'
+    }`;
+    flashDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'} mr-2"></i>${message}`;
+    document.body.appendChild(flashDiv);
+    
+    setTimeout(() => {
+        flashDiv.style.transition = 'all 0.3s ease';
+        flashDiv.style.opacity = '0';
+        flashDiv.style.transform = 'translateX(100%)';
+        setTimeout(() => flashDiv.remove(), 300);
+    }, 3000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Auto-refresh alerts every 30 seconds
+setInterval(() => {
+    // Pass null or undefined as event
+    refreshAlerts();
+}, 30000);
+
+function showExportModal() {
+    const modal = document.getElementById('exportModal');
+    const content = document.getElementById('modalContent');
+    modal.classList.remove('hidden');
+    // Small delay to allow display:block to apply before opacity transition
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function hideExportModal() {
+    const modal = document.getElementById('exportModal');
+    const content = document.getElementById('modalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+function exportReport(format) {
+    // Show loading state
+    const btn = event.currentTarget;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<div class="flex items-center justify-center w-full gap-3"><i class="fas fa-spinner fa-spin"></i> Generating ${format.toUpperCase()}...</div>`;
+    btn.disabled = true;
+    
+    // Redirect to export endpoint
+    window.location.href = `{{ url_for('admin.export_verification_report') }}?format=${format}`;
+    
+    // Reset button after short delay (assuming download starts)
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        hideExportModal();
+        showFlashMessage(`${format.toUpperCase()} report download started`, 'success');
+    }, 2000);
+}
+
+// Close modal when clicking outside
+// Note: event listener added after modal exists in DOM
+setTimeout(() => {
+    const modal = document.getElementById('exportModal');
+    if(modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideExportModal();
+            }
+        });
+    }
+}, 100);
+</script>
+
+<!-- Export Format Selection Modal -->
+<div id="exportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="modalContent">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-display font-bold text-white">Choose Export Format</h3>
+            <button onclick="hideExportModal()" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <p class="text-gray-400 mb-8">Select the format you'd like to export the verification report:</p>
+        
+        <div class="space-y-4">
+            <!-- Excel Option -->
+            <button onclick="exportReport('excel')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                    <i class="fas fa-file-excel text-green-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">Microsoft Excel</h4>
+                    <p class="text-gray-400 text-sm">Best for data analysis and calculations</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-white transition-colors"></i>
+            </button>
+            
+            <!-- PDF Option -->
+            <button onclick="exportReport('pdf')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                    <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">PDF Document</h4>
+                    <p class="text-gray-400 text-sm">Best for printing and sharing</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-white transition-colors"></i>
+            </button>
+            
+            <!-- CSV Option -->
+            <button onclick="exportReport('csv')" class="w-full p-4 rounded-xl border border-glass-border bg-white/5 hover:bg-white/10 transition-all group flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                    <i class="fas fa-file-csv text-blue-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-white font-semibold">CSV File</h4>
+                    <p class="text-gray-400 text-sm">Raw data for database imports</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-500 group-hover:text-white transition-colors"></i>
             </button>
         </div>
     </div>
 </div>
+
 {% endblock %}
