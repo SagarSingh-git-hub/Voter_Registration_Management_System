@@ -473,18 +473,32 @@
             console.log('Dashboard initialized. Current Status:', currentStatus);
 
             function pollStatus() {
+                // Don't poll if document is hidden to save resources
+                if (document.hidden) return;
+
                 fetch('/voter/api/application-status')
                     .then(response => {
+                        // Handle session expiration
+                        if (response.status === 401 || response.status === 403) {
+                            console.warn('Session expired, reloading...');
+                            window.location.reload();
+                            return null;
+                        }
+                        
                         if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                            // Log warning instead of error to reduce noise
+                            console.warn('Status poll failed:', response.status);
+                            return null;
                         }
                         return response.json();
                     })
                     .then(data => {
+                        if (!data) return;
+                        
                         // Check if status has changed
                         // We compare strict status strings. 
                         // Note: 'None' from API means no application found.
-                        if (data.status !== currentStatus) {
+                        if (data.status !== 'Error' && data.status !== currentStatus) {
                             console.log(`Status changed! ${currentStatus} -> ${data.status}`);
                             
                             // Visual feedback before reload (optional but nice)
@@ -498,7 +512,9 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error polling status:', error);
+                        // Suppress AbortError (common on page reload)
+                        if (error.name === 'AbortError') return;
+                        console.warn('Polling error (likely network or server restart):', error.message);
                     });
             }
 

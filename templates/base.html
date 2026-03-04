@@ -215,7 +215,7 @@
           {% if messages %}
             <div class="mb-8 space-y-4 max-w-2xl mx-auto">
               {% for category, message in messages %}
-                <div class="p-4 rounded-xl backdrop-blur-md border flex items-center gap-3 shadow-lg transform translate-y-[-10px] opacity-0 animate-slide-in
+                <div class="p-4 rounded-xl backdrop-blur-md border flex items-center gap-3 shadow-lg transform translate-y-[-10px] opacity-0 flash-animate
                   {% if category == 'success' %} bg-emerald/10 border-emerald/30 text-emerald-400
                   {% elif category == 'danger' %} bg-red-500/10 border-red-500/30 text-red-400
                   {% else %} bg-electric/10 border-electric/30 text-electric {% endif %}">
@@ -228,7 +228,16 @@
             <!-- Auto-hide Flash Messages Script (Cinematic VFX) -->
             <script>
               document.addEventListener('DOMContentLoaded', () => {
-                const alerts = document.querySelectorAll('.animate-slide-in');
+                // Fade in alerts
+                gsap.to(".flash-animate", {
+                  y: 0,
+                  opacity: 1,
+                  duration: 0.6,
+                  stagger: 0.1,
+                  ease: "power2.out"
+                });
+
+                const alerts = document.querySelectorAll('.flash-animate');
                 if (alerts.length > 0) {
                   setTimeout(() => {
                     alerts.forEach((alert, index) => {

@@ -43,12 +43,16 @@ def voter_required(f):
 @login_required
 @voter_required
 def application_status():
-    application = mongo.db.applications.find_one(
-        {'user_id': str(current_user.id)},
-        sort=[('submitted_at', -1)]
-    )
-    status = application['status'] if application else 'None'
-    return jsonify({'status': status})
+    try:
+        application = mongo.db.applications.find_one(
+            {'user_id': str(current_user.id)},
+            sort=[('submitted_at', -1)]
+        )
+        status = application['status'] if application else 'None'
+        return jsonify({'status': status})
+    except Exception as e:
+        current_app.logger.error(f"Error fetching application status: {e}")
+        return jsonify({'status': 'Error', 'message': str(e)}), 500
 
 @voter.route('/profile')
 @login_required

@@ -1,4 +1,9 @@
 /* Custom utilities that are tricky with just Tailwind classes */
+:root {
+    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-smooth: 0.4s;
+}
+
 body {
     background-color: #05070A;
 }
@@ -13,6 +18,7 @@ body {
 ::-webkit-scrollbar-thumb {
     background: #1f2937;
     border-radius: 4px;
+    transition: background var(--duration-smooth) var(--ease-smooth);
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #00B4FF;
@@ -25,7 +31,13 @@ body {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s ease;
+    transition: all var(--duration-smooth) var(--ease-smooth);
+}
+
+.glass-panel:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 35px 60px -15px rgba(0, 180, 255, 0.15);
 }
 
 /* Neon Text Glow */
@@ -60,14 +72,20 @@ input:-webkit-autofill:active{
 }
 
 /* Animations */
-.slide-in-bottom, .animate-slide-in {
-    animation: slideInBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.slide-in-bottom {
+    animation: slideInBottom 0.8s var(--ease-smooth) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.animate-slide-in {
+    animation: slideInBottom 0.8s var(--ease-smooth) forwards;
     opacity: 0;
     transform: translateY(30px);
 }
 
 .slide-in-left {
-    animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideInLeft 0.8s var(--ease-smooth) forwards;
     opacity: 0;
     transform: translateX(-30px);
 }
@@ -129,7 +147,7 @@ input:-webkit-autofill:active{
     color: #d1d5db; /* gray-300 */
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s var(--ease-smooth);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -152,7 +170,7 @@ input:-webkit-autofill:active{
 }
 
 .custom-select-trigger i {
-    transition: transform 0.3s ease;
+    transition: transform 0.3s var(--ease-smooth);
     color: #6b7280;
 }
 
@@ -176,7 +194,7 @@ input:-webkit-autofill:active{
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s var(--ease-smooth);
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(12px); /* Ensure readability */
     pointer-events: none; /* Prevent clicks when hidden */
@@ -211,7 +229,7 @@ input:-webkit-autofill:active{
     padding: 12px 16px;
     color: #e2e8f0;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s var(--ease-smooth);
     display: flex;
     align-items: center;
     justify-content: space-between;
