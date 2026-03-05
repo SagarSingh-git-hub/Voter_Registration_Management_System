@@ -413,9 +413,15 @@
             progressBar.style.width = `${progress}%`;
             
             // Show/Hide Steps
-            document.querySelectorAll('.form-step').forEach(el => el.classList.add('hidden'));
-            document.querySelector(`#step-${step}`).classList.remove('hidden');
-            document.querySelector(`#step-${step}`).classList.add('animate-slide-in');
+            document.querySelectorAll('.form-step').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('animate-slide-in'); // Reset animation
+            });
+            const currentStepEl = document.querySelector(`#step-${step}`);
+            currentStepEl.classList.remove('hidden');
+            // Trigger reflow to restart animation
+            void currentStepEl.offsetWidth; 
+            currentStepEl.classList.add('animate-slide-in');
             
             // Update Indicators
             document.querySelectorAll('.step-indicator').forEach(el => {

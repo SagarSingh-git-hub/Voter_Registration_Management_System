@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gsap.fromTo(section, 
             { 
                 opacity: 0, 
-                y: 50 
+                y: 30 
             },
             {
                 opacity: 1,
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollTrigger: {
                     trigger: section,
                     start: "top 80%", // Animation starts when top of section hits 80% of viewport
-                    toggleActions: "play none none reverse"
+                    toggleActions: "play none none none"
                 }
             }
         );
@@ -38,20 +38,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         gsap.fromTo(heading,
             {
-                y: 100,
+                y: 50,
                 opacity: 0,
-                clipPath: "inset(100% 0 0 0)"
+                // clipPath: "inset(100% 0 0 0)" // Removed for better compatibility
             },
             {
                 y: 0,
                 opacity: 1,
-                clipPath: "inset(0% 0 0 0)",
+                // clipPath: "inset(0% 0 0 0)",
                 duration: 1.2,
                 ease: "power4.out",
                 scrollTrigger: {
                     trigger: heading,
                     start: "top 90%",
-                    toggleActions: "play none none reverse"
+                    toggleActions: "play none none none"
                 }
             }
         );
@@ -70,23 +70,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if(children.length > 0) {
             gsap.fromTo(children,
                 {
-                    y: 50,
+                    y: 30,
                     opacity: 0,
-                    scale: 0.95,
-                    filter: "blur(10px)" // Motion blur simulation
+                    scale: 0.98,
+                    // filter: "blur(10px)" // Removed for performance
                 },
                 {
                     y: 0,
                     opacity: 1,
                     scale: 1,
-                    filter: "blur(0px)",
+                    // filter: "blur(0px)",
                     duration: 0.8,
-                    stagger: 0.15, // Stagger effect
-                    ease: "back.out(1.7)", // Physics-based easing
+                    stagger: 0.1, // Faster stagger
+                    ease: "back.out(1.2)", // Softer bounce
                     scrollTrigger: {
                         trigger: grid,
                         start: "top 85%",
-                        toggleActions: "play none none reverse"
+                        toggleActions: "play none none none"
                     }
                 }
             );
