@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, render_template
 from config import Config
-from models import mongo, login_manager, mail, limiter
+from models import mongo, login_manager, mail, limiter, csrf, init_indexes, init_redis
 import logging
 import os
 
@@ -23,6 +23,13 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     mail.init_app(app)
     limiter.init_app(app)
+    csrf.init_app(app)
+    
+    # Initialize DB Indexes
+    init_indexes(app)
+    
+    # Initialize Redis globally
+    init_redis(app)
 
     # Context Processor to inject config into templates
     @app.context_processor
@@ -41,6 +48,28 @@ def create_app(config_class=Config):
     app.register_blueprint(voter_blueprint, url_prefix='/voter')
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
     app.register_blueprint(e_epic_blueprint, url_prefix='/e-epic')
+
+    # --- BUG-015 FIX: Proper styled error handlers ---
+    @app.errorhandler(400)
+    def bad_request(e):
+        return render_template('errors/400.html'), 400
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(413)
+    def request_entity_too_large(e):
+        return render_template('errors/413.html'), 413
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        app.logger.error(f"Server Error: {e}")
+        return render_template('errors/500.html'), 500
 
     return app
 
