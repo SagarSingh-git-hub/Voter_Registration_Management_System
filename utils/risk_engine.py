@@ -1,5 +1,18 @@
-from fuzzywuzzy import fuzz
+import logging
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
+
+# BUG-018 FIX: Graceful fallback if fuzzywuzzy/rapidfuzz is not installed.
+# Prefer rapidfuzz (faster, actively maintained) over the legacy fuzzywuzzy.
+try:
+    from rapidfuzz import fuzz
+except ImportError:
+    try:
+        from fuzzywuzzy import fuzz
+    except ImportError:
+        fuzz = None
+        logger.warning("Neither rapidfuzz nor fuzzywuzzy is installed. Fuzzy duplicate detection is disabled.")
 
 def detect_duplicate_voter(app_data, mongo):
     """
@@ -37,78 +50,76 @@ def detect_duplicate_voter(app_data, mongo):
     })
 
     if existing_phone:
-        # Check name similarity
-        name_score = fuzz.ratio(app_data.get('full_name', '').lower(), existing_phone.get('full_name', '').lower())
-        
-        if name_score > 85:
-            risk_report.update({
-                "duplicate_type": "High Probability",
-                "reason": "Same Phone & Similar Name",
-                "confidence": 90,
-                "action": "Block" # High likelihood of duplicate
-            })
-            return risk_report
-        else:
+        if fuzz is None:
+            # Fuzzy library unavailable — flag for manual review
             risk_report.update({
                 "duplicate_type": "Possible",
-                "reason": "Phone number reused by different person",
+                "reason": "Phone number reused (fuzzy matching unavailable)",
                 "confidence": 60,
                 "action": "Review"
             })
-            # Continue to check profile similarity as well to potentially increase risk
+        else:
+            name_score = fuzz.ratio(
+                app_data.get('full_name', '').lower(),
+                existing_phone.get('full_name', '').lower()
+            )
+            if name_score > 85:
+                risk_report.update({
+                    "duplicate_type": "High Probability",
+                    "reason": "Same Phone & Similar Name",
+                    "confidence": 90,
+                    "action": "Block"
+                })
+                return risk_report
+            else:
+                risk_report.update({
+                    "duplicate_type": "Possible",
+                    "reason": "Phone number reused by different person",
+                    "confidence": 60,
+                    "action": "Review"
+                })
 
     # 3. AI Similar Profile Detection (Fuzzy Match)
-    # Find potential matches based on Pincode to narrow down search space
-    potential_matches = mongo.db.applications.find({
-        "pin_code": app_data.get('pin_code'),
-        "user_id": {"$ne": app_data.get('user_id')},
-        "status": {"$ne": "Rejected"}
-    })
+    if fuzz is not None:
+        potential_matches = mongo.db.applications.find({
+            "pin_code": app_data.get('pin_code'),
+            "user_id": {"$ne": app_data.get('user_id')},
+            "status": {"$ne": "Rejected"}
+        })
 
-    max_score = 0
-    best_match_id = None
+        max_score = 0
+        best_match_id = None
 
-    for match in potential_matches:
-        # Calculate similarity score
-        score = 0
-        
-        # Name (40%)
-        name_sim = fuzz.token_sort_ratio(app_data.get('full_name', ''), match.get('full_name', ''))
-        score += name_sim * 0.4
-        
-        # DOB (30%)
-        if app_data.get('dob') == match.get('dob'):
-            score += 30
-        
-        # Address (20%)
-        addr_sim = fuzz.token_set_ratio(app_data.get('present_address', ''), match.get('present_address', ''))
-        score += addr_sim * 0.2
-        
-        # Relative Name (10%)
-        rel_sim = fuzz.token_sort_ratio(app_data.get('relative_name', ''), match.get('relative_name', ''))
-        score += rel_sim * 0.1
-        
-        if score > max_score:
-            max_score = score
-            best_match_id = match['_id']
+        for match in potential_matches:
+            score = 0
+            name_sim = fuzz.token_sort_ratio(app_data.get('full_name', ''), match.get('full_name', ''))
+            score += name_sim * 0.4
+            if app_data.get('dob') == match.get('dob'):
+                score += 30
+            addr_sim = fuzz.token_set_ratio(app_data.get('present_address', ''), match.get('present_address', ''))
+            score += addr_sim * 0.2
+            rel_sim = fuzz.token_sort_ratio(app_data.get('relative_name', ''), match.get('relative_name', ''))
+            score += rel_sim * 0.1
+            if score > max_score:
+                max_score = score
+                best_match_id = match['_id']
 
-    if max_score > 75:
-        # If we already have a 'Review' from phone, upgrade to Block if profile match is high
-        if risk_report['action'] == "Review" and max_score > 85:
-             risk_report.update({
-                "duplicate_type": "Confirmed Profile Match",
-                "reason": f"Same Phone + Similar Profile (Score: {int(max_score)}%)",
-                "confidence": int(max_score),
-                "action": "Block"
-            })
-        elif risk_report['action'] == "Allow":
-            risk_report.update({
-                "duplicate_type": "Profile Match",
-                "reason": f"Similar Profile found (Score: {int(max_score)}%)",
-                "confidence": int(max_score),
-                "action": "Review" if max_score < 90 else "Block"
-            })
-    
+        if max_score > 75:
+            if risk_report['action'] == "Review" and max_score > 85:
+                risk_report.update({
+                    "duplicate_type": "Confirmed Profile Match",
+                    "reason": f"Same Phone + Similar Profile (Score: {int(max_score)}%)",
+                    "confidence": int(max_score),
+                    "action": "Block"
+                })
+            elif risk_report['action'] == "Allow":
+                risk_report.update({
+                    "duplicate_type": "Profile Match",
+                    "reason": f"Similar Profile found (Score: {int(max_score)}%)",
+                    "confidence": int(max_score),
+                    "action": "Review" if max_score < 90 else "Block"
+                })
+
     return risk_report
 
 def assess_fraud_risk(app_data, mongo):

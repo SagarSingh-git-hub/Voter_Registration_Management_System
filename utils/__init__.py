@@ -4,6 +4,12 @@ import string
 import smtplib
 import time
 import requests
+import logging
+from enum import Enum
+try:
+    import filetype  # Replaces deprecated imghdr (safe on Python 3.13+)
+except ImportError:
+    filetype = None
 # from flask_mail import Message # Removed Flask-Mail dependency
 from flask import current_app
 from models import mongo # Removed mail import
@@ -11,19 +17,34 @@ from datetime import datetime
 from flask import request
 from .risk_engine import detect_duplicate_voter, assess_fraud_risk
 
+logger = logging.getLogger(__name__)
+
+
+class ApplicationStatus(Enum):
+    """Centralised application status constants to avoid magic strings."""
+    PENDING = 'Pending'
+    APPROVED = 'Approved'
+    REJECTED = 'Rejected'
+    FLAGGED = 'Flagged'
+    UNDER_REVIEW = 'Under Review'
+
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
 try:
     from PIL import Image
     import pytesseract
 except ImportError:
     Image = None
     pytesseract = None
-    print("OCR libraries not found.")
+    logger.warning("OCR libraries (Pillow/pytesseract) not found. OCR features disabled.")
 
 try:
     from fuzzywuzzy import fuzz
 except ImportError:
     fuzz = None
-    print("FuzzyWuzzy not found.")
+    logger.warning("FuzzyWuzzy not found. Fuzzy matching disabled.")
 
 def log_admin_action(admin_id, action, target_id=None, details=None):
     try:
@@ -37,7 +58,7 @@ def log_admin_action(admin_id, action, target_id=None, details=None):
         }
         mongo.db.audit_logs.insert_one(log)
     except Exception as e:
-        print(f"Audit Log Error: {e}")
+        logger.error(f"Audit Log Error: {e}")
 
 def create_notification(user_id, message, type='info'):
     try:
@@ -50,7 +71,7 @@ def create_notification(user_id, message, type='info'):
         }
         mongo.db.notifications.insert_one(notification)
     except Exception as e:
-        print(f"Notification Error: {e}")
+        logger.error(f"Notification Error: {e}")
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -134,9 +155,42 @@ def send_status_email(to_email, name, app_id, status, comment=None):
     print(f"[FALLBACK MOCK EMAIL] Reason: EmailJS Failed.")
     return False
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+# BUG-014 FIX: Replaced imghdr (deprecated Python 3.13+) with 'filetype' library
+# Maps image MIME types to accepted extensions
+_ALLOWED_IMAGE_MIMES = {
+    'image/jpeg': {'jpg', 'jpeg'},
+    'image/png':  {'png'},
+    'image/gif':  {'gif'},
+}
+
+
+def allowed_file(filename, file_stream=None):
+    """Check extension AND (optionally) the actual MIME type via file magic bytes."""
+    if '.' not in filename:
+        return False
+
+    ext = filename.rsplit('.', 1)[1].lower()
+    allowed_exts = {e.lower() for e in current_app.config.get('ALLOWED_EXTENSIONS', set())}
+
+    # 1. Extension whitelist check
+    if ext not in allowed_exts:
+        return False
+
+    # 2. Optional: MIME magic-byte check for image files (skip for PDF)
+    if file_stream is not None and ext != 'pdf' and filetype is not None:
+        header = file_stream.read(261)  # filetype needs up to 261 bytes
+        file_stream.seek(0)  # Always rewind after reading
+        kind = filetype.guess(header)
+        if kind is None:
+            logger.warning(f"allowed_file: could not detect MIME for '{filename}'")
+            return False
+        allowed_exts_for_mime = _ALLOWED_IMAGE_MIMES.get(kind.mime, set())
+        if ext not in allowed_exts_for_mime:
+            logger.warning(f"allowed_file: extension '{ext}' doesn't match detected MIME '{kind.mime}'")
+            return False
+
+    return True
+
 
 def perform_ocr_scan(image_path):
     if not pytesseract or not Image:
@@ -146,20 +200,26 @@ def perform_ocr_scan(image_path):
         text = pytesseract.image_to_string(img)
         return text
     except Exception as e:
-        print(f"OCR Error: {e}")
+        logger.error(f"OCR Error: {e}")
         return "OCR Failed"
+
 
 def generate_unique_epic_number():
     """
-    Generates a unique EPIC number (3 Uppercase + 7 Digits)
-    and ensures it doesn't exist in the database.
+    Generates a unique EPIC number (3 Uppercase + 7 Digits).
+    BUG-007 FIX: Capped at 100 attempts to prevent infinite looping.
     """
-    while True:
+    MAX_RETRIES = 100
+    for attempt in range(MAX_RETRIES):
         letters = ''.join(random.choices(string.ascii_uppercase, k=3))
         digits = ''.join(random.choices(string.digits, k=7))
         epic = f"{letters}{digits}"
-        
-        # Check uniqueness in both collections
+
         if not mongo.db.applications.find_one({"epic_number": epic}) and \
            not mongo.db.final_voters.find_one({"epic_number": epic}):
             return epic
+
+    raise RuntimeError(
+        f"EPIC number generation failed after {MAX_RETRIES} attempts. "
+        "Database may be corrupt or full."
+    )
