@@ -267,4 +267,90 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
+
+/* ============================================
+   SCROLL ANIMATIONS — Supporting Styles
+   ============================================ */
+
+/* Nav shrink on scroll */
+#navbar.nav-scrolled {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#navbar.nav-scrolled .backdrop-blur-md {
+    background: rgba(5, 7, 10, 0.85) !important;
+    box-shadow: 0 4px 30px rgba(0, 180, 255, 0.08);
+}
+
+/* Scroll progress bar */
+#scroll-progress {
+    pointer-events: none;
+    will-change: width;
+}
+
+/* Clip-path reveal base — ensure headings don't flash */
+h2, h3 {
+    will-change: clip-path, opacity, transform;
+}
+
+/* Parallax elements — hardware acceleration */
+[data-parallax] {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Glass panel entrance */
+.glass-panel {
+    will-change: opacity, transform;
+}
+
+/* Service card glow-sweep keyframe */
+@keyframes glowSweep {
+    0%   { box-shadow: 0 0 0   rgba(0, 180, 255, 0); }
+    50%  { box-shadow: 0 0 30px rgba(0, 180, 255, 0.3); }
+    100% { box-shadow: 0 0 0   rgba(0, 180, 255, 0); }
+}
+
+.service-glow-on-enter {
+    animation: glowSweep 1.2s ease forwards;
+}
+
+/* Scan line animation (hero cinematic) */
+@keyframes scanDown {
+    0%   { top: 0%; opacity: 1; }
+    90%  { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Step connector animation support */
+.grid .absolute.top-10 {
+    transform-origin: left center;
+}
+
+/* Parallax bg blobs — no jitter */
+.parallax-bg {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Counter number flash */
+.text-2xl.font-bold {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Reveal hidden state for clip-path animation */
+.reveal-hidden {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+}
+
+/* Mobile: disable heavy parallax to save performance */
+@media (max-width: 768px) {
+    [data-parallax] {
+        will-change: auto;
+    }
+}
+
