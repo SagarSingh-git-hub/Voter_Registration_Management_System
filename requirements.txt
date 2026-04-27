@@ -15,3 +15,12 @@ Flask-Limiter
 firebase-admin
 pandas
 openpyxl
+fuzzywuzzy
+python-Levenshtein
+Pillow
+pytesseract
+filetype
+mongomock
+itsdangerous
+gunicorn
+google-generativeai
