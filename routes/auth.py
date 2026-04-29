@@ -2,10 +2,11 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from models.user import User
 from models.forms import LoginForm, RegistrationForm, OTPForm, ForgotPasswordForm
-from utils import generate_otp, send_otp_email
+from utils import generate_otp, send_otp_email, send_emailjs
 from utils.firebase_init import verify_token
 from models import mongo, limiter
 from bson.objectid import ObjectId
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 import logging
 
 # Configure Logging
@@ -187,15 +188,83 @@ def login():
 def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    
+
     form = ForgotPasswordForm()
     if form.validate_on_submit():
-        # In a real app, we would generate a token and send an email here
-        # For now, we'll just simulate the success to satisfy the flow
-        flash('If an account exists for that email, we have sent a password reset link.', 'info')
+        user = User.find_by_email(form.email.data.strip().lower())
+        # Always show a generic flash to prevent user-enumeration
+        flash('If an account exists for that email, we have sent a password reset link. Check your inbox.', 'info')
+
+        if user:
+            # Generate a time-limited signed token (expires in 1 hour)
+            s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+            token = s.dumps(user.email, salt='password-reset-salt')
+            reset_url = url_for('auth.reset_password', token=token, _external=True)
+
+            # Send via EmailJS
+            send_emailjs(
+                to_email=user.email,
+                template_params={
+                    'to_email': user.email,
+                    'to_name': user.full_name or user.username,
+                    'subject': 'VOTE.X — Password Reset Request',
+                    'message': (
+                        f'Click the link below to reset your password. '
+                        f'This link expires in 1 hour.\n\n{reset_url}'
+                    ),
+                    'reset_url': reset_url,
+                }
+            )
+            current_app.logger.info(f'Password reset link generated for: {user.email}')
+
         return redirect(url_for('auth.login'))
-        
+
     return render_template('forgot_password.html', form=form)
+
+
+@auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Validate the reset token and allow the user to set a new password."""
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = s.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
+    except SignatureExpired:
+        flash('The password reset link has expired. Please request a new one.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    except BadSignature:
+        flash('Invalid or tampered reset link. Please request a new one.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if not new_password or len(new_password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
+            return render_template('reset_password.html', token=token)
+
+        if new_password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return render_template('reset_password.html', token=token)
+
+        user = User.find_by_email(email)
+        if not user:
+            flash('User account not found.', 'danger')
+            return redirect(url_for('auth.forgot_password'))
+
+        from werkzeug.security import generate_password_hash
+        mongo.db.users.update_one(
+            {'_id': ObjectId(user.id)},
+            {'$set': {'password_hash': generate_password_hash(new_password)}}
+        )
+        current_app.logger.info(f'Password reset completed for: {email}')
+        flash('Your password has been updated successfully! Please log in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('reset_password.html', token=token)
 
 @auth.route('/logout')
 @login_required
