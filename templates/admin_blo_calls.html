@@ -124,6 +124,7 @@
                     <!-- Assign BLO -->
                     {% if call.status in ['Pending'] %}
                     <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex gap-2 mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="action" value="assign">
                         <input type="text" name="blo_name" placeholder="Enter BLO Name" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required>
                         <button type="submit" class="bg-electric/20 hover:bg-electric/30 text-electric px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-electric/30">Assign</button>
@@ -133,6 +134,7 @@
                     <!-- Schedule Call -->
                     {% if call.status in ['Pending', 'Assigned'] %}
                     <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex gap-2 mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="action" value="schedule">
                         <input type="datetime-local" name="scheduled_time" class="flex-1 bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-electric outline-none" required
                         {% if not call.blo_name %} disabled title="Assign BLO first" {% endif %}>
@@ -144,6 +146,7 @@
                     <!-- Mark Complete -->
                     {% if call.status in ['Scheduled'] %}
                     <form action="{{ url_for('admin.update_blo_call', call_id=call._id) }}" method="POST" class="flex justify-between items-center">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="text-sm text-gray-400">Action:</div>
                         <div class="flex gap-2">
                             <button type="submit" name="action" value="complete" class="bg-emerald/20 hover:bg-emerald/30 text-emerald px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-emerald/30">
