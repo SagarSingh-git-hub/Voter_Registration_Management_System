@@ -84,6 +84,7 @@
             </div>
             
             <form id="quick-register-form" onsubmit="saveQuickDraft(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="text" name="voter_id" placeholder="Voter ID (ABC1234567)" pattern="[A-Z]{3}[0-9]{7}" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if(this.value.length > 3 && !/^[A-Z]{3}/.test(this.value)) this.value=this.value.slice(0,3); if(this.value.length > 3) this.value = this.value.slice(0,3) + this.value.slice(3).replace(/[^0-9]/g, '');" maxlength="10" title="Format: 3 Letters + 7 Digits (e.g., ABC1234567)" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
                 <input type="text" name="full_name" placeholder="Full Name" required maxlength="30" pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" title="Only letters and spaces allowed (Max 30 chars)" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
                 <input type="tel" name="phone" placeholder="Phone Number" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Only 10 digit numbers allowed" class="px-4 py-3 rounded-xl bg-dark/50 border border-glass-border text-white placeholder-gray-500 focus:border-electric/50 focus:outline-none transition-colors">
@@ -539,6 +540,7 @@
         </div>
         
         <form id="new-call-form" onsubmit="createCallRequest(event)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="space-y-4">
                 <div>
                     <label class="block text-gray-400 text-sm font-medium mb-2">Voter Name</label>
