@@ -463,63 +463,33 @@
         </div>
     </div>
 </div>
-    <!-- Real-time Status Polling -->
+    <!-- Real-time Status Polling (SSE) -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize current status from server-side template
             const initialStatus = "{{ application.status if application else 'None' }}";
             let currentStatus = initialStatus;
             
             console.log('Dashboard initialized. Current Status:', currentStatus);
 
-            function pollStatus() {
-                // Don't poll if document is hidden to save resources
-                if (document.hidden) return;
-
-                fetch('/voter/api/application-status')
-                    .then(response => {
-                        // Handle session expiration
-                        if (response.status === 401 || response.status === 403) {
-                            console.warn('Session expired, reloading...');
-                            window.location.reload();
-                            return null;
-                        }
-                        
-                        if (!response.ok) {
-                            // Log warning instead of error to reduce noise
-                            console.warn('Status poll failed:', response.status);
-                            return null;
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data) return;
-                        
-                        // Check if status has changed
-                        // We compare strict status strings. 
-                        // Note: 'None' from API means no application found.
-                        if (data.status !== 'Error' && data.status !== currentStatus) {
-                            console.log(`Status changed! ${currentStatus} -> ${data.status}`);
-                            
-                            // Visual feedback before reload (optional but nice)
-                            const statusCard = document.querySelector('.tilt-card');
-                            if (statusCard) {
-                                statusCard.style.opacity = '0.5';
-                            }
-                            
-                            // Reload page to fetch fresh data (Notifications, Flash messages, Updated UI)
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        // Suppress AbortError (common on page reload)
-                        if (error.name === 'AbortError') return;
-                        console.warn('Polling error (likely network or server restart):', error.message);
-                    });
-            }
-
-            // Poll every 3 seconds for near real-time updates
-            setInterval(pollStatus, 3000);
+            const eventSource = new EventSource('/voter/api/application-status');
+            
+            eventSource.onmessage = function(event) {
+                const newStatus = event.data;
+                if (newStatus !== 'Error' && newStatus !== currentStatus && newStatus !== 'None') {
+                    console.log(`Status changed! ${currentStatus} -> ${newStatus}`);
+                    
+                    const statusCard = document.querySelector('.tilt-card');
+                    if (statusCard) {
+                        statusCard.style.opacity = '0.5';
+                    }
+                    
+                    window.location.reload();
+                }
+            };
+            
+            eventSource.onerror = function(error) {
+                console.warn('SSE connection error, retrying...', error);
+            };
         });
     </script>
 {% endblock %}
