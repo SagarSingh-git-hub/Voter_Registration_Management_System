@@ -2,11 +2,11 @@
 
 {% block content %}
 <!-- HERO SECTION -->
-<div class="relative min-h-[85vh] flex items-center">
+<div class="relative min-h-[85vh] flex items-center py-16">
     <!-- Hero Background Effect -->
     <div class="absolute inset-0 z-0">
-        <div class="absolute top-20 right-0 w-[800px] h-[800px] bg-gradient-to-br from-peacock/20 to-electric/10 rounded-full blur-[100px] animate-pulse-slow"></div>
-        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-emerald/10 to-transparent rounded-full blur-[80px]"></div>
+        <div data-parallax="-0.25" class="absolute top-20 right-0 w-[800px] h-[800px] bg-gradient-to-br from-peacock/20 to-electric/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div data-parallax="0.15" class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-emerald/10 to-transparent rounded-full blur-[80px]"></div>
     </div>
 
     <div class="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -48,7 +48,7 @@
         </div>
 
         <!-- Hero Visual/Illustration -->
-        <div class="relative hidden lg:block">
+        <div class="relative hidden lg:block animate-slide-in opacity-0" style="animation-delay: 0.3s;">
             <div class="relative z-10 glass-panel p-8 rounded-3xl border-t border-l border-white/10 tilt-card">
                 <!-- Abstract UI Representation -->
                 <div class="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
@@ -92,10 +92,10 @@
             </div>
             
             <!-- Floating Elements -->
-            <div class="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 1s;">
+            <div data-parallax="-0.3" class="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 1s;">
                 <i class="fas fa-vote-yea text-4xl text-white"></i>
             </div>
-            <div class="absolute -bottom-5 -left-5 w-20 h-20 bg-gradient-to-br from-emerald to-teal-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 2s;">
+            <div data-parallax="0.2" class="absolute -bottom-5 -left-5 w-20 h-20 bg-gradient-to-br from-emerald to-teal-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 2s;">
                 <i class="fas fa-check text-3xl text-white"></i>
             </div>
         </div>
@@ -129,7 +129,7 @@
 </div>
 
 <!-- SERVICES PREVIEW -->
-<div class="py-24 relative">
+<div class="py-24 relative" id="services-section">
     <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
             <h2 class="font-display text-4xl font-bold text-white mb-4">Digital Services</h2>
@@ -195,7 +195,7 @@
 </div>
 
 <!-- HOW IT WORKS -->
-<div class="py-12 bg-white/5 relative overflow-hidden">
+<div class="py-12 bg-white/5 relative overflow-hidden" id="how-it-works">
     <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] opacity-30"></div>
     
     <div class="max-w-6xl mx-auto px-6 relative z-10">
@@ -248,7 +248,7 @@
 </div>
 
 <!-- BENEFITS -->
-<div class="py-24">
+<div class="py-24" id="benefits-section">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div class="space-y-8">
@@ -284,7 +284,7 @@
                 </div>
             </div>
             
-            <div class="glass-panel p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+            <div class="glass-panel p-8 rounded-3xl border border-white/10 relative overflow-hidden h-fit self-center">
                  <div class="absolute -right-20 -top-20 w-64 h-64 bg-electric/10 rounded-full blur-3xl"></div>
                  <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-peacock/20 rounded-full blur-3xl"></div>
                  
@@ -325,7 +325,7 @@
 </div>
 
 <!-- ABOUT VRMS SECTION -->
-<div class="py-12 relative">
+<div class="py-12 relative" id="about-vrms">
     <div class="max-w-5xl mx-auto px-6">
         <div class="glass-panel p-10 rounded-3xl border border-electric/30 relative overflow-hidden group hover:border-electric/50 transition-all duration-500 shadow-glow-lg">
             <!-- Decorative Background Elements -->
