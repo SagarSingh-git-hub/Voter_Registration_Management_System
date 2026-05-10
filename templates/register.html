@@ -18,6 +18,7 @@
         </div>
 
         <form method="POST" action="" class="space-y-8" id="register-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {{ form.hidden_tag() }}
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
@@ -183,9 +184,11 @@
             });
     }
 
-    // Attach to form submit
+    // Attach to form submit — guard against double-click
     document.getElementById('register-form').addEventListener('submit', function(e) {
         e.preventDefault();
+        const submitBtn = document.querySelector('input[type="submit"]');
+        if (submitBtn && submitBtn.disabled) return; // Already submitting
         signupEmail();
     });
 </script>
