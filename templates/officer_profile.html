@@ -187,6 +187,7 @@
             </div>
             
             <form action="{{ url_for('admin.update_profile') }}" method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div>
                     <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Full Name</label>
                     <div class="relative">
@@ -230,6 +231,7 @@
                 <p class="text-gray-400 text-sm">Set a new password for your account</p>
             </div>
             <form action="{{ url_for('admin.change_password') }}" method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div>
                     <label class="block text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">New Password</label>
                     <div class="relative">
