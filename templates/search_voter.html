@@ -82,9 +82,12 @@
                     <input type="text" id="assemblyInput" placeholder="Optional" 
                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-electric focus:ring-1 focus:ring-electric outline-none transition-all">
                 </div>
-                 <div class="flex items-end relative z-10">
-                    <button type="button" id="btnSearchDetails" onclick="performSearch()" class="w-full bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
+                 <div class="flex items-end gap-2 relative z-10">
+                    <button type="button" id="btnSearchDetails" onclick="performSearch()" class="flex-1 bg-electric hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-glow flex items-center justify-center gap-2">
                         <i class="fas fa-search"></i> Search Records
+                    </button>
+                    <button type="button" onclick="resetSearch()" class="bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white font-bold py-3 px-4 rounded-xl transition-all border border-white/10 flex items-center justify-center" title="Clear Search">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
@@ -173,6 +176,32 @@
             formDetails.classList.add('hidden');
             formDetails.classList.remove('grid');
         }
+    }
+
+    function resetSearch() {
+        // Clear all inputs
+        const inputs = ['nameInput', 'ageInput', 'assemblyInput', 'epicInput'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+
+        // Reset custom dropdowns to placeholder
+        const stateNative = document.getElementById('stateInput');
+        const districtNative = document.getElementById('districtInput');
+        if (stateNative) {
+            stateNative.value = '';
+            stateNative.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (districtNative) {
+            districtNative.innerHTML = '<option value="" class="bg-dark">Select District</option>';
+        }
+
+        // Hide results
+        document.getElementById('resultsContainer').classList.add('hidden');
+        document.getElementById('resultsContainer').innerHTML = '';
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('loadingState').classList.add('hidden');
     }
 
     async function performSearch() {
