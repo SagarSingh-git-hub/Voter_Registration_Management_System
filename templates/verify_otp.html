@@ -11,6 +11,7 @@
         <p class="text-gray-400 font-light mb-8 slide-in-bottom" style="animation-delay: 0.25s;">Please enter the One-Time Password sent to your registered email address.</p>
         
         <form method="POST" action="" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {{ form.hidden_tag() }}
             
             <div class="group slide-in-bottom" style="animation-delay: 0.3s;">
